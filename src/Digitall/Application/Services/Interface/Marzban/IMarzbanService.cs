@@ -1,0 +1,168 @@
+﻿using Domain.DTOs.Marzban;
+using Domain.Entities.Marzban;
+
+namespace Application.Services.Interface.Marzban;
+
+public interface IMarzbanService
+{
+    /// <summary>
+    /// for add marzban server
+    /// </summary>
+    /// <param name="marzban"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddMarzbanServerAsync(AddMarzbanServerDto marzban, long userId);
+
+    /// <summary>
+    /// get marzban server by id 
+    /// </summary>
+    /// <param name="Id"></param>
+    /// <returns></returns>
+    Task<MarzbanServer> GetMarzbanServerByIdAsync(long Id);
+
+    /// <summary>
+    /// for test marzban server befor added
+    /// to database by login to server
+    /// </summary>
+    /// <param name="marzbanServer"></param>
+    /// <returns></returns>
+    Task<bool> MarzbanServerIsSuccess(MarzbanServer marzbanServer);
+
+    // Task AddNodeAsync();
+    /// <summary>
+    /// reaset core
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task ReasetMarzbanServerCore(long serverId);
+
+    /// <summary>
+    /// get marzban server configs
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns>configs</returns>
+    Task<string> GetMarzbanServerCoreConfigAsync(long serverId);
+
+    /// <summary>
+    /// get marzban server list inbouds for added vpn
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task<MarzbanInboundsDto> GetMarzbanInboudsAsync(long serverId);
+
+    /// <summary>
+    /// update marzban server core config
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="core"></param>
+    /// <returns></returns>
+    Task<string> UpdateMarzbanServerCoreConfigAsync(long serverId, object core);
+
+    /// <summary>
+    /// get marzban node settings for add node
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task<MarzbanNodeSettingDto> GetMarzbanServerNodeSettingsAsync(long serverId);
+
+    /// <summary>
+    /// add marzban node by certificate
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    Task<MarzbanNodeDto> AddMarzbanNodeAsync(long serverId, AddMarzbanNodeDto node);
+
+
+    /// <summary>
+    /// get marzban node by id
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="nodeId"></param>
+    /// <returns></returns>
+    Task<MarzbanNodeDto> GetMarzbanNodeByIdAsync(long serverId, long nodeId);
+
+    /// <summary>
+    /// update marzban node by id async
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="nodeId"></param>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    Task<MarzbanNodeDto> UpdateMarzbanServerNodeAsync(long serverId, long nodeId, AddMarzbanNodeDto node);
+
+    /// <summary>
+    /// delete marzban node by id async
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="nodeId"></param>
+    /// <returns></returns>
+    Task DeleteNodeByIdAsync(long serverId, long nodeId);
+
+    /// <summary>
+    /// get all nodes from marzban server
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task<List<MarzbanNodeDto>> GetMarzbanNodeAsync(long serverId);
+
+    /// <summary>
+    /// for buy vpn
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task<List<MarzbanUser>> AddMarzbanUserAsync(List<AddMarzbanUserDto> users, long serverId);
+
+    /// <summary>
+    /// for performance
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="server"></param>
+    /// <returns></returns>
+    Task AddMarzbanUserAsync(List<AddMarzbanUserDto> users, MarzbanServer server);
+
+    /// <summary>
+    /// get marzban server by id for counting client
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <returns></returns>
+    Task<GetMarzbanServerOptionDto> GetMarzbanServerAsync(long serverId);
+
+    /// <summary>
+    /// get all marzban server for drop down list in client
+    /// </summary>
+    /// <returns></returns>
+    Task<List<GetMarzbanServerOptionDto>> GetMarzbanServersAsync();
+
+    /// <summary>
+    /// add vpn for marzban
+    /// <remarks>for server or append server</remarks>
+    /// </summary>
+    /// <param name="vpn"></param>
+    /// <returns></returns>
+    Task AddMarzbanVpnAsync(AddMarzbanVpnDto vpn, long userId);
+
+    /// <summary>
+    /// get list marzban vpn for buy vpn from vpn service
+    /// </summary>
+    /// <returns></returns>
+    Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync();
+
+    /// <summary>
+    /// buy marzban vpn
+    /// </summary>
+    /// <param name="vpn"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task BuyMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId);
+
+    /// <summary>
+    /// get marzban user information
+    /// befor get info checked access config or not
+    /// but have 2 action for admin
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<MarzbanUserInformationDto> GetMarzbanUserInformationAsync(string userName, long? userId = null);
+}

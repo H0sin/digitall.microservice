@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+
+  nginx:
+    image: nginx:stable-alpine
+
+  api:
+    image: ${DOCKER_REGISTRY-}api
+    build:
+      context: .
+      dockerfile: src/Digitall/Api/Dockerfile
+
+networks:
+  nginx-network:
+    driver: bridge

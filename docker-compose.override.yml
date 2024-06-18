@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  nginx:
+    volumes:
+      - ./src/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    restart : unless-stopped
+    depends_on:
+      - api
+    networks:
+      - nginx-network
+
+  api:
+    expose:
+      - 5000
+    restart : unless-stopped
+    environment:
+      - ASPNETCORE_HTTP_PORTS=5000
+    ports:
+      - 5000:5000
+    networks:
+      - nginx-network
+    volumes:
+      - ./digitall/Api/bin/Debug/net8.0/.xml:/app/Digitall.Api.XML 
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "Hossein8916"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    restart: unless-stopped
+    networks:
+      - nginx-network
