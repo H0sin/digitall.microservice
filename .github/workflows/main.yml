@@ -19,7 +19,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        port : 2222
+        port : 47831
         script: |
           cd /app/
           git pull
