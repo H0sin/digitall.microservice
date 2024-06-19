@@ -34,6 +34,9 @@ services:
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql/data
+      - ./src/sqlserver/restore_script.sql:/docker-entrypoint-initdb.d/restore_script.sql
     restart: unless-stopped
     networks:
       - nginx-network
