@@ -22,6 +22,9 @@ public class UserItems
             AgentId = 100001,
             MobileActiveCode = new Random().Next(10000, 999999).ToString(),
             IsMobileActive = true,
+            Email = "h.faraji8079@gmail.com",
+            IsEmailActive = true,
+            EmailActiveCode = Guid.NewGuid().ToString("N"),
         }
     };
 }

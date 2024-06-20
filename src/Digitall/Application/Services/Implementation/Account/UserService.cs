@@ -7,9 +7,12 @@ using Application.Static;
 using Application.Utilities;
 using Application.Exceptions;
 using Application.Extensions;
+using Application.Senders.Email;
+using Application.Senders.Sms;
 using Domain.Common;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Email;
 using Domain.DTOs.Sms;
 using Domain.Entities.Account;
 using Domain.Enums.Account;
@@ -24,16 +27,33 @@ namespace Application.Services.Implementation.Account;
 
 public class UserService(
     IUserRepository userRepository,
-    ISendNotificationService<SmsDto> smsService,
     IAgentService agentService) : IUserService
 {
     #region login
 
-    public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
+    // public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
+    // {
+    //     User user = (await userRepository
+    //         .GetQuery()
+    //         .SingleOrDefaultAsync(u => u.Mobile == login.Mobile))!;
+    //
+    //     if (user is null)
+    //         return LoginUserResult.NotFound;
+    //
+    //     if (user.IsBlocked)
+    //         return LoginUserResult.Blocked;
+    //
+    //     if (user.Password == PasswordHelper.EncodePasswordMd5(login.Password))
+    //         return LoginUserResult.Success;
+    //
+    //     return LoginUserResult.NotFound;
+    // }
+
+    public async Task<LoginUserResult> LoginByEmailAsync(string email, string password)
     {
-        User user = (await userRepository
+        User? user = (await userRepository
             .GetQuery()
-            .SingleOrDefaultAsync(u => u.Mobile == login.Mobile))!;
+            .SingleOrDefaultAsync(u => u.Email == email));
 
         if (user is null)
             return LoginUserResult.NotFound;
@@ -41,7 +61,25 @@ public class UserService(
         if (user.IsBlocked)
             return LoginUserResult.Blocked;
 
-        if (user.Password == PasswordHelper.EncodePasswordMd5(login.Password))
+        if (user.Password == PasswordHelper.EncodePasswordMd5(password))
+            return LoginUserResult.Success;
+
+        return LoginUserResult.NotFound;
+    }
+
+    public async Task<LoginUserResult> LoginByChatIdAsync(long chatId, string password)
+    {
+        User? user = (await userRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(u => u.ChatId == chatId));
+
+        if (user is null)
+            return LoginUserResult.NotFound;
+
+        if (user.IsBlocked)
+            return LoginUserResult.Blocked;
+
+        if (user.Password == PasswordHelper.EncodePasswordMd5(password))
             return LoginUserResult.Success;
 
         return LoginUserResult.NotFound;
@@ -87,8 +125,7 @@ public class UserService(
                 Address = user.Address,
                 Avatar = PathExtension.UserAvatarThumbServer + user.Avatar,
                 AgentId = user.AgentId,
-                Email = user.Email,
-                IsMobileActive = user.IsMobileActive
+                Email = user.Email
             }
         };
     }
@@ -96,6 +133,52 @@ public class UserService(
     public async Task<UserDto?> GetUserByIdAsync(long id)
     {
         User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == id);
+
+        if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
+
+        return new UserDto()
+        {
+            Id = user.Id,
+            Mobile = user.Mobile,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Address = user.Address,
+            Avatar = user.Avatar,
+            AgentId = user.AgentId,
+            Email = user.Email,
+            IsMobileActive = user.IsMobileActive,
+            MobileActiveCode = user.MobileActiveCode,
+            Balance = user.Balance,
+            ModifiedDate = user.ModifiedDate
+        };
+    }
+
+    public async Task<UserDto?> GetUserByEmailAsync(string email)
+    {
+        User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == email.Trim());
+
+        if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
+
+        return new UserDto()
+        {
+            Id = user.Id,
+            Mobile = user.Mobile,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Address = user.Address,
+            Avatar = user.Avatar,
+            AgentId = user.AgentId,
+            Email = user.Email,
+            IsMobileActive = user.IsMobileActive,
+            MobileActiveCode = user.MobileActiveCode,
+            Balance = user.Balance,
+            ModifiedDate = user.ModifiedDate
+        };
+    }
+
+    public async Task<UserDto?> GetUserByChatIdAsync(long chatId)
+    {
+        User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
 
         if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
 
@@ -126,45 +209,57 @@ public class UserService(
 
         try
         {
-            if (await GetUserByMobileAsync(registerUser.Mobile) is not null)
+    
+            if (await userRepository.GetQuery().SingleOrDefaultAsync(x=>x.Email == registerUser.Email) is not null)
                 return RegisterUserResult.IsExists;
 
-            string password = CreatePassword.CreateUserPassword(7);
-
-            AgentDto? agent = await agentService.GetAgentByCode(registerUser.AgentCode);
+            AgentDto? agent = await agentService.GetAgentByCode(registerUser.AgentCode ?? 0);
 
             if (agent == null)
                 return RegisterUserResult.AgentNotFound;
 
             User user = new()
             {
-                Mobile = registerUser.Mobile,
+                Email = registerUser.Email,
+                EmailActiveCode = Guid.NewGuid().ToString(),
+                IsEmailActive = false,
                 FirstName = registerUser.FirstName,
                 LastName = registerUser.LastName,
-                Password = PasswordHelper.EncodePasswordMd5(password),
+                Password = PasswordHelper.EncodePasswordMd5(registerUser.Password),
                 IsDelete = false,
                 MobileActiveCode = new Random().Next(10000, 999999).ToString(),
-                AgentId = agent.Id
+                AgentId = agent.Id,
             };
 
             await userRepository.AddEntity(user);
             await userRepository.SaveChanges(user.Id);
 
-            // sms template 
-            SmsDto sms = new()
+            // email 
+            EmailDto email = new()
             {
-                Message = "",
-                Parameters = new VerifySendParameter[]
-                {
-                    new("NAME", registerUser.FirstName + ' ' + registerUser.LastName),
-                    new("PASS", password),
-                },
-                Receiver = registerUser.Mobile,
+                Message = "تست",
+                Receiver = registerUser.Email,
                 Status = 0,
-                TypeSendSms = TypeSendSms.SendPassword,
+                Subject = "te4st"
             };
-
-            await smsService.SendNotificationAsync(sms);
+            
+            // sms template 
+            // SmsDto sms = new()
+            // {
+            //     Message = "",
+            //     Parameters = new VerifySendParameter[]
+            //     {
+            //         new("NAME", registerUser.FirstName + ' ' + registerUser.LastName),
+            //         new("PASS", password),
+            //     },
+            //     Receiver = registerUser.Mobile,
+            //     Status = 0,
+            //     TypeSendSms = TypeSendSms.SendPassword,
+            // };
+            //
+            // await smsService.SendNotificationAsync(sms);
+            ISendNotificationService<EmailDto> emailService = new SendEmailService<EmailDto>();
+            await emailService.SendNotificationAsync(email);
             await transaction.CommitAsync();
             return RegisterUserResult.Success;
         }
@@ -209,7 +304,7 @@ public class UserService(
                 Status = 0,
                 TypeSendSms = TypeSendSms.SendPassword,
             };
-
+            ISendNotificationService<SmsDto> smsService = new SendSmsService<SmsDto>();
             await smsService.SendNotificationAsync(sms);
 
             #endregion
@@ -364,6 +459,7 @@ public class UserService(
                 Status = 0,
                 TypeSendSms = TypeSendSms.SendChangeMobile,
             };
+            ISendNotificationService<SmsDto> smsService = new SendSmsService<SmsDto>();
             await smsService.SendNotificationAsync(sms);
             // User? newUser = await userRepository.GetEntityById(userId);
             // newUser.MobileActiveCode = new Random().Next(10000, 999999).ToString();
@@ -383,6 +479,9 @@ public class UserService(
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)
     {
         if (await userRepository.GetQuery().AnyAsync(x => x.Mobile == user.Mobile))
+            return AddUserResult.IsExists;
+
+        if (await userRepository.GetQuery().AnyAsync(x => x.Email == user.Email))
             return AddUserResult.IsExists;
 
         AgentDto? agent = await agentService.GetAgentByAdminId(userId);

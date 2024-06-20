@@ -16,9 +16,8 @@ public class User : BaseEntity
     public string? Email { get; set; }
 
     [Display(Name = "تلفن همراه")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(12, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string Mobile { get; set; }
+    public string? Mobile { get; set; }
 
     [Display(Name = "کلمه ی عبور")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -29,8 +28,15 @@ public class User : BaseEntity
     [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string MobileActiveCode { get; set; }
 
+    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    [MaxLength(40, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
+    public string EmailActiveCode { get; set; }
+
     [Display(Name = "موبایل فعال / غیرفعال")]
     public bool IsMobileActive { get; set; }
+
+    [Display(Name = "ایمیل فعال / غیرفعال")]
+    public bool IsEmailActive { get; set; }
 
     [Display(Name = "نام")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -55,6 +61,8 @@ public class User : BaseEntity
     [Display(Name = "شناسه نمایندگی")] public long AgentId { get; set; }
 
     [Display(Name = "موجودی")] public long Balance { get; set; }
+
+    [Display(Name = "شناسه چت تلگرام")] public long? ChatId { get; set; }
 
     #endregion
 

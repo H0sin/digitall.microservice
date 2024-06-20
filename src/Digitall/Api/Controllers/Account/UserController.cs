@@ -24,18 +24,8 @@ namespace Api.Controllers.Account
     [ServiceFilter(typeof(ExceptionHandler))]
     [ApiResultFilter]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IUserService userService) : ControllerBase
     {
-        #region cosntructor
-
-        private readonly IUserService _userService;
-
-        public UserController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        #endregion
 
         #region login
 
@@ -49,7 +39,7 @@ namespace Api.Controllers.Account
         [HttpPost]
         public async Task<ApiResult> Login([FromBody] LoginUserDto login)
         {
-            LoginUserResult response = await _userService.LoginAsync(login);
+            LoginUserResult response = await userService.LoginAsync(login);
 
             switch (response)
             {
@@ -58,7 +48,7 @@ namespace Api.Controllers.Account
                 case LoginUserResult.Blocked:
                     return new ApiResult(false, ApiResultStatusCode.Blocked, "حساب کاربری شما مسدود شدع است");
                 case LoginUserResult.Success:
-                    UserDto user = await _userService.GetUserByMobileAsync(login.Mobile!);
+                    UserDto user = await userService.GetUserByMobileAsync(login.Mobile!);
                     string token = JwtHelper.GenerateToken(user);
                     return new ApiResult<LoginUserResponseDto>
                     (true, ApiResultStatusCode.Success, new LoginUserResponseDto(token, user.UserFullName()),
@@ -82,7 +72,7 @@ namespace Api.Controllers.Account
         [HttpPost]
         public async Task<ApiResult> Register([FromBody] RegisterUserDto register)
         {
-            RegisterUserResult response = await _userService.RegisterAsync(register);
+            RegisterUserResult response = await userService.RegisterAsync(register);
 
             switch (response)
             {
@@ -91,10 +81,10 @@ namespace Api.Controllers.Account
                         "ثبت نام با موفقیت انجام شد کلمه عبور از طریق پیامک ارسال شد");
                 case RegisterUserResult.IsExists:
                     return new ApiResult(false, ApiResultStatusCode.Duplicate,
-                        "با این شماره موبایل حساب کاربری وجود دارد");
+                        "چنین کاربری وجود دارد");
             }
 
-            return BadRequest();
+            return NotFound();
         }
 
         #endregion
@@ -111,7 +101,7 @@ namespace Api.Controllers.Account
         [HttpPost]
         public async Task<ApiResult> ForgetPassword([FromBody] ForgetUserPasswordDto forget)
         {
-            ForgetPasswordResult response = await _userService.ForgetPasswordAsync(forget);
+            ForgetPasswordResult response = await userService.ForgetPasswordAsync(forget);
 
             switch (response)
             {
@@ -144,7 +134,7 @@ namespace Api.Controllers.Account
         [HttpGet]
         public async Task<ApiResult<FilterUsersDto>> GetUsersByFilter([FromQuery] FilterUsersDto filter)
         {
-            FilterUsersDto users = await _userService.GetUsersByFilterAsync(filter);
+            FilterUsersDto users = await userService.GetUsersByFilterAsync(filter);
 
             return new OkObjectResult(users);
         }
@@ -161,7 +151,7 @@ namespace Api.Controllers.Account
         [ProducesResponseType(typeof(ApiResult<FilterUsersDto>), (int)HttpStatusCode.OK)]
         public async Task<ApiResult<FilterUsersDto>> GetAgentUsersFilter([FromQuery] FilterUsersDto filter)
         {
-            FilterUsersDto users = await _userService.GetAgentUsersByFilterAsync(filter);
+            FilterUsersDto users = await userService.GetAgentUsersByFilterAsync(filter);
 
             return new OkObjectResult(users);
         }
@@ -182,7 +172,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> GetUser()
         {
-            UserDto user = await _userService.GetUserByIdAsync(User.GetUserId());
+            UserDto user = await userService.GetUserByIdAsync(User.GetUserId());
 
             return user switch
             {
@@ -203,7 +193,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult<List<UserDto>>> GetAgentUsers()
         {
-            List<UserDto> users = await _userService.GetUserByAgentAsync(User.GetUserId());
+            List<UserDto> users = await userService.GetUserByAgentAsync(User.GetUserId());
 
             return Ok(users);
         }
@@ -217,7 +207,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> UpdateProfile([FromForm] UpdateUserProfileDto user)
         {
-            UpdateUserProfileResult response = await _userService.UpdateUserProfileAsync(user, User.GetUserId());
+            UpdateUserProfileResult response = await userService.UpdateUserProfileAsync(user, User.GetUserId());
             return Ok();
         }
 
@@ -240,7 +230,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> SendMobileActiveCode([FromQuery] string phone)
         {
-            await _userService.SendMobileActiveCode(phone, User.GetUserId());
+            await userService.SendMobileActiveCode(phone, User.GetUserId());
             return Ok();
         }
 
@@ -261,7 +251,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> AddUser([FromForm] AddUserDto user)
         {
-            AddUserResult response = await _userService.AddUserAsync(user, User.GetUserId());
+            AddUserResult response = await userService.AddUserAsync(user, User.GetUserId());
 
             return response switch
             {
