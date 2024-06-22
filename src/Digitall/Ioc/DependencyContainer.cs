@@ -59,6 +59,8 @@ using Application.Senders.Sms;
 using Application.Services.Implementation.Authorization;
 using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
+using Application.Services.Implementation.Telegram;
+using Application.Services.Interface.Telegram;
 using Data.Repositories.Vpn;
 
 namespace Ioc;
@@ -113,7 +115,8 @@ public static class DependencyContainer
         services.AddScoped<IVpnService, VpnService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<IMarzbanService, MarzbanServies>();
-
+        services.AddScoped<ITelegramService, TelegramService>();
+        
         #endregion
 
         return services;

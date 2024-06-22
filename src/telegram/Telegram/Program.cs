@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Ioc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using Telegram.Bot.Services;
@@ -18,10 +19,11 @@ IHost host = Host.CreateDefaultBuilder(args)
                     TelegramBotClientOptions options = new(botConfig.BotToken);
                     return new TelegramBotClient(options, httpClient);
                 });
-
+        
         services.AddScoped<UpdateHandler>();
         services.AddScoped<ReceiverService>();
         services.AddHostedService<PollingService>();
+
     })
     .Build();
 
