@@ -206,11 +206,9 @@ public class UserService(
     public async Task<RegisterUserResult> RegisterAsync(RegisterUserDto registerUser)
     {
         using IDbContextTransaction transaction = await userRepository.context.Database.BeginTransactionAsync();
-
         try
         {
-    
-            if (await userRepository.GetQuery().SingleOrDefaultAsync(x=>x.Email == registerUser.Email) is not null)
+            if (await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == registerUser.Email) is not null)
                 return RegisterUserResult.IsExists;
 
             AgentDto? agent = await agentService.GetAgentByCode(registerUser.AgentCode ?? 0);
@@ -229,6 +227,7 @@ public class UserService(
                 IsDelete = false,
                 MobileActiveCode = new Random().Next(10000, 999999).ToString(),
                 AgentId = agent.Id,
+                Description = registerUser.Description
             };
 
             await userRepository.AddEntity(user);
@@ -242,24 +241,7 @@ public class UserService(
                 Status = 0,
                 Subject = "te4st"
             };
-            
-            // sms template 
-            // SmsDto sms = new()
-            // {
-            //     Message = "",
-            //     Parameters = new VerifySendParameter[]
-            //     {
-            //         new("NAME", registerUser.FirstName + ' ' + registerUser.LastName),
-            //         new("PASS", password),
-            //     },
-            //     Receiver = registerUser.Mobile,
-            //     Status = 0,
-            //     TypeSendSms = TypeSendSms.SendPassword,
-            // };
-            //
-            // await smsService.SendNotificationAsync(sms);
-            ISendNotificationService<EmailDto> emailService = new SendEmailService<EmailDto>();
-            await emailService.SendNotificationAsync(email);
+
             await transaction.CommitAsync();
             return RegisterUserResult.Success;
         }

@@ -64,6 +64,10 @@ public class User : BaseEntity
 
     [Display(Name = "شناسه چت تلگرام")] public long? ChatId { get; set; }
 
+    [Display(Name = "توضیحات")]
+    [MaxLength(3000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
+    public string? Description { get; set; }
+
     #endregion
 
     #region relations

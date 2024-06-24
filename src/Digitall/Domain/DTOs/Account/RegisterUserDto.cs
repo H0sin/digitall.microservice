@@ -26,4 +26,8 @@ public class RegisterUserDto
     public string? ConfirmPassword { get; set; }
 
     [Display(Name = "کد نمایندگی")] public long? AgentCode { get; set; }
+
+    [Display(Name = "توضیحات")]
+    [MaxLength(3000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
+    public string? Description { get; set; }
 }

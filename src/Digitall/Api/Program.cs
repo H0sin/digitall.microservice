@@ -4,6 +4,7 @@ using Api.Filters;
 using Api.Middleware;
 using Asp.Versioning;
 using Application.Extensions;
+using Application.Helper;
 using Data.Context;
 using Ioc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,17 +13,46 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Telegram.Bot;
+using Telegram.Bot.Controllers;
+using Telegram.Bot.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddServices();
 builder.Services.AddHttpContextAccessor();
+
+#region telegram web hook (get configuration)
+
+IConfigurationSection? botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
+builder.Services.Configure<BotConfiguration>(botConfigurationSection);
+
+BotConfiguration? botConfiguration = botConfigurationSection.Get<BotConfiguration>();
+
+builder.Services.AddHttpClient("telegram_bot_client")
+    .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+    {
+        BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
+        TelegramBotClientOptions options = new(botConfig!.BotToken);
+        return new TelegramBotClient(options, httpClient);
+    });
+
+// Dummy business-logic service
+builder.Services.AddScoped<UpdateHandlers>();
+
+// There are several strategies for completing asynchronous tasks during startup.
+// Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
+// We are going to use IHostedService to add and later remove Webhook
+builder.Services.AddHostedService<ConfigureWebhook>();
+
+#endregion
+
+builder.Services.AddControllers();
 
 #region cors config
 
@@ -154,13 +184,11 @@ builder.Services.AddAuthentication(opt =>
 
 var app = builder.Build();
 
-
 #region middelewear
 
 app.UseMiddleware<AuthenticationMiddleware>();
 
 #endregion
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -184,6 +212,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseCors("DigitallCors");
+app.MapBotWebhookRoute<BotController>(route: botConfiguration!.Route);
 
 app.MigrateDatabase<DigitallDbContext>((context, services) =>
 {
