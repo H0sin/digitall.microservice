@@ -25,7 +25,7 @@ public class AuthenticationMiddleware(RequestDelegate next)
                 var token = new JwtSecurityToken(jwtEncodedString: jwtEncodedString);
                 var identity = new ClaimsIdentity(token.Claims, "basic");
                 context.User = new ClaimsPrincipal(identity);
-            }
+            } 
         }
         catch (Exception e)
         {
