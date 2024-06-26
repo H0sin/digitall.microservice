@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main  # تغییر به نام شاخه اصلی خود
+      - master  # تغییر به نام شاخه اصلی خود
 
 jobs:
   deploy:
