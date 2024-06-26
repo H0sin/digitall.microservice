@@ -19,7 +19,7 @@ jobs:
     - name: Set up SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.SshKey }}
+        ssh-private-key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCUKTh2YySpTMZOg+/aFJI2TyU4o1LJFXR9+sFMeab12XzycQKXWQCZJOVYDXm0Gtr102j3gS3DOrFltM9i7Dl4dscXwQHPVMuOi6s1geO9Qs0l1oUxk64+gr16UPOOVCmgTZ15jr0r8ux4GYMiIqf+DI+LXOWhtM5ZU3AEplPNdy3upJqC54OaZrNJkXm7/4xKOiLWXB6+29R+mHjPiZnlDrdhpb0pyg4jTvEApx6V9N0J4tfmN43q5TAMalU2Rx+nclBo7GXWs/IvqQ+Zj4PfzN1HZLDRNLogBOsonJ6xaPwvkDIjwxAcvny5jKLaJkDTGkHLpeAknrl+TEzvp9XbL5R3NDk9uYrSi0MMDbYQGStXyDdSACY3YD20herc4eaRUnUlEzi01Lxw/L/7Wr/DFtttTy4IXbUJmlxm0tSCzMH8lSWETBDi4UT7Xapp5B+DQRW0tVCgZxbT8L5vyjdta/gMkHrpPVja23jZ4jMOU5BFew+YPONj0Km5stPwrT7hTXwDHR365uSrZqnVlEWLOgkUhSqfN3ORMe33PhDQ2eneZudwdsWVvz5zc4gqtS/zTtPWdHFcSiIC21Ol+/0UQqKhm9vqSFzcY+MpyH4rgfFnmLEXQTP496YBnfNr7l996rOCdLnuRg6ZZQZNICnlYXE2r3MFu6vB5XQzlsocxQ== h.faraji8079@gmail.com
 
     - name: Deploy via SSH and Run Docker
       run: |
