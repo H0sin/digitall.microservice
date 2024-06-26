@@ -7,13 +7,13 @@ using Application.Static;
 using Application.Utilities;
 using Application.Exceptions;
 using Application.Extensions;
-using Application.Senders.Email;
 using Application.Senders.Sms;
 using Domain.Common;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Email;
 using Domain.DTOs.Sms;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Enums.Account;
 using Domain.Enums.Notification;
@@ -29,26 +29,6 @@ public class UserService(
     IUserRepository userRepository,
     IAgentService agentService) : IUserService
 {
-    #region login
-
-    // public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
-    // {
-    //     User user = (await userRepository
-    //         .GetQuery()
-    //         .SingleOrDefaultAsync(u => u.Mobile == login.Mobile))!;
-    //
-    //     if (user is null)
-    //         return LoginUserResult.NotFound;
-    //
-    //     if (user.IsBlocked)
-    //         return LoginUserResult.Blocked;
-    //
-    //     if (user.Password == PasswordHelper.EncodePasswordMd5(login.Password))
-    //         return LoginUserResult.Success;
-    //
-    //     return LoginUserResult.NotFound;
-    // }
-
     public async Task<LoginUserResult> LoginByEmailAsync(string email, string password)
     {
         User? user = (await userRepository
@@ -84,10 +64,6 @@ public class UserService(
 
         return LoginUserResult.NotFound;
     }
-
-    #endregion
-
-    #region get user
 
     public async Task<List<UserDto>> GetUserByAgentAsync(long userId)
     {
@@ -199,10 +175,6 @@ public class UserService(
         };
     }
 
-    #endregion
-
-    #region register
-
     public async Task<RegisterUserResult> RegisterAsync(RegisterUserDto registerUser)
     {
         using IDbContextTransaction transaction = await userRepository.context.Database.BeginTransactionAsync();
@@ -252,9 +224,13 @@ public class UserService(
         }
     }
 
-    #endregion
-
-    #region forget
+    public async Task RegisterUserFromTelegram(AddUserFromTelegramDto user)
+    {
+        await userRepository.AddEntity(new User()
+        {
+            Balance = 0
+        });
+    }
 
     public async Task<ForgetPasswordResult> ForgetPasswordAsync(ForgetUserPasswordDto forget)
     {
@@ -298,10 +274,6 @@ public class UserService(
 
         return ForgetPasswordResult.Posted;
     }
-
-    #endregion
-
-    #region filter
 
     public async Task<FilterUsersDto> GetUsersByFilterAsync(FilterUsersDto filter)
     {
@@ -378,10 +350,6 @@ public class UserService(
         return filter;
     }
 
-    #endregion
-
-    #region update
-
     public async Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
@@ -454,10 +422,6 @@ public class UserService(
         }
     }
 
-    #endregion
-
-    #region add
-
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)
     {
         if (await userRepository.GetQuery().AnyAsync(x => x.Mobile == user.Mobile))
@@ -497,6 +461,4 @@ public class UserService(
 
         return AddUserResult.Success;
     }
-
-    #endregion
 }

@@ -1,5 +1,6 @@
 ﻿using Application.Exceptions;
 using Domain.DTOs.Account;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Enums.Account;
 
@@ -14,6 +15,7 @@ public interface IUserService
     Task<LoginUserResult> LoginByChatIdAsync(long chatId,string password);
     Task<UserDto> GetUserByMobileAsync(string mobile);
     Task<RegisterUserResult> RegisterAsync(RegisterUserDto registerUser);
+    Task RegisterUserFromTelegram(AddUserFromTelegramDto user);
     Task<ForgetPasswordResult> ForgetPasswordAsync(ForgetUserPasswordDto forget);
     Task<FilterUsersDto> GetUsersByFilterAsync(FilterUsersDto filter);
     Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter);

@@ -68,6 +68,8 @@ public class User : BaseEntity
     [MaxLength(3000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? Description { get; set; }
 
+    public bool UserStatus { get; set; } = false; // not active defualt
+    
     #endregion
 
     #region relations

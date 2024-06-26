@@ -1,5 +1,4 @@
-﻿using Application.Senders.Email;
-using Data.Repositories.Account;
+﻿using Data.Repositories.Account;
 using Data.Repositories.Agent;
 using Data.Repositories.Authorization;
 using Data.Repositories.Base;
@@ -8,8 +7,6 @@ using Data.Repositories.Category;
 using Data.Repositories.Menu;
 using Data.Repositories.Server;
 using Data.Repositories.Transaction;
-using Domain.Common;
-using Domain.DTOs.Sms;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Agent;
 using Domain.IRepositories.Authorization;
@@ -100,7 +97,6 @@ public static class DependencyContainer
         #region services
 
         services.AddScoped(typeof(ISendNotificationService<>), typeof(SendSmsService<>));
-        services.AddScoped(typeof(ISendNotificationService<>), typeof(SendEmailService<>));
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAgentService, AgentService>();
         services.AddScoped<IMenuService, MenuService>();
