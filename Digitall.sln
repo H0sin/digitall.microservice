@@ -30,11 +30,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sqlserver", "sqlserver", "{
 		restore_script.sql = restore_script.sql
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "certbot", "certbot", "{4E706A24-1963-43A7-80FF-D741D21682AD}"
-	ProjectSection(SolutionItems) = preProject
-		src\certbot\certbot.sh = src\certbot\certbot.sh
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,7 +73,6 @@ Global
 		{77942109-88B1-41E6-BD10-B29DA60E2294} = {64EB8A45-5457-4D9B-9B4A-82D05B6968F0}
 		{0B157D38-2885-4896-A53C-FA1C70E0C02D} = {133C9721-7D3A-4504-8985-D11E6C15BECC}
 		{0B475DC5-7717-4297-8703-4DACB9DA9326} = {133C9721-7D3A-4504-8985-D11E6C15BECC}
-		{4E706A24-1963-43A7-80FF-D741D21682AD} = {133C9721-7D3A-4504-8985-D11E6C15BECC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6617A53D-962E-4DFE-96B8-6CB716E4D5C3}

@@ -9,14 +9,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Api.Middleware;
 
-public class AuthenticationMiddleware
+public class AuthenticationMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public AuthenticationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    private readonly RequestDelegate _next = next;
 
     public Task Invoke(HttpContext context)
     {
