@@ -1,9 +1,9 @@
 name: Deploy
-
+ 
 on:
   push:
     branches:
-      - master  # تغییر به نام شاخه اصلی خود
+      - main  # تغییر به نام شاخه اصلی خود
 
 jobs:
   deploy:
@@ -19,7 +19,7 @@ jobs:
     - name: Set up SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.SshKey }}
+        ssh-private-key: SshKey
 
     - name: Deploy via SSH and Run Docker
       run: |
