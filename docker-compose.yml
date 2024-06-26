@@ -12,9 +12,6 @@ services:
     build:
       context: .
       dockerfile: src/Digitall/Api/Dockerfile
-  
-  certbot:
-    image: certbot/certbot
 
 networks:
   nginx-network:

@@ -6,9 +6,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./src/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt/live/test.samanii.com/fullchain.pem:/etc/letsencrypt/live/test.samanii.com/fullchain.pem
+      - /etc/letsencrypt/live/test.samanii.com/privkey.pem:/etc/letsencrypt/live/test.samanii.com/privkey.pem
     restart: unless-stopped
     depends_on:
       - api
@@ -25,8 +25,8 @@ services:
       - 5000:5000
     networks:
       - nginx-network
-    volumes:
-      - ./digitall/Api/bin/Debug/net8.0/.xml:/app/Digitall.Api.XML
+    # volumes:
+      # - ./digitall/Api/bin/Debug/net8.0/.xml:/app/Digitall.Api.XML
     depends_on:
       - sqlserver
 
@@ -37,17 +37,10 @@ services:
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    volumes:
-      - sqlserver-data:/var/opt/mssql/data
-      - ./src/sqlserver/restore_script.sql:/docker-entrypoint-initdb.d/restore_script.sql
+    # volumes:
+    #   - sqlserver-data:/var/opt/mssql/data
+    #   - ./src/sqlserver/restore_script.sql:/docker-entrypoint-initdb.d/restore_script.sql
     restart: unless-stopped
     networks:
       - nginx-network
   
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
