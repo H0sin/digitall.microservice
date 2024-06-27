@@ -8,6 +8,7 @@ using Application.Utilities;
 using Application.Exceptions;
 using Application.Extensions;
 using Application.Senders.Sms;
+using Data.DefaultData;
 using Domain.Common;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
@@ -226,9 +227,16 @@ public class UserService(
 
     public async Task RegisterUserFromTelegram(AddUserFromTelegramDto user)
     {
+        AgentDto? agent = await agentService.GetAgentByCode(user.AgentCode ?? 0);
+
+        if (agent == null)
+            agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
+        
         await userRepository.AddEntity(new User()
         {
-            Balance = 0
+            Balance = 0,
+            AgentId = agent.Id,
+            
         });
     }
 

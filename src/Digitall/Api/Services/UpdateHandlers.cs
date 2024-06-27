@@ -1,3 +1,5 @@
+using Application.Services.Interface.Account;
+using Domain.DTOs.Telegram;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -10,11 +12,12 @@ public class UpdateHandlers
 {
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<UpdateHandlers> _logger;
-
-    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger)
+    private readonly IUserService? _userService;
+    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger, IUserService? userService)
     {
         _botClient = botClient;
         _logger = logger;
+        _userService = userService;
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -64,7 +67,7 @@ public class UpdateHandlers
 
         var action = messageText.Split(' ')[0] switch
         {
-            "/start" => SendStartedMessage(_botClient, message, cancellationToken);
+            "/start" => SendStartedMessage(_botClient, message, cancellationToken, _userService);
             "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken),
             "/keyboard" => SendReplyKeyboard(_botClient, message, cancellationToken),
             "/remove" => RemoveKeyboard(_botClient, message, cancellationToken),
@@ -83,21 +86,28 @@ public class UpdateHandlers
         //------------------------------ S T A R T ---------------------------------------
 
         static async Task<Message> SendStartedMessage(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken, IUserService userService)
         {
             await botClient.SendChatActionAsync(
                 chatId: message.Chat.Id,
                 chatAction: ChatAction.Typing,
                 cancellationToken: cancellationToken);
-
             
             await Task.Delay(500, cancellationToken);
 
+            string parameter = "";
+            
             if (message.Text != null && message.Text.StartsWith("/start"))
             {
-                string parameter = message.Text.Substring(7);
+                parameter = message.Text.Substring(7);
             }
-                
+
+            await userService.RegisterUserFromTelegram(new()
+            {
+                ChatId = message.Chat.Id,
+                FirstName = message.Chat.Id.ToString(),
+                LastName = "",
+            });
             
             InlineKeyboardMarkup inlineKeyboard = new(
                 new[]
