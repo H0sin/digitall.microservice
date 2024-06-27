@@ -1,26 +1,35 @@
-name: Deploy
- 
+name: Deploy to Server
+
 on:
   push:
     branches:
-      - master  # تغییر به نام شاخه اصلی خود
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install SSH Client
-      run: sudo apt-get install openssh-client
+    - name: Build Docker image
+      run: docker build -t my-app .
 
-    - name: Set up SSH key
-      uses: webfactory/ssh-agent@v0.5.3
+    - name: Save Docker image to a tar file
+      run: docker save my-app -o my-app.tar
+
+    - name: Copy Docker image to server
+      uses: appleboy/scp-action@v0.1.1
       with:
-        ssh-private-key: SshKey
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        source: "my-app.tar"
+        target: "~/my-app.tar"
 
-    - name: Deploy via SSH and Run Docker
-      run: |
-        ssh root@95.179.199.192 -p 2 "cd /app/digitall.microservice && git pull && docker-compose up -d"
+    - name: Load Docker image on server
+      run: ssh -i ${{ secrets.SERVER_SSH_KEY }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'docker load -i ~/my-app.tar'
+
+    - name: Run Docker container on server
+      run: ssh -i ${{ secrets.SERVER_SSH_KEY }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'docker run -d --name my-app-container -p 80:80 my-app'
