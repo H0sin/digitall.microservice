@@ -153,28 +153,28 @@ public class UserService(
         };
     }
 
-    public async Task<UserDto?> GetUserByChatIdAsync(long chatId)
-    {
-        User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
-
-        if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
-
-        return new UserDto()
-        {
-            Id = user.Id,
-            Mobile = user.Mobile,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Address = user.Address,
-            Avatar = user.Avatar,
-            AgentId = user.AgentId,
-            Email = user.Email,
-            IsMobileActive = user.IsMobileActive,
-            MobileActiveCode = user.MobileActiveCode,
-            Balance = user.Balance,
-            ModifiedDate = user.ModifiedDate
-        };
-    }
+    // public async Task<UserDto?> GetUserByChatIdAsync(long chatId)
+    // {
+    //     User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
+    //
+    //     if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
+    //
+    //     return new UserDto()
+    //     {
+    //         Id = user.Id,
+    //         Mobile = user.Mobile,
+    //         FirstName = user.FirstName,
+    //         LastName = user.LastName,
+    //         Address = user.Address,
+    //         Avatar = user.Avatar,
+    //         AgentId = user.AgentId,
+    //         Email = user.Email,
+    //         IsMobileActive = user.IsMobileActive,
+    //         MobileActiveCode = user.MobileActiveCode,
+    //         Balance = user.Balance,
+    //         ModifiedDate = user.ModifiedDate
+    //     };
+    // }
 
     public async Task<RegisterUserResult> RegisterAsync(RegisterUserDto registerUser)
     {
@@ -231,12 +231,14 @@ public class UserService(
 
         if (agent == null)
             agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
-        
+
         await userRepository.AddEntity(new User()
         {
             Balance = 0,
             AgentId = agent.Id,
-            
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Password = PasswordHelper.EncodePasswordMd5(user.ChatId.ToString()),
         });
     }
 
@@ -428,6 +430,23 @@ public class UserService(
         {
             throw new LogicException("لطفا 3 دقیقه صبر کنید");
         }
+    }
+
+    public async Task<UserDto?> GetUserByChatIdAsync(long chatId)
+    {
+        User? user = await userRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(x => x.ChatId == chatId);
+
+        if (user is null) return null;
+
+        return new()
+        {
+            Balance = user.Balance,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Id = user.Id
+        };
     }
 
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)

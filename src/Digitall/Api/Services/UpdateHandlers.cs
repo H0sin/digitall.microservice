@@ -67,7 +67,7 @@ public class UpdateHandlers
 
         var action = messageText.Split(' ')[0] switch
         {
-            "/start" => SendStartedMessage(_botClient, message, cancellationToken, _userService);
+            "/start" => SendStartedMessage(_botClient, message, cancellationToken, _userService),
             "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken),
             "/keyboard" => SendReplyKeyboard(_botClient, message, cancellationToken),
             "/remove" => RemoveKeyboard(_botClient, message, cancellationToken),
@@ -102,12 +102,16 @@ public class UpdateHandlers
                 parameter = message.Text.Substring(7);
             }
 
-            await userService.RegisterUserFromTelegram(new()
+            if (await userService.GetUserByChatIdAsync(message.Chat.Id) is null)
             {
-                ChatId = message.Chat.Id,
-                FirstName = message.Chat.Id.ToString(),
-                LastName = "",
-            });
+                await userService.RegisterUserFromTelegram(new()
+                {
+                    ChatId = message.Chat.Id,
+                    FirstName = message.From!.FirstName,
+                    LastName = message.From!.LastName,
+                    AgentCode = Convert.ToInt64(parameter)
+                });
+            };
             
             InlineKeyboardMarkup inlineKeyboard = new(
                 new[]
