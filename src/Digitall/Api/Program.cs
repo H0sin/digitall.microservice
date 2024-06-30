@@ -14,8 +14,10 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
 using Telegram.Bot;
-using Telegram.Bot.Controllers;
 using Telegram.Bot.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Api.Services;
+using Api.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,34 +27,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddServices();
+
 builder.Services.AddHttpContextAccessor();
 
-#region telegram web hook (get configuration)
+builder.Services.AddSingleton<BotService>();
+builder.Services.AddSingleton<TelegramBotClientFactory>();
 
-IConfigurationSection? botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
-builder.Services.Configure<BotConfiguration>(botConfigurationSection);
-
-BotConfiguration? botConfiguration = botConfigurationSection.Get<BotConfiguration>();
-
-builder.Services.AddHttpClient("telegram_bot_client")
-    .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
-    {
-        BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
-        TelegramBotClientOptions options = new(botConfig!.BotToken);
-        return new TelegramBotClient(options, httpClient);
-    });
-
-// Dummy business-logic service
-builder.Services.AddScoped<UpdateHandlers>();
-
-// There are several strategies for completing asynchronous tasks during startup.
-// Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
-// We are going to use IHostedService to add and later remove Webhook
-builder.Services.AddHostedService<ConfigureWebhook>();
-
-#endregion
-
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 #region cors config
 
@@ -149,10 +130,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.XML";
-    string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    // string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.XML";
+    // string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-    c.IncludeXmlComments(xmlPath);
+    // c.IncludeXmlComments(xmlPath);
 });
 
 #endregion
@@ -182,7 +163,16 @@ builder.Services.AddAuthentication(opt =>
 
 #endregion
 
+
 var app = builder.Build();
+
+#region bot
+
+var botService = app.Services.GetRequiredService<BotService>();
+var cancellationTokenSource = new CancellationTokenSource();
+botService.StartAllBotsAsync(cancellationTokenSource.Token).GetAwaiter().GetResult();
+
+#endregion
 
 #region middelewear
 
@@ -212,7 +202,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseCors("DigitallCors");
-app.MapBotWebhookRoute<BotController>(route: botConfiguration!.Route);
 
 app.MigrateDatabase<DigitallDbContext>((context, services) =>
 {

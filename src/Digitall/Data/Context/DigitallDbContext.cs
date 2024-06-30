@@ -14,6 +14,7 @@ using Domain.Entities.Product;
 using Domain.Entities.Sanaei;
 using Domain.Entities.Server;
 using Domain.Entities.Subscription;
+using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Entities.Vpn;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,8 @@ public class DigitallDbContext : DbContext
     public DbSet<MarzbanServer> MarzbanServers { get; set; }
     public DbSet<MarzbanVpn> MarzbanVpns { get; set; }
     public DbSet<MarzbanUser> MarzbanUsers { get; set; }
+    public DbSet<TelegramOptions> TelegramOptions { get; set; }
+    
     #endregion
 
     #region properties

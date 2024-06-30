@@ -12,12 +12,12 @@ public class UpdateHandlers
 {
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<UpdateHandlers> _logger;
-    private readonly IUserService? _userService;
-    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger, IUserService? userService)
+    //private readonly IUserService? _userService;
+    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger)
     {
         _botClient = botClient;
         _logger = logger;
-        _userService = userService;
+        //_userService = userService;
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -67,13 +67,8 @@ public class UpdateHandlers
 
         var action = messageText.Split(' ')[0] switch
         {
-            "/start" => SendStartedMessage(_botClient, message, cancellationToken, _userService),
+            //"/start" => SendStartedMessage(_botClient, message, cancellationToken, _userService),
             "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken),
-            "/keyboard" => SendReplyKeyboard(_botClient, message, cancellationToken),
-            "/remove" => RemoveKeyboard(_botClient, message, cancellationToken),
-            "/photo" => SendFile(_botClient, message, cancellationToken),
-            "/request" => RequestContactAndLocation(_botClient, message, cancellationToken),
-            "/inline_mode" => StartInlineQuery(_botClient, message, cancellationToken),
             _ => Usage(_botClient, message, cancellationToken)
         };
         Message sentMessage = await action;
@@ -99,7 +94,7 @@ public class UpdateHandlers
             
             if (message.Text != null && message.Text.StartsWith("/start"))
             {
-                parameter = message.Text.Substring(7);
+                parameter = message.Text.Substring(6);
             }
 
             if (await userService.GetUserByChatIdAsync(message.Chat.Id) is null)

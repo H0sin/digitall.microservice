@@ -24,13 +24,13 @@ public class User : BaseEntity
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string Password { get; set; }
 
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+    [Display(Name="کد فعال سازی مبایل")]
     [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string MobileActiveCode { get; set; }
+    public string? MobileActiveCode { get; set; }
 
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(40, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string EmailActiveCode { get; set; }
+    public string? EmailActiveCode { get; set; }
 
     [Display(Name = "موبایل فعال / غیرفعال")]
     public bool IsMobileActive { get; set; }
@@ -41,12 +41,11 @@ public class User : BaseEntity
     [Display(Name = "نام")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     [Display(Name = "نام خانوادگی")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     [Display(Name = "تصویر آواتار")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
