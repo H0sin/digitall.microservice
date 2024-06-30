@@ -17,8 +17,7 @@ public class MarzbanUser : BaseEntity
     public long UserId { get; set; }
     public long OrderDetailId { get; set; }
     public OrderDetail OrderDetail { get; set; }
-
-
+    
     // [JsonProperty("proxies")] public object? Proxies { get; set; }
 
     // [JsonProperty("data_limit")] public long? Data_Limit { get; set; } = 0;

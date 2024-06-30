@@ -5,7 +5,7 @@ using Domain.Enums.Agent;
 
 namespace Application.Services.Interface.Agent;
 
-public interface IAgentService
+public interface IAgentService : IAsyncDisposable
 {
     Task<AgentDto?> GetAgentByCode(long agentCode);
     Task<AgentDto?> GetAgentByIdAsync(long id);

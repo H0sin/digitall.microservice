@@ -12,7 +12,6 @@ using Domain.DTOs.Account;
 using Domain.DTOs.Marzban;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
-
 using Domain.Entities.Order;
 using Domain.Enums;
 using Domain.Enums.Order;
@@ -271,9 +270,7 @@ public class MarzbanServies(
 
             // get user
             User? user = await userRepository.GetEntityById(userId);
-            user.FirstName = "123";
-            await userRepository.UpdateEntity(user);
-            await userRepository.SaveChanges(userId);
+
             //get agent ids
             var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
@@ -413,6 +410,124 @@ public class MarzbanServies(
                 HttpMethod.Get);
 
         return response;
+    }
+
+    public async Task BuyMarzbanTestVpnAsync(long vpnId, long userId)
+    {
+        IDbContextTransaction transaction = await marzbanVpnRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            //get vpn
+            MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnId);
+            if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
+
+            // get user
+            User? user = await userRepository.GetEntityById(userId);
+
+            // get marzban server by id
+            MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
+
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(userId);
+
+            List<AddMarzbanUserDto> users = new();
+
+            long byteSize = 1048576;
+
+            DateTime today = DateTime.Today;
+            DateTime futureDate = today.AddDays(marzbanVpn.Test_Days);
+            // Convert the future date to Unix timestamp (seconds since January 1, 1970)
+            long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
+
+            object inbounds = new
+            {
+                vmess = marzbanVpn.Vmess,
+                vless = marzbanVpn.Vless,
+                trojan = marzbanVpn.Trojan,
+                shadowsocks = marzbanVpn.Shadowsocks
+            };
+
+            Dictionary<string, object> proxies = new Dictionary<string, object>();
+
+            if (marzbanVpn.Vmess.Count > 0)
+                proxies.Add("vmess", new { });
+            if (marzbanVpn.Trojan.Count > 0)
+                proxies.Add("trojan", new { });
+            if (marzbanVpn.Vless.Count > 0)
+                proxies.Add("vless", new { });
+            if (marzbanVpn.Shadowsocks.Count > 0)
+                proxies.Add("shadowsocks", new { });
+
+
+            users.Add(new()
+            {
+                Username = user.FirstName + "" + user.LastName + "" + marzbanServer.Users,
+                Expire = unixTimestamp.ToString(),
+                Data_Limit_Reset_Strategy = "no_reset",
+                Inbounds = inbounds,
+                Note = "",
+                Proxies = proxies,
+                Status = "active",
+                Data_Limit = (byteSize * marzbanVpn.Test_TotalGb).ToString(),
+            });
+
+            List<Domain.Entities.Order.Order> orders = new()
+            {
+                new Domain.Entities.Order.Order()
+                {
+                    Description = "خرید Vpn Test" + users[0].Username,
+                    UserId = userId,
+                    IsPaid = true,
+                    TracingCode = 1,
+                    PaymentDate = DateTime.Now,
+                    OrderDetails = new List<OrderDetail>()
+                    {
+                        new()
+                        {
+                            Count = 1,
+                            OrderDeatilType = OrderDeatilType.Vpn,
+                            ProductPrice = 0
+                        }
+                    }
+                }
+            };
+
+            await orderRepository.AddEntities(orders);
+            await orderRepository.SaveChanges(userId);
+
+            List<MarzbanUser> marzbanUsers = await AddMarzbanUserAsync(users, marzbanServer.Id);
+
+            marzbanUsers.ForEach(x =>
+            {
+                x.OrderDetailId = orders.First().OrderDetails.First().Id;
+                x.UserId = userId;
+                x.MarzbanServerId = marzbanServer.Id;
+                x.MarzbanVpnId = marzbanVpn.Id;
+            });
+
+            await marzbanUserRepository.AddEntities(marzbanUsers);
+            await marzbanUserRepository.SaveChanges(userId);
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw e;
+        }
+    }
+
+    public async Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnsTest()
+    {
+        return await marzbanVpnRepository
+            .GetQuery()
+            .Where(x => x.Test_Active == true)
+            .Include(x => x.MarzbanServer)
+            .Select(x => new MarzbanVpnTestDto()
+            {
+                Id = x.Id,
+                Title = x.MarzbanServer!.ServerName
+            }).ToListAsync();
     }
 
     private async Task UpdateMarzbanServerCount(long serverId, long count)

@@ -69,6 +69,9 @@ public class User : BaseEntity
 
     public bool UserStatus { get; set; } = false; // not active defualt
     
+    [Display(Name = "نهایت تعداد اکانت تست")]
+    public long FinalCountTestMarzbanAccount { get; set; }
+    
     #endregion
 
     #region relations

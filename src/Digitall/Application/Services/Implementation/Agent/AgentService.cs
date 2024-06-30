@@ -139,4 +139,10 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
     }
 
     #endregion
+
+    public async ValueTask DisposeAsync()
+    {
+        await agentRepository.DisposeAsync();
+        await userRepository.DisposeAsync();
+    }
 }

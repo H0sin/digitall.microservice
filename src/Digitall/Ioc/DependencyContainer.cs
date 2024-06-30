@@ -58,7 +58,9 @@ using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
 using Application.Services.Implementation.Telegram;
 using Application.Services.Interface.Telegram;
+using Data.Repositories.Telegram;
 using Data.Repositories.Vpn;
+using Domain.IRepositories.Telegram;
 
 namespace Ioc;
 
@@ -91,7 +93,7 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanServerRepository, MarzbanServerRepository>();
         services.AddScoped<IMarzbanVpnRepository, MarzbanVpnRepository>();
         services.AddScoped<IMarzbanUserRepository, MarzbanUserRepository>();
-
+        services.AddScoped<ITelegramBotRepository,TelegramBotRepository>();
         #endregion
 
         #region services

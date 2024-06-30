@@ -165,4 +165,17 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<MarzbanUserInformationDto> GetMarzbanUserInformationAsync(string userName, long? userId = null);
+
+    /// <summary>
+    /// total price 0
+    /// test account in marzban
+    /// </summary>
+    /// <returns></returns>
+    Task BuyMarzbanTestVpnAsync(long vpnId,long userId);
+
+    /// <summary>
+    /// get list marzban vpn are test
+    /// </summary>
+    /// <returns></returns>
+    Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnsTest();
 }

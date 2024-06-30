@@ -3,7 +3,7 @@ using Domain.Common;
 
 namespace Domain.Entities.Telegram;
 
-public class TelegramOptions : BaseEntity
+public class TelegramBot : BaseEntity
 {
     [Display(Name = "توکن")]
     [MaxLength(200)]
@@ -24,4 +24,12 @@ public class TelegramOptions : BaseEntity
     [Display(Name = "Route")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Route { get; set; } = Guid.NewGuid().ToString("N");
+
+    [Display(Name = "HostAddress ")]
+    [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
+    public string? HostAddress { get; set; }
+
+    [Display(Name = "SecretToken ")]
+    [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
+    public string? SecretToken { get; set; }
 }

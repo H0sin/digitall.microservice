@@ -2,31 +2,41 @@
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using Api.Factory;
+using Application.Services.Implementation.Telegram;
+using Application.Services.Interface.Telegram;
+using Domain.DTOs.Telegram;
 
 namespace Api.Services;
 
 public class BotService(
     IServiceProvider serviceProvider,
     ILogger<BotService> logger,
-    IConfiguration configuration,
     TelegramBotClientFactory botClientFactory)
 {
-    private readonly List<BotConfiguration> _botConfigurations = configuration.GetSection("Bots").Get<List<BotConfiguration>>();
-    private readonly TelegramBotClientFactory _botClientFactory = botClientFactory;
-
     public async Task StartAllBotsAsync(CancellationToken cancellationToken)
     {
-        foreach (var bot in _botConfigurations)
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        ITelegramService telegramService =  scope
+            .ServiceProvider.GetRequiredService<ITelegramService>();
+
+        List<TelegramBotDto> bots = await telegramService.GetAllTelegramBotAsync();
+        
+        for (int i = 0; i < bots.Count; i++)
         {
-            await StartBotAsync(bot, cancellationToken);
+            await StartBotAsync(bots[i], cancellationToken);
+            if ((i + 1) == bots.Count)
+            {
+      
+            }
         }
+        //await telegramService.DisposeAsync();
     }
 
-    private async Task StartBotAsync(BotConfiguration bot, CancellationToken cancellationToken)
+    private async Task StartBotAsync(TelegramBotDto bot, CancellationToken cancellationToken)
     {
         Thread.Sleep(500);  // Optional: برای اینکه به هر بات زمان بدهیم
 
-        using var scope = serviceProvider.CreateScope();
         var botClient = botClientFactory.Create(bot.Token); // Create a new instance with the bot's token
 
         var webhookAddress = $"{bot.HostAddress}{bot.Route}";

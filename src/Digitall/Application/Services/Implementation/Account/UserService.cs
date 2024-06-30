@@ -225,7 +225,7 @@ public class UserService(
         }
     }
 
-    public async Task RegisterUserFromTelegram(AddUserFromTelegramDto user)
+    public async Task RegisterUserFromTelegram(StartTelegramBotDto user)
     {
         AgentDto? agent = await agentService.GetAgentByCode(user.AgentCode ?? 0);
 

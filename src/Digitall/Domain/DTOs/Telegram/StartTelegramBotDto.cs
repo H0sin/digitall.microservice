@@ -1,6 +1,6 @@
 ﻿namespace Domain.DTOs.Telegram;
 
-public class AddUserFromTelegramDto
+public class StartTelegramBotDto
 {
     public long? AgentCode { get; set; }
     public long ChatId { get; set; }

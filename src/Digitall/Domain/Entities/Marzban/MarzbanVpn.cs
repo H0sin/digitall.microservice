@@ -35,6 +35,12 @@ public class MarzbanVpn : BaseEntity
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public long DayPrice { get; set; }
 
+    public bool Test_Active { get; set; }
+
+    [Display(Name = "تعداد روز تست")] public long Test_Days { get; set; } = 1;
+
+    [Display(Name = "حجم تست")] public long Test_TotalGb { get; set; } = 1;
+
     public List<string>? Vmess { get; set; }
     public List<string>? Vless { get; set; }
     public List<string>? Shadowsocks { get; set; }

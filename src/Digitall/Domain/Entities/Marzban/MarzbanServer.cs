@@ -24,9 +24,9 @@ public class MarzbanServer : BaseEntity
     [Display(Name = "نام")] public string? UserName { get; set; }
 
     [Display(Name = "کلمه عبور")]
-    [MaxLength(10)]
+    [MaxLength(50)]
     public string? Password { get; set; }
-
+    
     public ICollection<MarzbanVpn>? MarzbanVpns { get; set; }
 
     [Display(Name = "تعداد کاربر ها سرور")]
