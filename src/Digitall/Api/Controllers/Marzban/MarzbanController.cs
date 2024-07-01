@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
@@ -264,5 +265,31 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     public async Task<ApiResult<MarzbanUserInformationDto>> GetMarzbanUser([FromQuery] string Username)
     {
         return Ok(await marzbanService.GetMarzbanUserInformationAsync(Username, User.GetUserId()));
+    }
+
+    /// <summary>
+    /// add vpn template
+    /// </summary>
+    /// <param name="template"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> AddMarzbanVpnTemplate([FromBody] AddMarzbanVpnTemplatesDto template)
+    {
+        await marzbanService.AddMarzbanVpnTemplateAsync(template, User.GetUserId());
+        return Ok();
+    }
+
+    /// <summary>
+    /// get marzban vpn template list by vpn id
+    /// </summary>
+    /// <param name="vpnId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<MarzbanVpnTemplateDto>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<List<MarzbanVpnTemplateDto>>> GetMarzbanVpnTemplateByVpnId([FromQuery] long vpnId)
+    {
+        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId));
     }
 }

@@ -1,13 +1,7 @@
-﻿using System.Net;
-using Api.Controllers.Base;
-using Api.Filters;
-using Application.Extensions;
-using Application.Helper;
+﻿using Application.Helper;
 using Application.Services.Interface.Telegram;
-using Asp.Versioning;
+using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
-using Domain.Entities.Telegram;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -162,13 +156,13 @@ public class BotHookController(
                     InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
                 },
             });
-        
+
         await _botClient.SendTextMessageAsync(
             chatId: chatId,
             text: "به منو اصلی بازگشتید 🏠",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
-        
+
         if (messageId != 0)
         {
             await _botClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
@@ -177,25 +171,31 @@ public class BotHookController(
 
     private async Task SendSubscriptionMenu(long chatId, int messageId, CancellationToken cancellationToken)
     {
-        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        List<MarzbanVpnBotDto> vpns = await telegramService.GetMarzbanVpnsAsync();
+
+        foreach (MarzbanVpnBotDto vpn in vpns)
         {
-            new[]
+            List<InlineKeyboardButton> button = new()
             {
-                InlineKeyboardButton.WithCallbackData("سرویس ویژه آلمان 🇩🇪 آمریکا 🇺🇸 ترکیه 🇹🇷", "special_service")
-            },
-            new []
-            {
-                InlineKeyboardButton.WithCallbackData("سرویس اقتصادی آلمان 🇩🇪 هلند 🇳🇱 فرانسه 🇫🇷 ترکیه 🇹🇷", "economic_service")
-            },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("بازگشت به منوی اصلی 🏠", "back_to_main")
-            }
-        });
+                InlineKeyboardButton.WithCallbackData(vpn.Title, "vpn_template?id=" + vpn.Id)
+            };
+            keys.Add(button);
+        }
+
+        List<InlineKeyboardButton> home = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        };
+
+        keys.Add(home);
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
         await _botClient.SendTextMessageAsync(
             chatId: chatId,
-            text: "منوی خرید اشتراک را انتخاب کنید 📌",
+            text: "اشتراک خود را انتخاب نمایید. 📌",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
 
@@ -204,6 +204,98 @@ public class BotHookController(
         {
             await _botClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
         }
+    }
+
+    private async Task SendTestFreeMenu(long chatId, int messageId, CancellationToken cancellationToken)
+    {
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        List<MarzbanVpnTestDto> vpns = await telegramService.GetListMarzbanVpnTestAsync();
+
+        foreach (MarzbanVpnTestDto vpn in vpns)
+        {
+            List<InlineKeyboardButton> button = new()
+            {
+                InlineKeyboardButton.WithCallbackData(vpn.Title, "createtestsub?id=" + vpn.Id)
+            };
+            keys.Add(button);
+        }
+
+        List<InlineKeyboardButton> home = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        };
+
+        keys.Add(home);
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+        await _botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: " موقعیت سرویس را انتخاب نمایید. 📌",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+
+        // حذف منوی قبلی اگر شماره پیام ارسالی موجود باشد
+        if (messageId != 0)
+        {
+            await _botClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
+        }
+    }
+
+    private async Task SendVpnTemplateById(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        string callbackData = callbackQuery.Data;
+        int index = callbackData.IndexOf('=');
+        long id = 0;
+        if (index != -1) id = Convert.ToInt64(callbackData[(index + 1)..]);
+
+        List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id);
+
+        foreach (MarzbanVpnTemplateDto template in templates)
+        {
+            List<InlineKeyboardButton> button = new()
+            {
+                InlineKeyboardButton.WithCallbackData(template!.Title!, "createsub?id=" + template.Id)
+            };
+            keys.Add(button);
+        }
+
+        List<InlineKeyboardButton> custom = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه", "custom_subscribe")
+        };
+
+        List<InlineKeyboardButton> home = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        };
+
+        keys.Add(home);
+        keys.Add(custom);
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+        await _botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: " نوع سرویس خود را انتخاب کنید. 📌",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+
+        // حذف منوی قبلی اگر شماره پیام ارسالی موجود باشد
+        if (callbackQuery.Message.MessageId != 0)
+        {
+            await _botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        }
+    }
+
+    private async Task CreateAndSendTestConfig(long chatId, int messageId, CancellationToken cancellationToken)
+    {
+        GenerateQrCode.GetQrCodeAsync("");
     }
 
     private async Task BotOnMessageReceived(Message message,
@@ -215,8 +307,8 @@ public class BotHookController(
         var action = messageText.Split(' ')[0] switch
         {
             "/start" => SendStartedMessage(_botClient, message, cancellationToken),
-            "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken),
-            _ => Usage(_botClient, message, cancellationToken)
+            "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken)
+            // _ => Usage(_botClient, message, cancellationToken)
         };
         Message sentMessage = await action;
 
@@ -256,115 +348,69 @@ public class BotHookController(
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
         }
-
-        static async Task<Message> SendReplyKeyboard(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            ReplyKeyboardMarkup replyKeyboardMarkup = new(
-                new[]
-                {
-                    new KeyboardButton[] { "1.1", "1.2" },
-                    new KeyboardButton[] { "2.1", "2.2" },
-                })
-            {
-                ResizeKeyboard = true
-            };
-
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: "Choose",
-                replyMarkup: replyKeyboardMarkup,
-                cancellationToken: cancellationToken);
-        }
-
-        static async Task<Message> RemoveKeyboard(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: "Removing keyboard",
-                replyMarkup: new ReplyKeyboardRemove(),
-                cancellationToken: cancellationToken);
-        }
-
-        static async Task<Message> SendFile(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            await botClient.SendChatActionAsync(
-                message.Chat.Id,
-                ChatAction.UploadPhoto,
-                cancellationToken: cancellationToken);
-
-            const string filePath = "Files/tux.png";
-            await using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var fileName = filePath.Split(Path.DirectorySeparatorChar).Last();
-
-            return await botClient.SendPhotoAsync(
-                chatId: message.Chat.Id,
-                photo: new InputFileStream(fileStream, fileName),
-                caption: "Nice Picture",
-                cancellationToken: cancellationToken);
-        }
-
-        static async Task<Message> RequestContactAndLocation(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            ReplyKeyboardMarkup RequestReplyKeyboard = new(
-                new[]
-                {
-                    KeyboardButton.WithRequestLocation("Location"),
-                    KeyboardButton.WithRequestContact("Contact"),
-                });
-
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: "Who or Where are you?",
-                replyMarkup: RequestReplyKeyboard,
-                cancellationToken: cancellationToken);
-        }
-
-        static async Task<Message> Usage(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            const string usage = "Usage:\n" +
-                                 "/inline_keyboard - send inline keyboard\n" +
-                                 "/keyboard    - send custom keyboard\n" +
-                                 "/remove      - remove custom keyboard\n" +
-                                 "/photo       - send a photo\n" +
-                                 "/request     - request location or contact\n" +
-                                 "/inline_mode - send keyboard with Inline Query";
-
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: usage,
-                replyMarkup: new ReplyKeyboardRemove(),
-                cancellationToken: cancellationToken);
-        }
-
-        static async Task<Message> StartInlineQuery(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            InlineKeyboardMarkup inlineKeyboard = new(
-                InlineKeyboardButton.WithSwitchInlineQueryCurrentChat("Inline Mode"));
-
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: "Press the button to start Inline Query",
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken);
-        }
     }
 
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        switch (callbackQuery.Data)
+        string data = callbackQuery.Data.Split('?')[0];
+
+        switch (data)
         {
             case "subscribe":
-                await SendSubscriptionMenu(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, cancellationToken);
+                await SendSubscriptionMenu(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId,
+                    cancellationToken);
+                break;
+            case "test_free":
+                await SendTestFreeMenu(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId,
+                    cancellationToken);
                 break;
             case "back_to_main":
                 await SendMainMenu(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, cancellationToken);
+                break;
+            case "vpn_template":
+                await SendVpnTemplateById(callbackQuery, cancellationToken);
+                break;
+            default:
+                if (callbackQuery.Data.StartsWith("createtestsub?id"))
+                {
+                    string callbackData = callbackQuery.Data;
+                    int index = callbackData.IndexOf('=');
+                    if (index != -1)
+                    {
+                        long id = Convert.ToInt64(callbackData[(index + 1)..]);
+
+                        MarzbanUserInformationDto user =
+                            await telegramService
+                                .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
+
+                        GetMarzbanVpnDto? vpn = await telegramService
+                            .GetMarzbanVpnInformationByIdAsync(id);
+
+                        byte[] QrImage = await GenerateQrCode
+                            .GetQrCodeAsync(user.Subscription_Url);
+
+                        string caption = $@"
+✅ سرویس با موفقیت ایجاد شد
+
+👤 نام کاربری سرویس: {user.Username.TrimEnd()}
+🌿 نام سرویس: {vpn.Name.TrimEnd()}
+⏳ مدت زمان: {vpn.Test_Days} روز
+🗜 حجم سرویس: {vpn.Test_TotalGb} مگابایت
+لینک اتصال:
+{user.Subscription_Url.TrimEnd()}
+";
+                        using (var Qr = new MemoryStream(QrImage))
+                        {
+                            await _botClient.SendPhotoAsync(
+                                chatId: callbackQuery.Message.Chat.Id,
+                                photo: new InputFileStream(Qr, user.Subscription_Url),
+                                caption: caption,
+                                cancellationToken: cancellationToken);
+                        }
+                    }
+                }
+
                 break;
         }
 

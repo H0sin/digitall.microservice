@@ -53,6 +53,7 @@ public class DigitallDbContext : DbContext
     public DbSet<MarzbanServer> MarzbanServers { get; set; }
     public DbSet<MarzbanVpn> MarzbanVpns { get; set; }
     public DbSet<MarzbanUser> MarzbanUsers { get; set; }
+    public DbSet<MarzbanVpnTemplate> MarzbanVpnTemplates { get; set; }
     public DbSet<TelegramBot> TelegramBots { get; set; }
     
     #endregion

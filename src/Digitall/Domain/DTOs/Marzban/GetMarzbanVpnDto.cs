@@ -13,6 +13,12 @@ public class GetMarzbanVpnDto
     public long DayMin { get; set; }
     public long DayPrice { get; set; }
     public long MarzbanServerId { get; set; }
+    
+    public bool Test_Active { get; set; } = false;
+    
+    public long Test_Days { get; set; } = 1;
+
+    public long Test_TotalGb { get; set; } = 1;
 
     public GetMarzbanVpnDto(MarzbanVpn vpn)
     {
@@ -25,5 +31,8 @@ public class GetMarzbanVpnDto
         MarzbanServerId = vpn.MarzbanServerId;
         Name = vpn.Name;
         Id = vpn.Id;
+        Test_Active = vpn.Test_Active;
+        Test_Days = vpn.Test_Days;
+        Test_TotalGb = vpn.Test_TotalMg;
     }
 }

@@ -10,7 +10,7 @@ namespace Application.Services.Interface.Account;
 public interface IUserService
 {
     Task<AddUserResult> AddUserAsync(AddUserDto user, long userId);
-    Task<LoginUserResult> LoginAsync(LoginUserDto login) => throw new AppException("از ورژن v2 استفاده کنید");
+    Task<LoginUserResult> LoginAsync(LoginUserDto login);
     Task<LoginUserResult> LoginByEmailAsync(string email,string password);
     Task<LoginUserResult> LoginByChatIdAsync(long chatId,string password);
     Task<UserDto> GetUserByMobileAsync(string mobile);

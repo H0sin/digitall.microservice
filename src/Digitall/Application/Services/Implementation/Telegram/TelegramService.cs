@@ -13,13 +13,17 @@ using Domain.IRepositories.Account;
 using Domain.IRepositories.Telegram;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Application.Services.Interface.Marzban;
+using Domain.DTOs.Marzban;
+using Domain.Entities.Marzban;
 
 namespace Application.Services.Implementation.Telegram;
 
 public class TelegramService(
     ITelegramBotRepository telegramBotRepository,
     IUserRepository userRepository,
-    IAgentService agentService) : ITelegramService
+    IAgentService agentService,
+    IMarzbanService marzbanService) : ITelegramService
 {
     public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
     {
@@ -33,9 +37,12 @@ public class TelegramService(
         return bot;
     }
 
-    public async Task<List<TelegramBotDto>> GetAllTelegramBotAsync()
+    public async Task<List<TelegramBotDto>?> GetAllTelegramBotAsync()
     {
-        return await telegramBotRepository.GetQuery().Select(x => new TelegramBotDto(x)).ToListAsync();
+        return await telegramBotRepository
+            .GetQuery()
+            .Select(x => new TelegramBotDto(x))
+            .ToListAsync();
     }
 
     public async Task<string?> GetTelegramBotAsyncByName(string name)
@@ -48,6 +55,33 @@ public class TelegramService(
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
         return await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
+    }
+
+    public async Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnTestAsync()
+    {
+        return await marzbanService.GetListMarzbanVpnsTest();
+    }
+
+    public async Task<List<MarzbanVpnBotDto>> GetMarzbanVpnsAsync()
+    {
+        return await marzbanService.GetListMarzbanVpns();
+    }
+
+    public async Task<MarzbanUserInformationDto> GetMarzbanTestVpnsAsync(long vpnId, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        MarzbanUser marzbanUser = await marzbanService.BuyMarzbanTestVpnAsync(vpnId, user.Id);
+        return await marzbanService.GetMarzbanUserInformationAsync(marzbanUser.Username);
+    }
+
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId)
+    {
+        return await marzbanService.GetMarzbanVpnByIdAsync(vpnId);
+    }
+
+    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId)
+    {
+        return await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId);
     }
 
     public async Task StartTelegramBot(StartTelegramBotDto start)

@@ -30,6 +30,25 @@ public class UserService(
     IUserRepository userRepository,
     IAgentService agentService) : IUserService
 {
+    public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
+    {
+        User user = (await userRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(u => u.Mobile == login.Mobile))!;
+
+        if (user is null)
+            return LoginUserResult.NotFound;
+
+        if (user.IsBlocked)
+            return LoginUserResult.Blocked;
+
+        if (user.Password == PasswordHelper.EncodePasswordMd5(login.Password))
+            return LoginUserResult.Success;
+
+        return LoginUserResult.NotFound;
+    }
+
+
     public async Task<LoginUserResult> LoginByEmailAsync(string email, string password)
     {
         User? user = (await userRepository

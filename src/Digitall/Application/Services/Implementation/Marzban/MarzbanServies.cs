@@ -29,6 +29,7 @@ public class MarzbanServies(
     IMarzbanServerRepository marzbanServerRepository,
     IMarzbanVpnRepository marzbanVpnRepository,
     IMarzbanUserRepository marzbanUserRepository,
+    IMarzbanVpnTemplatesRepository marzbanVpnTemplatesRepository,
     IUserRepository userRepository,
     IOrderRepository orderRepository,
     IAgentService agentService) : IMarzbanService
@@ -185,8 +186,8 @@ public class MarzbanServies(
 
             var loginData = new Dictionary<string, string>()
             {
-                { "username", server!.UserName },
-                { "password", server!.Password }
+                { "username", server!.UserName! },
+                { "password", server!.Password! }
             };
 
             var content = new FormUrlEncodedContent(loginData);
@@ -246,7 +247,10 @@ public class MarzbanServies(
             GbMax = vpn.GbMax,
             GbPrice = vpn.GbPrice,
             DayPrice = vpn.DayPrice,
-            MarzbanServerId = vpn.MarzbanServerId
+            MarzbanServerId = vpn.MarzbanServerId,
+            Test_Active = vpn.Test_Active,
+            Test_Days = vpn.Test_Days,
+            Test_TotalMg = vpn.Test_Days
         };
 
         await marzbanVpnRepository.AddEntity(marzbanVpn);
@@ -279,8 +283,12 @@ public class MarzbanServies(
 
             // counting price
             // for percent
+            MarzbanVpnTemplateDto? template = await GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
+
             using Percent percent = new(agentService);
-            long price = vpn.CountingPrice(marzbanVpn);
+
+            long price = template?.Price ?? vpn.CountingPrice(marzbanVpn);
+
             long productPrice = await percent.Calculate(agentIds, price);
             long totalPrice = price * vpn.Count;
             List<CalculatorUserIncome> incomes = await percent.CalculateBalanse(agentIds, price);
@@ -307,7 +315,7 @@ public class MarzbanServies(
             long byteSize = 1073741824;
 
             DateTime today = DateTime.Today;
-            DateTime futureDate = today.AddDays(vpn.TotalDay);
+            DateTime futureDate = today.AddDays(template?.Days ?? vpn.TotalDay);
             // Convert the future date to Unix timestamp (seconds since January 1, 1970)
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
@@ -341,7 +349,7 @@ public class MarzbanServies(
                     Note = "",
                     Proxies = proxies,
                     Status = "active",
-                    Data_Limit = (byteSize * vpn.TotalGb).ToString(),
+                    Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
                 });
             }
 
@@ -412,7 +420,7 @@ public class MarzbanServies(
         return response;
     }
 
-    public async Task BuyMarzbanTestVpnAsync(long vpnId, long userId)
+    public async Task<MarzbanUser?> BuyMarzbanTestVpnAsync(long vpnId, long userId)
     {
         IDbContextTransaction transaction = await marzbanVpnRepository.context.Database.BeginTransactionAsync();
         try
@@ -436,7 +444,6 @@ public class MarzbanServies(
 
             DateTime today = DateTime.Today;
             DateTime futureDate = today.AddDays(marzbanVpn.Test_Days);
-            // Convert the future date to Unix timestamp (seconds since January 1, 1970)
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
             object inbounds = new
@@ -461,14 +468,14 @@ public class MarzbanServies(
 
             users.Add(new()
             {
-                Username = user.FirstName + "" + user.LastName + "" + marzbanServer.Users,
+                Username = new Random().Next(1, 123456789).ToString() + marzbanServer.Users + "Test",
                 Expire = unixTimestamp.ToString(),
                 Data_Limit_Reset_Strategy = "no_reset",
                 Inbounds = inbounds,
                 Note = "",
                 Proxies = proxies,
                 Status = "active",
-                Data_Limit = (byteSize * marzbanVpn.Test_TotalGb).ToString(),
+                Data_Limit = (byteSize * marzbanVpn.Test_TotalMg).ToString(),
             });
 
             List<Domain.Entities.Order.Order> orders = new()
@@ -509,6 +516,8 @@ public class MarzbanServies(
             await marzbanUserRepository.SaveChanges(userId);
 
             await transaction.CommitAsync();
+
+            return marzbanUsers?.FirstOrDefault() ?? null;
         }
         catch (Exception e)
         {
@@ -517,16 +526,88 @@ public class MarzbanServies(
         }
     }
 
+    public async Task<List<MarzbanVpnBotDto>> GetListMarzbanVpns()
+    {
+        return await marzbanVpnRepository
+            .GetQuery()
+            .Select(x => new MarzbanVpnBotDto()
+            {
+                Id = x.Id,
+                Title = x.Name
+            }).ToListAsync();
+    }
+
     public async Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnsTest()
     {
         return await marzbanVpnRepository
             .GetQuery()
             .Where(x => x.Test_Active == true)
-            .Include(x => x.MarzbanServer)
             .Select(x => new MarzbanVpnTestDto()
             {
                 Id = x.Id,
-                Title = x.MarzbanServer!.ServerName
+                Title = x.Name
+            }).ToListAsync();
+    }
+
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId)
+    {
+        MarzbanVpn? vpn = await marzbanVpnRepository.GetEntityById(vpnId);
+        return vpn switch
+        {
+            null => null,
+            _ => new GetMarzbanVpnDto(vpn)
+        };
+    }
+
+    public async Task AddMarzbanVpnTemplateAsync(AddMarzbanVpnTemplatesDto template, long userId)
+    {
+        GetMarzbanVpnDto? vpn = await GetMarzbanVpnByIdAsync(template.MarzbanVpnId);
+
+        if (vpn is null) throw new NotFoundException("چنین vpn وجود ندارد");
+
+        MarzbanVpnTemplate vpnTemplate = new()
+        {
+            Days = template.Days,
+            Title = template.Title,
+            Gb = template.Gb,
+            Price = template.Price,
+            MarzbanVpnId = template.MarzbanVpnId
+        };
+
+        await marzbanVpnTemplatesRepository.AddEntity(vpnTemplate);
+        await marzbanVpnTemplatesRepository.SaveChanges(userId);
+    }
+
+    public async Task<MarzbanVpnTemplateDto?> GetMarzbanVpnTemplateByIdAsync(long id)
+    {
+        MarzbanVpnTemplate? marzbanVpnTemplate = await marzbanVpnTemplatesRepository.GetEntityById(id);
+
+        return marzbanVpnTemplate switch
+        {
+            null => null,
+            _ => new MarzbanVpnTemplateDto()
+            {
+                Days = marzbanVpnTemplate.Days,
+                Title = marzbanVpnTemplate.Title,
+                Gb = marzbanVpnTemplate.Gb,
+                Price = marzbanVpnTemplate.Price,
+                Id = marzbanVpnTemplate.Id
+            }
+        };
+    }
+
+    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId)
+    {
+        return await marzbanVpnTemplatesRepository
+            .GetQuery()
+            .Where(x => x.MarzbanVpnId == vpnId)
+            .Select(x => new MarzbanVpnTemplateDto()
+            {
+                Days = x.Days,
+                Title = x.Title,
+                Gb = x.Gb,
+                Price = x.Price,
+                Id = x.Id
             }).ToListAsync();
     }
 

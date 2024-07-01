@@ -93,6 +93,7 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanServerRepository, MarzbanServerRepository>();
         services.AddScoped<IMarzbanVpnRepository, MarzbanVpnRepository>();
         services.AddScoped<IMarzbanUserRepository, MarzbanUserRepository>();
+        services.AddScoped<IMarzbanVpnTemplatesRepository, MarzbanVpnTemplatesRepository>();
         services.AddScoped<ITelegramBotRepository,TelegramBotRepository>();
         #endregion
 

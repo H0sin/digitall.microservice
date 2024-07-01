@@ -13,11 +13,11 @@ public class MarzbanVpn : BaseEntity
 
     [Display(Name = "نهایت حجم")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long GbMax { get; set; }
+    public int GbMax { get; set; }
 
     [Display(Name = "کم ترین مقدار حجم")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long GbMin { get; set; }
+    public int GbMin { get; set; }
 
     [Display(Name = "قیمت هر گیگ")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
@@ -25,21 +25,21 @@ public class MarzbanVpn : BaseEntity
 
     [Display(Name = "نهایت روز")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long DayMax { get; set; }
+    public int DayMax { get; set; }
 
     [Display(Name = "کمترین روز")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long DayMin { get; set; }
+    public int DayMin { get; set; }
 
     [Display(Name = "قیمت هر روز")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public long DayPrice { get; set; }
 
-    public bool Test_Active { get; set; }
+    public bool Test_Active { get; set; } = false;
 
-    [Display(Name = "تعداد روز تست")] public long Test_Days { get; set; } = 1;
+    [Display(Name = "تعداد روز تست")] public int Test_Days { get; set; } = 1;
 
-    [Display(Name = "حجم تست")] public long Test_TotalGb { get; set; } = 1;
+    [Display(Name = "حجم تست")] public int Test_TotalMg { get; set; } = 1;
 
     public List<string>? Vmess { get; set; }
     public List<string>? Vless { get; set; }
@@ -50,4 +50,6 @@ public class MarzbanVpn : BaseEntity
     public long MarzbanServerId { get; set; }
 
     public MarzbanServer? MarzbanServer { get; set; }
+
+    public ICollection<MarzbanVpnTemplate>? MarzbanVpnTemplate { get; set; }
 }

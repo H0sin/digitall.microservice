@@ -171,11 +171,46 @@ public interface IMarzbanService
     /// test account in marzban
     /// </summary>
     /// <returns></returns>
-    Task BuyMarzbanTestVpnAsync(long vpnId,long userId);
+    Task<MarzbanUser?> BuyMarzbanTestVpnAsync(long vpnId, long userId);
+
+    /// <summary>
+    /// get list marzban vpns
+    /// </summary>
+    /// <returns></returns>
+    Task<List<MarzbanVpnBotDto>> GetListMarzbanVpns();
 
     /// <summary>
     /// get list marzban vpn are test
     /// </summary>
     /// <returns></returns>
     Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnsTest();
+
+    /// <summary>
+    /// get marzban vpn by id async
+    /// </summary>
+    /// <param name="vpnId"></param>
+    /// <returns></returns>
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
+
+    /// <summary>
+    /// add marzban vpn template
+    /// </summary>
+    /// <param name="template"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddMarzbanVpnTemplateAsync(AddMarzbanVpnTemplatesDto template, long userId);
+
+    /// <summary>
+    /// get marzban vpn template by id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<MarzbanVpnTemplateDto?> GetMarzbanVpnTemplateByIdAsync(long id);
+
+    /// <summary>
+    /// get marzban vpns template by vpn id
+    /// </summary>
+    /// <param name="vpnId"></param>
+    /// <returns></returns>
+    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId);
 }

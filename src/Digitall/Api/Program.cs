@@ -169,7 +169,6 @@ var app = builder.Build();
 
 var botService = app.Services.GetRequiredService<BotService>();
 var cancellationTokenSource = new CancellationTokenSource();
-botService.StartAllBotsAsync(cancellationTokenSource.Token).GetAwaiter().GetResult();
 
 #endregion
 
@@ -205,4 +204,5 @@ app.UseCors("DigitallCors");
 app.MigrateDatabase<DigitallDbContext>((context, services) =>
 {
     var logger = services.GetService<ILogger<DigitallDbContext>>();
+    botService.StartAllBotsAsync(cancellationTokenSource.Token).GetAwaiter().GetResult();
 }).Run();

@@ -9,11 +9,11 @@ public class BuyMarzbanVpnDto
     [Range(0, 20, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public int Count { get; set; }
 
-    [MaxLength(50)][Required] public string? Title { get; set; }
+    [MaxLength(50)] [Required] public string? Title { get; set; }
     public long MarzbanVpnId { get; set; }
-    public long TotalGb { get; set; } = 1;
-    public long TotalDay { get; set; } = 1;
-    public long TotalUser { get; set; } = 1;
+    public int TotalGb { get; set; } = 1;
+    public int TotalDay { get; set; } = 1;
+    public long? MarzbanVpnTemplateId { get; set; } = null;
 
     public long CountingPrice(MarzbanVpn vpn)
     {
