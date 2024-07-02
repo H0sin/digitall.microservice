@@ -290,6 +290,6 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<List<MarzbanVpnTemplateDto>>> GetMarzbanVpnTemplateByVpnId([FromQuery] long vpnId)
     {
-        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId));
+        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId,User.GetUserId()));
     }
 }

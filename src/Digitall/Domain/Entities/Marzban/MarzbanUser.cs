@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using Domain.Enums.Marzban;
 using Domain.Common;
 using Domain.Entities.Order;
@@ -17,7 +16,10 @@ public class MarzbanUser : BaseEntity
     public long UserId { get; set; }
     public long OrderDetailId { get; set; }
     public OrderDetail OrderDetail { get; set; }
-    
+
+    [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
+
+
     // [JsonProperty("proxies")] public object? Proxies { get; set; }
 
     // [JsonProperty("data_limit")] public long? Data_Limit { get; set; } = 0;

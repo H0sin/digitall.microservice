@@ -1,7 +1,13 @@
-﻿using Application.Helper;
+﻿using System.Collections.Concurrent;
+using System.Collections.Specialized;
+using System.Web;
+using Api.Filters;
+using Application.Helper;
 using Application.Services.Interface.Telegram;
+using Application.Sessions;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
+using Domain.Entities.Marzban;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -10,6 +16,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Api.Controllers.Telegram;
 
+[ServiceFilter(typeof(ExceptionHandler))]
 public class BotHookController(
     IServiceProvider serviceProvider,
     ITelegramService telegramService
@@ -17,6 +24,8 @@ public class BotHookController(
 {
     private ITelegramBotClient? _botClient;
 
+    private static ConcurrentDictionary<long, CustomMarzbanVpnSession> userSessions =
+        new ConcurrentDictionary<long, CustomMarzbanVpnSession>();
 
     [HttpPost("{botName}")]
     public async Task<IActionResult> Post(string botName,
@@ -106,15 +115,6 @@ public class BotHookController(
                     InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
                 },
             });
-        //
-        // if (messageId.HasValue)
-        // {
-        //     await botClient.EditMessageTextAsync(chatId, messageId.Value, "به صفحه اصلی بازگشتید!", replyMarkup: inlineKeyboard);
-        // }
-        // else
-        // {
-        //     await botClient.SendTextMessageAsync(chatId, "به صفحه اصلی بازگشتید!", replyMarkup: inlineKeyboard);
-        // }
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
@@ -239,7 +239,10 @@ public class BotHookController(
         // حذف منوی قبلی اگر شماره پیام ارسالی موجود باشد
         if (messageId != 0)
         {
-            await _botClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
+            await _botClient.DeleteMessageAsync(
+                chatId,
+                messageId,
+                cancellationToken);
         }
     }
 
@@ -254,13 +257,17 @@ public class BotHookController(
         long id = 0;
         if (index != -1) id = Convert.ToInt64(callbackData[(index + 1)..]);
 
-        List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id);
+        List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
 
         foreach (MarzbanVpnTemplateDto template in templates)
         {
             List<InlineKeyboardButton> button = new()
             {
-                InlineKeyboardButton.WithCallbackData(template!.Title!, "createsub?id=" + template.Id)
+                InlineKeyboardButton.WithCallbackData(
+                    (template!.Days! + " روزه ") +
+                    (template.Gb > 200 ? " نامحدود " : template.Gb + " گیگ ")
+                    + (template.Price + " تومان "),
+                    "factor_subscribe?id=" + template.Id + "&vpnId=" + id)
             };
             keys.Add(button);
         }
@@ -269,14 +276,13 @@ public class BotHookController(
         {
             InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه", "custom_subscribe")
         };
-
         List<InlineKeyboardButton> home = new()
         {
             InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
         };
 
-        keys.Add(home);
         keys.Add(custom);
+        keys.Add(home);
 
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
@@ -293,10 +299,129 @@ public class BotHookController(
         }
     }
 
+    private async Task SendSubscription(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long marzbanvpntemplateId = 0;
+        long marzbanvpnid = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["marzbanvpntemplateId"], out marzbanvpntemplateId);
+            Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
+        }
+
+        BuyMarzbanVpnDto buy = new();
+
+        buy.MarzbanVpnId = marzbanvpnid;
+        buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
+        buy.Count = 2;
+        MarzbanVpnTemplateDto? template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
+        
+        List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
+        
+        foreach (MarzbanUser user in marzbanUsers)
+        {
+            byte[] QrImage = await GenerateQrCode
+                .GetQrCodeAsync(user.Subscription_Url);
+
+            string caption = $@"
+✅ سرویس با موفقیت ایجاد شد
+
+👤 نام کاربری سرویس: {user.Username.TrimEnd()}
+🌿 نام سرویس: {template.Title.TrimEnd()}
+⏳ مدت زمان: {template.Days} روز
+🗜 حجم سرویس: {template.Gb} مگابایت
+لینک اتصال:
+{user.Subscription_Url.TrimEnd()}
+";
+            using (var Qr = new MemoryStream(QrImage))
+            {
+                await _botClient.SendPhotoAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    photo: new InputFileStream(Qr, user.Subscription_Url),
+                    caption: caption,
+                    cancellationToken: cancellationToken);
+            }
+        }
+    }
+
+    private async Task SendFactorSubscribe(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        long vpnId = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["vpnId"], out vpnId);
+        }
+
+        BuyMarzbanVpnDto buy = new();
+        buy.MarzbanVpnTemplateId = id;
+        buy.MarzbanVpnId = vpnId;
+        buy.Count = 1;
+
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        List<InlineKeyboardButton> bu = new()
+        {
+            InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس", $"buy_subscribe" +
+                                                                           $"?marzbanvpntemplateId={id}" +
+                                                                           $"&marzbanvpnid={vpnId}")
+        };
+        List<InlineKeyboardButton> home = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        };
+
+        keys.Add(bu);
+        keys.Add(home);
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+        var sub = await telegramService.SendFactorSubscribeAsync(buy, chatId);
+
+        string deatils = $@"
+📇 پیش فاکتور شما:
+🔐 نام سرویس: 🛍 {sub.Title}
+📆 مدت اعتبار: {sub.Days} روز
+💶 قیمت:  {sub.Price} تومان
+👥 حجم اکانت: {(sub.Gb > 200 ? "نامحدود" : sub.Gb + "گیگ")}
+🗒 یادداشت محصول : 
+💵 موجودی کیف پول شما : {sub.Balance}          
+💰 سفارش شما آماده پرداخت است
+";
+
+        await _botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: deatils,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+        // حذف منوی قبلی اگر شماره پیام ارسالی موجود باش
+        // د
+        if (callbackQuery.Message.MessageId != 0)
+        {
+            await _botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        }
+    }
+
     private async Task CreateAndSendTestConfig(long chatId, int messageId, CancellationToken cancellationToken)
     {
         GenerateQrCode.GetQrCodeAsync("");
     }
+
 
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
@@ -307,47 +432,12 @@ public class BotHookController(
         var action = messageText.Split(' ')[0] switch
         {
             "/start" => SendStartedMessage(_botClient, message, cancellationToken),
-            "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken)
+            // "/inline_keyboard" => SendInlineKeyboard(_botClient, message, cancellationToken)
             // _ => Usage(_botClient, message, cancellationToken)
         };
         Message sentMessage = await action;
 
         //------------------------------ S T A R T ---------------------------------------
-
-        static async Task<Message> SendInlineKeyboard(ITelegramBotClient botClient, Message message,
-            CancellationToken cancellationToken)
-        {
-            await botClient.SendChatActionAsync(
-                chatId: message.Chat.Id,
-                chatAction: ChatAction.Typing,
-                cancellationToken: cancellationToken);
-
-            // Simulate longer running task
-            await Task.Delay(500, cancellationToken);
-
-            InlineKeyboardMarkup inlineKeyboard = new(
-                new[]
-                {
-                    // first row
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("1.1", "11"),
-                        InlineKeyboardButton.WithCallbackData("1.2", "12"),
-                    },
-                    // second row
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("2.1", "21"),
-                        InlineKeyboardButton.WithCallbackData("2.2", "22"),
-                    },
-                });
-
-            return await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: "Choose",
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken);
-        }
     }
 
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery,
@@ -370,6 +460,14 @@ public class BotHookController(
                 break;
             case "vpn_template":
                 await SendVpnTemplateById(callbackQuery, cancellationToken);
+                break;
+            case "factor_subscribe":
+                await SendFactorSubscribe(callbackQuery, cancellationToken);
+                break;
+            case "buy_subscribe":
+                await SendSubscription(callbackQuery, cancellationToken);
+                break;
+            case "custom_subscribe":
                 break;
             default:
                 if (callbackQuery.Data.StartsWith("createtestsub?id"))
@@ -413,16 +511,5 @@ public class BotHookController(
 
                 break;
         }
-
-        // await _botClient.SendTextMessageAsync(
-        //     chatId: callbackQuery.Id,
-        //     text: "Choose",
-        //     replyMarkup: replyKeyboardMarkup,
-        //     cancellationToken: cancellationToken);
-
-        // await _botClient.SendTextMessageAsync(
-        //     chatId: callbackQuery.Message!.Chat.Id,
-        //     text: $"Received {callbackQuery.Data}",
-        //     cancellationToken: cancellationToken);
     }
 }

@@ -47,8 +47,8 @@ public interface ITelegramService : IAsyncDisposable
     /// </summary>
     /// <returns>MarzbanUserInformationDto</returns>
     Task<List<MarzbanVpnBotDto>> GetMarzbanVpnsAsync();
-    
-    
+
+
     /// <summary>
     /// generate test file and send 
     /// </summary>
@@ -69,7 +69,29 @@ public interface ITelegramService : IAsyncDisposable
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId);
+    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId);
 
+    /// <summary>
+    /// buy marzban vpn
+    /// </summary>
+    /// <param name="buy"></param>
+    /// <returns></returns>
+    Task<List<MarzbanUser>> BuySubscribeAsync(BuyMarzbanVpnDto buy, long chatId);
+
+    /// <summary>
+    /// befor buy vpn send pish factor
+    /// </summary>
+    /// <param name="buy"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId);
+
+    /// <summary>
+    /// get marzban template by id for information 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<MarzbanVpnTemplateDto?> GetMarzbanTemplateByIdAsync(long id);
+    
     Task StartTelegramBot(StartTelegramBotDto start);
 }

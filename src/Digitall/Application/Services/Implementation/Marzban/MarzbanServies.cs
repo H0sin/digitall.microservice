@@ -8,6 +8,7 @@ using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
 using Application.Utilities;
 using Application.Exceptions;
+using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Marzban;
 using Domain.Entities.Account;
@@ -263,7 +264,7 @@ public class MarzbanServies(
         return response.Select(x => new GetMarzbanVpnDto(x)).ToList();
     }
 
-    public async Task BuyMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
+    public async Task<List<MarzbanUser>> BuyMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
     {
         IDbContextTransaction transaction = await marzbanVpnRepository.context.Database.BeginTransactionAsync();
         try
@@ -342,7 +343,7 @@ public class MarzbanServies(
             {
                 users.Add(new()
                 {
-                    Username = vpn.Title + "" + marzbanServer.Users + i,
+                    Username = vpn.Title + "" + marzbanServer.Users + i + new Random().NextInt64(13121,212312312),
                     Expire = unixTimestamp.ToString(),
                     Data_Limit_Reset_Strategy = "no_reset",
                     Inbounds = inbounds,
@@ -391,6 +392,8 @@ public class MarzbanServies(
             await marzbanUserRepository.SaveChanges(userId);
 
             await transaction.CommitAsync();
+
+            return marzbanUsers;
         }
         catch (Exception e)
         {
@@ -596,9 +599,16 @@ public class MarzbanServies(
         };
     }
 
-    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId)
+    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId, long userId)
     {
-        return await marzbanVpnTemplatesRepository
+        User? user = await userRepository.GetEntityById(userId);
+
+        if (user == null) throw new NotFoundException("کاربری با این شناسه یافت نشد");
+
+        var agentIds = await agentService.GetAgentRoot(user.AgentId);
+
+        using Percent percent = new(agentService);
+        List<MarzbanVpnTemplateDto> templates = await marzbanVpnTemplatesRepository
             .GetQuery()
             .Where(x => x.MarzbanVpnId == vpnId)
             .Select(x => new MarzbanVpnTemplateDto()
@@ -609,6 +619,13 @@ public class MarzbanServies(
                 Price = x.Price,
                 Id = x.Id
             }).ToListAsync();
+
+        foreach (MarzbanVpnTemplateDto template in templates)
+        {
+            template.Price = await percent.Calculate(agentIds, template.Price);
+        }
+
+        return templates;
     }
 
     private async Task UpdateMarzbanServerCount(long serverId, long count)

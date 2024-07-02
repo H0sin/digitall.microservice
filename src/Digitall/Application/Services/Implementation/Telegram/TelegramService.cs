@@ -79,10 +79,55 @@ public class TelegramService(
         return await marzbanService.GetMarzbanVpnByIdAsync(vpnId);
     }
 
-    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId)
+    public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId)
     {
-        return await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId);
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId, user!.Id);
     }
+
+    public async Task<List<MarzbanUser>> BuySubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await marzbanService.BuyMarzbanVpnAsync(buy, user.Id);
+    }
+
+    public async Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        var agentIds = await agentService.GetAgentRoot(user.AgentId);
+
+        using Percent percent = new(agentService);
+
+        SubscribeFactorBotDto factor = new();
+
+        factor.Title = buy.Title ?? "خرید سرویس کاهش پینگ";
+        factor.Balance = user?.Balance ?? 0;
+
+        if ((buy.MarzbanVpnTemplateId ?? 0) == 0)
+        {
+            GetMarzbanVpnDto? vpn = await GetMarzbanVpnInformationByIdAsync(buy.MarzbanVpnId);
+            factor.Count = buy.Count == 0 ? 1 : buy.Count;
+            // factor.Description = buy. todo
+            factor.Price = ((buy.TotalGb * vpn.GbPrice) + (buy.TotalDay * vpn.DayPrice)) * buy.Count;
+            factor.Days = buy.TotalDay;
+            factor.Gb = buy.TotalGb;
+            factor.Price = await percent.Calculate(agentIds, factor.Price);
+            return factor;
+        }
+
+        MarzbanVpnTemplateDto? template =
+            await marzbanService.GetMarzbanVpnTemplateByIdAsync(buy.MarzbanVpnTemplateId ?? 0);
+        factor.Days = template.Days;
+        factor.Gb = template.Gb;
+        factor.Price = (await percent.Calculate(agentIds, template.Price)) * buy.Count;
+        factor.Count = buy.Count;
+
+        return factor;
+    }
+
+    public async Task<MarzbanVpnTemplateDto?> GetMarzbanTemplateByIdAsync(long id)
+        => await marzbanService.GetMarzbanVpnTemplateByIdAsync(id);
 
     public async Task StartTelegramBot(StartTelegramBotDto start)
     {
