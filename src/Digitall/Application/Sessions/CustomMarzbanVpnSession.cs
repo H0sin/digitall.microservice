@@ -11,5 +11,6 @@ public enum CustomMarzbanVpnSessionState
 {
     None,
     AwaitingFirstNumber,
-    AwaitingSecondNumber
+    AwaitingSecondNumber,
+    AwaitingSubscibeCount
 }

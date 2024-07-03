@@ -118,7 +118,7 @@ public class BotHookController(
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: "Choose",
+            text: "خوش آمدید بچه هایه دیرین",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
@@ -322,9 +322,9 @@ public class BotHookController(
         buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
         buy.Count = 2;
         MarzbanVpnTemplateDto? template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
-        
+
         List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
-        
+
         foreach (MarzbanUser user in marzbanUsers)
         {
             byte[] QrImage = await GenerateQrCode
@@ -336,7 +336,7 @@ public class BotHookController(
 👤 نام کاربری سرویس: {user.Username.TrimEnd()}
 🌿 نام سرویس: {template.Title.TrimEnd()}
 ⏳ مدت زمان: {template.Days} روز
-🗜 حجم سرویس: {template.Gb} مگابایت
+👥 حجم سرویس: {(template.Gb > 200 ? "نامحدود" : template.Gb + "گیگ")}
 لینک اتصال:
 {user.Subscription_Url.TrimEnd()}
 ";
@@ -349,6 +349,9 @@ public class BotHookController(
                     cancellationToken: cancellationToken);
             }
         }
+
+        await _botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        await SendMainMenu(chatId, callbackQuery.Message.MessageId, cancellationToken);
     }
 
     private async Task SendFactorSubscribe(CallbackQuery callbackQuery, CancellationToken cancellationToken)
@@ -423,6 +426,94 @@ public class BotHookController(
     }
 
 
+    private async Task SendListServices(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        // int skip = 0;
+        // int take = 3;
+        int page = 1;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["page"], out page);
+        }
+
+        FilterMarzbanUser filter = new FilterMarzbanUser();
+        Domain.Entities.Account.User? user = await telegramService.GetUserByChatIdAsync(chatId);
+        filter.UserId = user.Id;
+        filter.Page = page;
+        FilterMarzbanUser users = await telegramService.FilterMarzbanUsersList(filter);
+
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        foreach (var us in users.Entities)
+        {
+            List<InlineKeyboardButton> key = new()
+            {
+                InlineKeyboardButton.WithCallbackData(us.Username, $"subscribe_info?id={us.Id}")
+            };
+            keys.Add(key);
+        }
+
+        List<InlineKeyboardButton> beforAfter = new();
+
+        if (page != 1)
+            beforAfter.Add(InlineKeyboardButton.WithCallbackData("قبلی",
+                $"my_services?page={page - 1}"));
+        if (page * filter.TakeEntity < filter.AllEntitiesCount)
+            beforAfter.Add(InlineKeyboardButton.WithCallbackData("بعدی",
+                $"my_services?page={page + 1}"));
+
+        List<InlineKeyboardButton> home = new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        };
+
+        keys.Add(beforAfter);
+        keys.Add(home);
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+        await _botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text:
+            "\ud83d\udecd اشتراک های خریداری شده توسط شما\n\n\u26a0\ufe0fبرای مشاهده اطلاعات و مدیریت روی نام کاربری کلیک کنید",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+
+        if (callbackQuery.Message.MessageId != 0)
+        {
+            await _botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        }
+    }
+
+    private async Task SendSubscribeInfo(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        
+        int page = 1;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["page"], out page);
+        }
+
+    
+        if (callbackQuery.Message.MessageId != 0)
+        {
+            await _botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        }
+    }
+
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
     {
@@ -436,8 +527,6 @@ public class BotHookController(
             // _ => Usage(_botClient, message, cancellationToken)
         };
         Message sentMessage = await action;
-
-        //------------------------------ S T A R T ---------------------------------------
     }
 
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery,
@@ -468,6 +557,12 @@ public class BotHookController(
                 await SendSubscription(callbackQuery, cancellationToken);
                 break;
             case "custom_subscribe":
+                break;
+            case "my_services":
+                await SendListServices(callbackQuery, cancellationToken);
+                break;
+            case "subscribe_info":
+                await SendSubscribeInfo(callbackQuery, cancellationToken);
                 break;
             default:
                 if (callbackQuery.Data.StartsWith("createtestsub?id"))
@@ -508,7 +603,6 @@ public class BotHookController(
                         }
                     }
                 }
-
                 break;
         }
     }

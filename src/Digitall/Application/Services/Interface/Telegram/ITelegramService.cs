@@ -92,6 +92,13 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="id"></param>
     /// <returns></returns>
     Task<MarzbanVpnTemplateDto?> GetMarzbanTemplateByIdAsync(long id);
+
+    /// <summary>
+    /// get filter marzban users name
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<FilterMarzbanUser> FilterMarzbanUsersList(FilterMarzbanUser filter);
     
     Task StartTelegramBot(StartTelegramBotDto start);
 }

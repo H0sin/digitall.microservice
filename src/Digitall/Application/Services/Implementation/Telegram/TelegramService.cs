@@ -129,6 +129,9 @@ public class TelegramService(
     public async Task<MarzbanVpnTemplateDto?> GetMarzbanTemplateByIdAsync(long id)
         => await marzbanService.GetMarzbanVpnTemplateByIdAsync(id);
 
+    public async Task<FilterMarzbanUser> FilterMarzbanUsersList(FilterMarzbanUser filter)
+        => await marzbanService.FilterMarzbanUsersAsync(filter);
+
     public async Task StartTelegramBot(StartTelegramBotDto start)
     {
         AgentDto? agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);

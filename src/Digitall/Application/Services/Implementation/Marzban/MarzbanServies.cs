@@ -10,6 +10,7 @@ using Application.Utilities;
 using Application.Exceptions;
 using Data.Migrations;
 using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
@@ -277,7 +278,8 @@ public class MarzbanServies(
             User? user = await userRepository.GetEntityById(userId);
 
             //get agent ids
-            var agentIds = await agentService.GetAgentRoot(user.AgentId);
+            List<long> agentIds = await agentService.GetAgentRoot(user.AgentId);
+            AgentDto agent = await agentService.GetAgentByUserIdAsync(userId);
 
             // get marzban server by id
             MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
@@ -343,7 +345,7 @@ public class MarzbanServies(
             {
                 users.Add(new()
                 {
-                    Username = vpn.Title + "" + marzbanServer.Users + i + new Random().NextInt64(13121,212312312),
+                    Username = agent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99),
                     Expire = unixTimestamp.ToString(),
                     Data_Limit_Reset_Strategy = "no_reset",
                     Inbounds = inbounds,
@@ -422,6 +424,14 @@ public class MarzbanServies(
 
         return response;
     }
+
+    public async Task<List<string>> GetMarzbanUsersByUserId(long userId)
+        => await marzbanUserRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId)
+            .Select(x => new string(x.Username))
+            .ToListAsync();
+
 
     public async Task<MarzbanUser?> BuyMarzbanTestVpnAsync(long vpnId, long userId)
     {
@@ -626,6 +636,31 @@ public class MarzbanServies(
         }
 
         return templates;
+    }
+
+    public async Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter)
+    {
+        IQueryable<MarzbanUser> query = marzbanUserRepository.GetQuery();
+
+        if ((filter.UserId ?? 0) != 0)
+            query = query.Where(i => i.UserId == filter.UserId);
+
+        IQueryable<MarzbanUserDto> users = query.Select(x => new MarzbanUserDto(x));
+
+        await filter.Paging(users);
+        
+        return filter;
+    }
+
+    public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
+    {
+        MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
+
+        return marzbanUser switch
+        {
+            null => null,
+            _ => new MarzbanUserDto(marzbanUser)
+        };
     }
 
     private async Task UpdateMarzbanServerCount(long serverId, long count)

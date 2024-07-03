@@ -167,6 +167,15 @@ public interface IMarzbanService
     Task<MarzbanUserInformationDto> GetMarzbanUserInformationAsync(string userName, long? userId = null);
 
     /// <summary>
+    /// get list subscibe
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<List<string>> GetMarzbanUsersByUserId(long userId);
+    
+    // Task<MarzbanUserInformationDto> Get
+
+    /// <summary>
     /// total price 0
     /// test account in marzban
     /// </summary>
@@ -212,6 +221,14 @@ public interface IMarzbanService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId,long userId);
-    
+    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplateByVpnIdAsync(long vpnId, long userId);
+
+    /// <summary>
+    /// filter list marzban users
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter);
+
+    Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id,long userId);
 }
