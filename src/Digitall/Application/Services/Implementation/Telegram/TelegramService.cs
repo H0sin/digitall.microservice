@@ -132,6 +132,28 @@ public class TelegramService(
     public async Task<FilterMarzbanUser> FilterMarzbanUsersList(FilterMarzbanUser filter)
         => await marzbanService.FilterMarzbanUsersAsync(filter);
 
+    public async Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByChatIdAsync(long id, long chatId)
+    {
+        User user = await GetUserByChatIdAsync(chatId);
+        MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
+        SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
+        return subescribeStatus;
+    }
+
+    public async Task<List<string>> GetMarzbanSubscibtionLiknsAsync(long id, long chatId)
+    {
+        User user = await GetUserByChatIdAsync(chatId);
+        MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
+        return marzbanUser.Links;
+    }
+
+    public async Task<string> GetSubscibetionAsync(long id, long chatId)
+    {
+        User user = await GetUserByChatIdAsync(chatId);
+        MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
+        return marzbanUser.Subscription_Url;
+    }
+
     public async Task StartTelegramBot(StartTelegramBotDto start)
     {
         AgentDto? agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);

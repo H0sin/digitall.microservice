@@ -94,7 +94,8 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanVpnRepository, MarzbanVpnRepository>();
         services.AddScoped<IMarzbanUserRepository, MarzbanUserRepository>();
         services.AddScoped<IMarzbanVpnTemplatesRepository, MarzbanVpnTemplatesRepository>();
-        services.AddScoped<ITelegramBotRepository,TelegramBotRepository>();
+        services.AddScoped<ITelegramBotRepository, TelegramBotRepository>();
+
         #endregion
 
         #region services
@@ -115,7 +116,8 @@ public static class DependencyContainer
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<IMarzbanService, MarzbanServies>();
         services.AddScoped<ITelegramService, TelegramService>();
-        
+        services.AddScoped<IBotService, BotService>();
+
         #endregion
 
         return services;

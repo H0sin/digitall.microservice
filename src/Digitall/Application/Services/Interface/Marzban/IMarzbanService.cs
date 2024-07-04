@@ -230,5 +230,12 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter);
 
+    /// <summary>
+    /// get marzban user information
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
     Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id,long userId);
+    
 }

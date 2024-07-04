@@ -99,6 +99,30 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<FilterMarzbanUser> FilterMarzbanUsersList(FilterMarzbanUser filter);
+
+    /// <summary>
+    /// get marzban user dto
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByChatIdAsync(long id,long chatId);
+
+    /// <summary>
+    /// get marzban subscibetion links
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<List<string>> GetMarzbanSubscibtionLiknsAsync(long id, long chatId);
+    
+    /// <summary>
+    /// get subscribe
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<string> GetSubscibetionAsync(long id, long chatId);
     
     Task StartTelegramBot(StartTelegramBotDto start);
 }

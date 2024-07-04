@@ -8,7 +8,7 @@ using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
 using Application.Utilities;
 using Application.Exceptions;
-using Data.Migrations;
+// using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
@@ -648,18 +648,27 @@ public class MarzbanServies(
         IQueryable<MarzbanUserDto> users = query.Select(x => new MarzbanUserDto(x));
 
         await filter.Paging(users);
-        
+
         return filter;
     }
 
     public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
     {
         MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
+        
+        MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
+        MarzbanUserDto response =
+            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                HttpMethod.Get);
+        
+        if (marzbanUser.UserId != userId) marzbanUser = null;
+        
         return marzbanUser switch
         {
             null => null,
-            _ => new MarzbanUserDto(marzbanUser)
+            _ => response
         };
     }
 
