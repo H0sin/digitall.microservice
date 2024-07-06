@@ -17,11 +17,11 @@ public class ExceptionHandler : IAsyncExceptionFilter
     {
         try
         {
-            string? controller = context.RouteData.Values["controller"]!.ToString();
-            string? action = context.RouteData.Values["action"]!.ToString();
-            string? version = context.RouteData.Values["v"]!.ToString();
+            string? controller = context.RouteData.Values["controller"]?.ToString();
+            string? action = context.RouteData.Values["action"]?.ToString();
+            string? version = context.RouteData.Values["v"]?.ToString();
 
-            long userId = context.HttpContext.User.GetUserId();
+            long? userId = context.HttpContext.User.GetUserId();
 
             object information = new
             {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
+using Application.Exceptions;
 using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Domain.DTOs.Marzban;
@@ -16,6 +17,7 @@ public class BotService(ITelegramService telegramService) : IBotService
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
+        throw new NotFoundException("");
         string parameter = "";
 
         if (message.Text != null && message.Text.StartsWith("/start"))
