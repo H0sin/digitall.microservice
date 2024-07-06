@@ -6,15 +6,18 @@ using Application.Services.Interface.Telegram;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Application.Services.Implementation.Telegram;
 
-public class BotService(ITelegramService telegramService) : IBotService
+public class BotService(ITelegramService telegramService,ILogger<BotService> logger) : IBotService
 {
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
@@ -217,20 +220,23 @@ public class BotService(ITelegramService telegramService) : IBotService
             Int64.TryParse(queryParameters["id"], out id);
         }
         
-        
         MarzbanUserInformationDto user =
             await telegramService
                 .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
 
         GetMarzbanVpnDto? vpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(id);
-
+        
+        logger.LogInformation(JsonConvert.SerializeObject(vpn));
+        logger.LogInformation(JsonConvert.SerializeObject(user));
+        logger.LogInformation(user.Subscription_Url);
+        
         byte[] QrImage = await GenerateQrCode
             .GetQrCodeAsync(user.Subscription_Url);
 
-        Log.Information("{user}",user);
+        logger.LogInformation(QrImage.ToString());
+        logger.LogInformation(callbackQuery.Message.ToString());
 
-        Log.Information("{QrImage}",QrImage);
         
         string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
