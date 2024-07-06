@@ -6,6 +6,8 @@ using Application.Services.Interface.Telegram;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
+using Serilog;
+using Serilog.Core;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -17,7 +19,6 @@ public class BotService(ITelegramService telegramService) : IBotService
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
-        throw new NotFoundException("");
         string parameter = "";
 
         if (message.Text != null && message.Text.StartsWith("/start"))
@@ -215,7 +216,8 @@ public class BotService(ITelegramService telegramService) : IBotService
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int64.TryParse(queryParameters["id"], out id);
         }
-
+        
+        
         MarzbanUserInformationDto user =
             await telegramService
                 .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
@@ -226,6 +228,10 @@ public class BotService(ITelegramService telegramService) : IBotService
         byte[] QrImage = await GenerateQrCode
             .GetQrCodeAsync(user.Subscription_Url);
 
+        Log.Information("{user}",user);
+
+        Log.Information("{QrImage}",QrImage);
+        
         string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
 
