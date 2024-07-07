@@ -44,7 +44,7 @@ public interface IBotService
     /// <returns></returns>
     Task SendListVpnsHaveTestAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send test subscibe
     /// </summary>
@@ -123,5 +123,15 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendSubscribeAsync(ITelegramBotClient telegramBotClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send vpn days price async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendDaysPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
 }

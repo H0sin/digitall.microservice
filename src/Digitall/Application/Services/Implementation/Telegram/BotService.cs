@@ -17,7 +17,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Application.Services.Implementation.Telegram;
 
-public class BotService(ITelegramService telegramService,ILogger<BotService> logger) : IBotService
+public class BotService(ITelegramService telegramService, ILogger<BotService> logger) : IBotService
 {
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
@@ -117,7 +117,7 @@ public class BotService(ITelegramService telegramService,ILogger<BotService> log
         {
             await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
         }
-        
+
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: "به منو اصلی بازگشتید 🏠",
@@ -219,17 +219,17 @@ public class BotService(ITelegramService telegramService,ILogger<BotService> log
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int64.TryParse(queryParameters["id"], out id);
         }
-        
+
         MarzbanUserInformationDto user =
             await telegramService
                 .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
 
         GetMarzbanVpnDto? vpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(id);
-        
+
         byte[] QrImage = await GenerateQrCode
             .GetQrCodeAsync(user.Subscription_Url);
-        
+
         string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
 
@@ -619,5 +619,43 @@ public class BotService(ITelegramService telegramService,ILogger<BotService> log
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public async Task SendDaysPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        
+        int vpnId = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["vpnId"], out vpnId);
+        }
+
+        GetMarzbanVpnDto vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId);
+
+        string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
+🔔قیمت هر گیگ حجم {vpn.GbPrice} تومان می باشد.
+🔔 حداقل حجم {vpn.GbMin} گیگابایت و حداکثر {vpn.GbMax} گیگابایت می باشد.";
+
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+        
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: deatils,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
     }
 }

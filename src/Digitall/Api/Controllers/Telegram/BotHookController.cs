@@ -98,7 +98,8 @@ public class BotHookController(
             case "buy_subscribe":
                 await botService.SendSubscriptionAsync(_botClient, callbackQuery, cancellationToken);
                 break;
-            case "custom_subscribe":
+            case "custom_subscribe_totoal_days":
+                await botService.SendDaysPriceAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "my_services":
                 await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken);
