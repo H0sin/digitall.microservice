@@ -220,32 +220,32 @@ public class BotService(ITelegramService telegramService,ILogger<BotService> log
             Int64.TryParse(queryParameters["id"], out id);
         }
         
-        // MarzbanUserInformationDto user =
-        //     await telegramService
-        //         .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
-        //
-        // GetMarzbanVpnDto? vpn = await telegramService
-        //     .GetMarzbanVpnInformationByIdAsync(id);
-        //
-        byte[] QrImage = await GenerateQrCode
-            .GetQrCodeAsync("12312312312312312edasdasd");
+        MarzbanUserInformationDto user =
+            await telegramService
+                .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
+
+        GetMarzbanVpnDto? vpn = await telegramService
+            .GetMarzbanVpnInformationByIdAsync(id);
         
-//         string caption = $@"
-// ✅ سرویس با موفقیت ایجاد شد
-//
-// 👤 نام کاربری سرویس: {user.Username.TrimEnd()}
-// 🌿 نام سرویس: {vpn.Name.TrimEnd()}
-// ⏳ مدت زمان: {vpn.Test_Days} روز
-// 🗜 حجم سرویس: {vpn.Test_TotalGb} مگابایت
-// لینک اتصال:
-// {user.Subscription_Url.TrimEnd()}
-// ";
+        byte[] QrImage = await GenerateQrCode
+            .GetQrCodeAsync(user.Subscription_Url);
+        
+        string caption = $@"
+✅ سرویس با موفقیت ایجاد شد
+
+👤 نام کاربری سرویس: {user.Username.TrimEnd()}
+🌿 نام سرویس: {vpn.Name.TrimEnd()}
+⏳ مدت زمان: {vpn.Test_Days} روز
+🗜 حجم سرویس: {vpn.Test_TotalGb} مگابایت
+لینک اتصال:
+{user.Subscription_Url.TrimEnd()}
+";
         using (var Qr = new MemoryStream(QrImage))
         {
             await botClient.SendPhotoAsync(
                 chatId: callbackQuery.Message.Chat.Id,
-                photo: new InputFileStream(Qr, "123123dsdasdasdasda"),
-                caption: "",
+                photo: new InputFileStream(Qr, user.Username),
+                caption: caption,
                 cancellationToken: cancellationToken);
         }
     }
