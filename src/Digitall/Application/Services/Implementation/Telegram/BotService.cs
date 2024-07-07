@@ -227,16 +227,12 @@ public class BotService(ITelegramService telegramService,ILogger<BotService> log
         GetMarzbanVpnDto? vpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(id);
         
-        logger.LogInformation(JsonConvert.SerializeObject(vpn));
-        logger.LogInformation(JsonConvert.SerializeObject(user));
-        logger.LogInformation(user.Subscription_Url);
-        
         byte[] QrImage = await GenerateQrCode
             .GetQrCodeAsync(user.Subscription_Url);
 
-        logger.LogInformation(QrImage.ToString());
-        logger.LogInformation(callbackQuery.Message.ToString());
-
+        string ex = JsonConvert.SerializeObject(QrImage) + JsonConvert.SerializeObject(user) + JsonConvert.SerializeObject(vpn);
+        
+        throw new ApplicationException(ex);
         
         string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
