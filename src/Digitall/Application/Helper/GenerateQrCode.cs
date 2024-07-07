@@ -12,20 +12,15 @@ public static class GenerateQrCode
         {
             using var qrGenerator = new QRCodeGenerator();
             using var qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
-            using var qrCode = new QRCode(qrCodeData);
-            using var qrCodeImage = qrCode.GetGraphic(20);
+            using var qrCode = new PngByteQRCode(qrCodeData);
+            byte[] qrCodeImage = qrCode.GetGraphic(20);
 
-            // Save QR code image to memory stream
-            using var ms = new MemoryStream();
-            qrCodeImage.Save(ms, ImageFormat.Png);
-            ms.Position = 0;
             // Return image as byte array
-            return ms.ToArray();
+            return qrCodeImage;
         }
         catch (System.Exception qr)
         {
-            throw new ApplicationException("qr Kiry" + qr.Message);
+            throw new ApplicationException("qr" + qr.Message);
         }
-        // Generate QR code
     }
 }
