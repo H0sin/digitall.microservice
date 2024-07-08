@@ -1,8 +1,10 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections.Concurrent;
+using System.Collections.Specialized;
 using System.Web;
 using Application.Exceptions;
 using Application.Helper;
 using Application.Services.Interface.Telegram;
+using Application.Sessions;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
@@ -19,6 +21,9 @@ namespace Application.Services.Implementation.Telegram;
 
 public class BotService(ITelegramService telegramService, ILogger<BotService> logger) : IBotService
 {
+    private static ConcurrentDictionary<long, TelegramMarzbanVpnSession>? userSessions =
+        new ConcurrentDictionary<long, TelegramMarzbanVpnSession>();
+
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
@@ -280,7 +285,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         List<InlineKeyboardButton> custom = new()
         {
-            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه", "custom_subscribe")
+            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه", "custom_subscribe?vpnId=" + id)
         };
         List<InlineKeyboardButton> home = new()
         {
@@ -621,11 +626,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
     }
 
-    public async Task SendDaysPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    public async Task SendGbPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-        
+
         int vpnId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
@@ -639,10 +644,15 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         GetMarzbanVpnDto vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId);
 
-        string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
-🔔قیمت هر گیگ حجم {vpn.GbPrice} تومان می باشد.
-🔔 حداقل حجم {vpn.GbMin} گیگابایت و حداکثر {vpn.GbMax} گیگابایت می باشد.";
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb,vpnId:vpnId),
+                (key, old)
+                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb,vpnId:vpnId));
 
+        string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
+🔔قیمت هر گیگ حجم {vpn?.GbPrice ?? 0} تومان می باشد.
+🔔 حداقل حجم {vpn?.GbMin ?? 0} گیگابایت و حداکثر {vpn?.GbMax ?? 0} گیگابایت می باشد.";
 
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
@@ -651,11 +661,66 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
             }
         });
-        
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: deatils,
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
+    }
+
+    public async Task SendDaysPriceAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+        var uservalue = user.Value.Value;
+
+        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0);
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+
+        if (uservalue.Gb > vpn?.GbMax | uservalue.Gb < vpn?.GbMin | uservalue.Gb == 0)
+        {
+            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingGb;
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text:
+                $"\u274c حجم نامعتبر است.\n\ud83d\udd14 حداقل حجم {vpn.GbMin} گیگابایت و حداکثر {vpn.GbMax} گیگابایت می باشد",
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+
+            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingDate;
+            
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text:
+                $"\u231b\ufe0f زمان سرویس خود را انتخاب نمایید \n\ud83d\udccc تعرفه هر روز  : {vpn?.DayPrice}  تومان\n\u26a0\ufe0f حداقل زمان {vpn?.DayMin} روز  و حداکثر {vpn?.DayMax} روز  می توانید تهیه کنید",
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
     }
 }

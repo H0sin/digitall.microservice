@@ -126,12 +126,25 @@ public interface IBotService
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// send vpn gb price async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendGbPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// send vpn days price async
     /// </summary>
     /// <param name="botClient"></param>
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SendDaysPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    Task SendDaysPriceAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+    
+    Task SendCustomFactorVpnAsyncITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

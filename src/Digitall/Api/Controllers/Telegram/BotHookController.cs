@@ -25,9 +25,6 @@ public class BotHookController(
 {
     private ITelegramBotClient? _botClient;
 
-    private static ConcurrentDictionary<long, CustomMarzbanVpnSession> userSessions =
-        new ConcurrentDictionary<long, CustomMarzbanVpnSession>();
-
     [HttpPost("{botName}")]
     public async Task<IActionResult> Post(string botName,
         [FromBody] Update update,
@@ -59,17 +56,48 @@ public class BotHookController(
 
         await handler;
     }
-    
+
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
     {
         if (message.Text is not { } messageText)
             return;
 
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
+            .SingleOrDefault(x => x.Key == message.Chat.Id);
+
+        if (user != null)
+        {
+            switch (user.Value.Value.State)
+            {
+                case TelegramMarzbanVpnSessionState.AwaitingGb:
+                    int gb = 0;
+                    Int32.TryParse(message?.Text, out gb);
+                    user.Value.Value.Gb = gb;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+
+                    await botService.SendDaysPriceAsync(_botClient, message, cancellationToken);
+                    break;
+                
+                case TelegramMarzbanVpnSessionState.AwaitingDate:
+                    int date = 0;
+                    Int32.TryParse(message?.Text, out gb);
+                    user.Value.Value.Date = date;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+            }
+        }
+
         var action = messageText.Split(' ')[0] switch
         {
             "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
         };
+
         Message sentMessage = action;
     }
 
@@ -98,8 +126,8 @@ public class BotHookController(
             case "buy_subscribe":
                 await botService.SendSubscriptionAsync(_botClient, callbackQuery, cancellationToken);
                 break;
-            case "custom_subscribe_totoal_days":
-                await botService.SendDaysPriceAsync(_botClient, callbackQuery, cancellationToken);
+            case "custom_subscribe":
+                await botService.SendGbPriceAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "my_services":
                 await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken);
