@@ -16,6 +16,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using User = Domain.Entities.Account.User;
 
 namespace Application.Services.Implementation.Telegram;
 
@@ -86,6 +87,12 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                (key, old)
+                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
+
         InlineKeyboardMarkup inlineKeyboard = new(
             new[]
             {
@@ -100,22 +107,22 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
+                    // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
                 },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("پشتیبانی 📞", "support"),
-                    InlineKeyboardButton.WithCallbackData("آموزش 📚", "education")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("درخواست نمایندگی 🔒", "request_representative")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
-                },
+                // new[]
+                // {
+                //     InlineKeyboardButton.WithCallbackData("پشتیبانی 📞", "support"),
+                //     InlineKeyboardButton.WithCallbackData("آموزش 📚", "education")
+                // },
+                // new[]
+                // {
+                //     InlineKeyboardButton.WithCallbackData("درخواست نمایندگی 🔒", "request_representative")
+                // },
+                // new[]
+                // {
+                //     InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
+                // },
             });
 
         if (callbackQuery.Message.MessageId != 0)
@@ -373,6 +380,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         long marzbanvpntemplateId = 0;
         long marzbanvpnid = 0;
+        int days = 0;
+        int gb = 0;
 
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
@@ -382,6 +391,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int64.TryParse(queryParameters["marzbanvpntemplateId"], out marzbanvpntemplateId);
             Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
+            Int32.TryParse(queryParameters["days"], out days);
+            Int32.TryParse(queryParameters["gb"], out gb);
         }
 
         BuyMarzbanVpnDto buy = new();
@@ -389,8 +400,13 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         buy.MarzbanVpnId = marzbanvpnid;
         buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
         buy.Count = 1;
+        buy.TotalDay = days;
+        buy.TotalGb = gb;
 
-        MarzbanVpnTemplateDto? template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
+        MarzbanVpnTemplateDto? template = null;
+
+        if (marzbanvpntemplateId != 0)
+            template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
 
         List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
 
@@ -403,9 +419,9 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 ✅ سرویس با موفقیت ایجاد شد
 
 👤 نام کاربری سرویس: {user.Username.TrimEnd()}
-🌿 نام سرویس: {template.Title.TrimEnd()}
-⏳ مدت زمان: {template.Days} روز
-👥 حجم سرویس: {(template.Gb > 200 ? "نامحدود" : template.Gb + "گیگ")}
+🌿 نام سرویس: {template?.Title ?? "خرید اشتراک"}
+⏳ مدت زمان: {template?.Days ?? days} روز
+👥 حجم سرویس: {((template?.Gb ?? gb) > 200 ? "نامحدود" : (template?.Gb ?? gb) + "گیگ")}
 لینک اتصال:
 {user.Subscription_Url.TrimEnd()}
 ";
@@ -418,6 +434,12 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     cancellationToken: cancellationToken);
             }
         }
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                (key, old)
+                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
 
         await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
         await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
@@ -514,26 +536,26 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("دریافت ترافیک 🌍", $"get_traffic?id={id}"),
                 InlineKeyboardButton.WithCallbackData("لینک اشتراک 🔗", $"subscription_link?id={id}")
             },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", "renew_service"),
-                InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
-            },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", "delete_service"),
-                InlineKeyboardButton.WithCallbackData("خرید حجم اضافه ➕", "buy_extra_volume")
-            },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("تغییر وضعیت سرویس ❌", "change_service_status"),
-                InlineKeyboardButton.WithCallbackData("خرید زمان اضافه ⏳", "buy_extra_time")
-            },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("تغییر لوکیشن 🌐", "change_location"),
-                InlineKeyboardButton.WithCallbackData("انتقال سرویس به کاربر دیگر 🚚", "transfer_service")
-            },
+            // new[]
+            // {
+            //     InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", "renew_service"),
+            //     InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
+            // },
+            // new[]
+            // {
+            //     InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", "delete_service"),
+            //     InlineKeyboardButton.WithCallbackData("خرید حجم اضافه ➕", "buy_extra_volume")
+            // },
+            // new[]
+            // {
+            //     InlineKeyboardButton.WithCallbackData("تغییر وضعیت سرویس ❌", "change_service_status"),
+            //     InlineKeyboardButton.WithCallbackData("خرید زمان اضافه ⏳", "buy_extra_time")
+            // },
+            // new[]
+            // {
+            //     InlineKeyboardButton.WithCallbackData("تغییر لوکیشن 🌐", "change_location"),
+            //     InlineKeyboardButton.WithCallbackData("انتقال سرویس به کاربر دیگر 🚚", "transfer_service")
+            // },
             new[]
             {
                 InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_services")
@@ -646,9 +668,9 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         BotSessions
             .users_Sessions?
-            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb,vpnId:vpnId),
+            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId),
                 (key, old)
-                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb,vpnId:vpnId));
+                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId));
 
         string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
 🔔قیمت هر گیگ حجم {vpn?.GbPrice ?? 0} تومان می باشد.
@@ -706,9 +728,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
         else
         {
-
             uservalue.State = TelegramMarzbanVpnSessionState.AwaitingDate;
-            
+
             BotSessions
                 .users_Sessions?
                 .AddOrUpdate(chatId, uservalue,
@@ -721,6 +742,92 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 $"\u231b\ufe0f زمان سرویس خود را انتخاب نمایید \n\ud83d\udccc تعرفه هر روز  : {vpn?.DayPrice}  تومان\n\u26a0\ufe0f حداقل زمان {vpn?.DayMin} روز  و حداکثر {vpn?.DayMax} روز  می توانید تهیه کنید",
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendCustomFactorVpnAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+        var uservalue = user.Value.Value;
+
+        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0);
+        User mainUser = await telegramService.GetUserByChatIdAsync(chatId);
+
+
+        if (uservalue.Date > vpn?.DayMax | uservalue.Date < vpn?.DayMin | uservalue.Date == 0)
+        {
+            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingDate;
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text:
+                $"\u274c زمان ارسال شده نامعتبر است . زمان باید بین {vpn.DayMin} روز تا {vpn.DayMax} روز باشد",
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            uservalue.State = TelegramMarzbanVpnSessionState.AwatingFactor;
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس", $"buy_subscribe" +
+                        $"?marzbanvpnid={uservalue.VpnId}" +
+                        $"&gb={uservalue.Gb}" +
+                        $"&days={uservalue.Date}")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            SubscribeFactorBotDto sub = new()
+            {
+                Days = uservalue.Date ?? 0,
+                Gb = uservalue.Gb ?? 0,
+                Balance = mainUser.Balance,
+                Count = 1,
+                Price = ((uservalue.Gb * vpn.GbPrice) + (uservalue.Date * vpn.DayPrice)) * 1 ?? 0,
+                Title = "خرید اشتراک"
+            };
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: sub.GetInfo(),
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+
+            if (message.MessageId != 0)
+            {
+                await botClient!.DeleteMessageAsync(chatId, message.MessageId, cancellationToken);
+            }
         }
     }
 }

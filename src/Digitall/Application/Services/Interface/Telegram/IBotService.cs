@@ -145,6 +145,13 @@ public interface IBotService
     Task SendDaysPriceAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
     
-    Task SendCustomFactorVpnAsyncITelegramBotClient? botClient, Message message,
+    /// <summary>
+    /// after send days send factor
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendCustomFactorVpnAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

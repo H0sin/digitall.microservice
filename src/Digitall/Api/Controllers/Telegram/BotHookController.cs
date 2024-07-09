@@ -84,12 +84,15 @@ public class BotHookController(
                 
                 case TelegramMarzbanVpnSessionState.AwaitingDate:
                     int date = 0;
-                    Int32.TryParse(message?.Text, out gb);
+                    Int32.TryParse(message?.Text, out date);
                     user.Value.Value.Date = date;
                     BotSessions
                         .users_Sessions?
                         .AddOrUpdate(message.Chat.Id,
                             user.Value.Value, (key, old) => old = user.Value.Value);
+
+                    await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken);
+                    break;
             }
         }
 
