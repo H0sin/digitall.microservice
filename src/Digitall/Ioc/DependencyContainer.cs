@@ -76,6 +76,7 @@ public static class DependencyContainer
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<ITransactionDetailRepository, TransactionDetailRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IServerRepository, ServerRepository>();

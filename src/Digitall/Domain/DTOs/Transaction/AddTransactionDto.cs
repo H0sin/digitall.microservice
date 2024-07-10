@@ -35,7 +35,7 @@ public class AddTransactionDto
 
     [Display(Name = "شماره کارت")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long CardNumber { get; set; }
+    public string CardNumber { get; set; }
 
     [Display(Name = "نام بانک")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

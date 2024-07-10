@@ -10,29 +10,19 @@ using Domain.Enums.Transaction;
 using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
+using Application.Exceptions;
 
 namespace Application.Services.Implementation.Transaction;
 
-public class TransactionService : ITransactionService
+public class TransactionService(
+    ITransactionRepository transactionRepository,
+    ITransactionDetailRepository transactionDetailRepository,
+    IUserService userService)
+    : ITransactionService
 {
-    #region constructor
-
-    private readonly ITransactionRepository _transactionRepository;
-    private readonly IUserService _userService;
-
-    public TransactionService(ITransactionRepository transactionRepository, IUserService userService)
-    {
-        _transactionRepository = transactionRepository;
-        _userService = userService;
-    }
-
-    #endregion
-
-    #region add
-
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
     {
-        if (await _userService.GetUserByIdAsync(userId) is null)
+        if (await userService.GetUserByIdAsync(userId) is null)
             return AddTransactionResult.NotUserExists;
 
         Domain.Entities.Transaction.Transaction newTransaction = new()
@@ -50,7 +40,8 @@ public class TransactionService : ITransactionService
             UserId = userId
         };
 
-        if (transaction.AvatarTransaction != null && transaction.AvatarTransaction.IsImage())
+        //transaction.AvatarTransaction.IsImage()
+        if (transaction.AvatarTransaction != null)
         {
             var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(transaction.AvatarTransaction.FileName);
             transaction.AvatarTransaction.AddImageToServer(imageName,
@@ -61,33 +52,29 @@ public class TransactionService : ITransactionService
             newTransaction.AvatarTransaction = imageName;
         }
 
-        await _transactionRepository.AddEntity(newTransaction);
-        await _transactionRepository.SaveChanges(newTransaction.UserId);
+        await transactionRepository.AddEntity(newTransaction);
+        await transactionRepository.SaveChanges(newTransaction.UserId);
 
         return AddTransactionResult.Success;
     }
-
-    #endregion
-
-    #region update
 
     public async Task<UpdateTransactionStatusResult> UpdateTransactionStatusAsync(
         UpdateTransactionStatusDto transaction, long userId)
     {
         Domain.Entities.Transaction.Transaction? newTransaction =
-            await _transactionRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == transaction.TransactionId);
+            await transactionRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == transaction.TransactionId);
 
         if (newTransaction is null)
             return UpdateTransactionStatusResult.Error;
 
         if (transaction.TransactionStatus == TransactionStatus.Accepted &&
             newTransaction.TransactionStatus != TransactionStatus.Accepted)
-            await _userService.UpdateUserBalance(newTransaction.Price, newTransaction.CreateBy, userId);
+            await userService.UpdateUserBalance(newTransaction.Price, newTransaction.CreateBy, userId);
 
         newTransaction!.TransactionStatus = transaction.TransactionStatus;
 
-        await _transactionRepository.UpdateEntity(newTransaction);
-        await _transactionRepository.SaveChanges(userId);
+        await transactionRepository.UpdateEntity(newTransaction);
+        await transactionRepository.SaveChanges(userId);
 
         return UpdateTransactionStatusResult.Success;
     }
@@ -97,11 +84,11 @@ public class TransactionService : ITransactionService
         try
         {
             Domain.Entities.Transaction.Transaction? newTransaction =
-                await _transactionRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == transaction.Id);
+                await transactionRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == transaction.Id);
 
             newTransaction!.TransactionStatus = status;
 
-            await _transactionRepository.UpdateEntity(newTransaction);
+            await transactionRepository.UpdateEntity(newTransaction);
 
             return true;
         }
@@ -111,22 +98,14 @@ public class TransactionService : ITransactionService
         }
     }
 
-    #endregion
-
-    #region get
-
     public async Task<TransactionDto> GetTransactionByIdAsync(long id)
     {
         throw new NotImplementedException();
     }
 
-    #endregion
-
-    #region filter
-
     public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter)
     {
-        IQueryable<Domain.Entities.Transaction.Transaction> query = _transactionRepository.GetQuery();
+        IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository.GetQuery();
 
         IQueryable<TransactionDto> transaction = query.Select(x => new TransactionDto()
         {
@@ -148,5 +127,16 @@ public class TransactionService : ITransactionService
         return filter;
     }
 
-    #endregion
+    public async Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId)
+    {
+        if (await transactionDetailRepository.GetQuery()
+            .AnyAsync(x => x.CardNumber == transaction.CardNumber))
+            throw new ExistsException("این شماره کارت از قبل ثبت شده است");
+
+        await transactionDetailRepository.AddEntity(transaction._GenerateTransaction());
+        await transactionDetailRepository.SaveChanges(userId);
+    }
+
+    public async Task<List<TransactionDetailDto>> GetTransactionDetailsAsync() =>
+        await transactionDetailRepository.GetQuery().Select(x => new TransactionDetailDto(x)).ToListAsync();
 }

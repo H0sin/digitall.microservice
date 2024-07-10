@@ -1,6 +1,7 @@
 ﻿using Domain.DTOs.Account;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
 
@@ -123,6 +124,14 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<string> GetSubscibetionAsync(long id, long chatId);
+
+    /// <summary>
+    /// get transaction deatil
+    /// </summary>
+    /// <returns></returns>
+    Task<List<TransactionDetailDto>> GetTransactionDetailAsync();
+
+    Task AddTransactionAsync(AddTransactionDto transaction,long chatId);
     
     Task StartTelegramBot(StartTelegramBotDto start);
 }

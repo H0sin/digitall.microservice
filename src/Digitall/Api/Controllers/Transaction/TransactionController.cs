@@ -13,22 +13,13 @@ using Microsoft.EntityFrameworkCore.Update.Internal;
 
 namespace Api.Controllers.Transaction;
 
+/// <summary>
+/// for transaction services 
+/// </summary>
+/// <param name="transactionService"></param>
 [ApiVersion(1)]
-public class TransactionController : BaseController
+public class TransactionController(ITransactionService transactionService) : BaseController
 {
-    #region constructor
-
-    private readonly ITransactionService _transactionService;
-
-    public TransactionController(ITransactionService transactionService)
-    {
-        _transactionService = transactionService;
-    }
-
-    #endregion
-
-    #region add
-
     /// <summary>
     /// add transaction for user
     /// فقط کاربری که لاگین هست مجاز به ثبت است
@@ -37,10 +28,9 @@ public class TransactionController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     [ProducesDefaultResponseType]
-    [Authorize]
     public async Task<ApiResult> AddTransaction([FromForm] AddTransactionDto transaction)
     {
-        AddTransactionResult response = await _transactionService.AddTransactionAsync(transaction, User.GetUserId());
+        AddTransactionResult response = await transactionService.AddTransactionAsync(transaction, User.GetUserId());
 
         return response switch
         {
@@ -54,9 +44,6 @@ public class TransactionController : BaseController
         };
     }
 
-    #endregion
-
-    #region update
 
     /// <summary>
     /// after admin show transaction acept transaction
@@ -67,10 +54,10 @@ public class TransactionController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     [ProducesDefaultResponseType]
-    [Authorize]
     public async Task<ApiResult> UpdateTransactionStatus([FromForm] UpdateTransactionStatusDto transaction)
     {
-        UpdateTransactionStatusResult response = await _transactionService.UpdateTransactionStatusAsync(transaction, User.GetUserId());
+        UpdateTransactionStatusResult response =
+            await transactionService.UpdateTransactionStatusAsync(transaction, User.GetUserId());
 
         return response switch
         {
@@ -84,10 +71,6 @@ public class TransactionController : BaseController
         };
     }
 
-    #endregion
-
-    #region filter
-
     /// <summary>
     /// get transaction list by filter
     /// </summary>
@@ -96,13 +79,39 @@ public class TransactionController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<FilterTransactionDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
-    [Authorize]
     public async Task<ApiResult<FilterTransactionDto>> FilterTransaction([FromQuery] FilterTransactionDto transaction)
     {
-        FilterTransactionDto response = await _transactionService.FilterTransactionAsync(transaction);
+        FilterTransactionDto response = await transactionService.FilterTransactionAsync(transaction);
 
         return Ok(response);
     }
 
-    #endregion
+    /// <summary>
+    /// add transaction detail
+    /// </summary>
+    /// <returns>FilterTransaction</returns>
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
+    public async Task<ApiResult> AddTransactionDetial(
+        [FromBody] AddTransactionDetialDto transaction)
+    {
+        await transactionService.AddTransactionDetailAsync(transaction, User.GetUserId());
+        return Ok();
+    }
+
+    /// <summary>
+    /// get transaciton detail list
+    /// </summary>
+    /// <returns>FilterTransaction</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult<TransactionDetailDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult<List<TransactionDetailDto>>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<List<TransactionDetailDto>>> GetTransactionDetail()
+    {
+        return Ok(await transactionService.GetTransactionDetailsAsync());
+    }
 }

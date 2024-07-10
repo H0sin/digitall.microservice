@@ -2,9 +2,11 @@
 using System.Collections.Specialized;
 using System.Web;
 using Api.Filters;
+using Application.Extensions;
 using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
+using Application.Utilities;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
@@ -60,7 +62,8 @@ public class BotHookController(
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
     {
-        if (message.Text is not { } messageText)
+        
+        if (message.Photo is not {} photo & message.Text is not { } messageText )
             return;
 
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
@@ -93,10 +96,25 @@ public class BotHookController(
 
                     await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken);
                     break;
+                case TelegramMarzbanVpnSessionState.AwatingSendPrice:
+                    int price = 0;
+                    Int32.TryParse(message?.Text, out price);
+                    user.Value.Value.Price = price;
+                    
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+
+                    await botService.SendCardNumberAndDetailAsync(_botClient, message, cancellationToken);
+                    break;
+                case TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage:
+                    await botService.AddTrnasactionAsync(_botClient, message, cancellationToken);
+                    break;
             }
         }
-
-        var action = messageText.Split(' ')[0] switch
+        
+        var action = message?.Text?.Split(' ')[0] switch
         {
             "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
         };
@@ -143,6 +161,15 @@ public class BotHookController(
                 break;
             case "get_traffic":
                 await botService.SendConfigsAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "wallet":
+                await botService.SendUserInformationAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "inventory_increase":
+                await botService.SendTransactionDetailsAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "send_transaction_image":
+                await botService.WatingForTransactionImageAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             default:
                 break;

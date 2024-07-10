@@ -9,6 +9,11 @@ public interface ITransactionService
     Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId);
     Task<TransactionDto> GetTransactionByIdAsync(long id);
     Task<bool> ChangeTransactionStatusAsync(TransactionDto transaction, TransactionStatus status);
-    Task<UpdateTransactionStatusResult> UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction, long userId);
+
+    Task<UpdateTransactionStatusResult> UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction,
+        long userId);
+
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
+    Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId);
+    Task<List<TransactionDetailDto>> GetTransactionDetailsAsync();
 }

@@ -2,18 +2,24 @@
 using System.Collections.Specialized;
 using System.Web;
 using Application.Exceptions;
+using Application.Extensions;
 using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
+using Application.Utilities;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
+using Domain.Enums.Transaction;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using User = Domain.Entities.Account.User;
@@ -83,7 +89,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     }
 
     public async Task SendMainMenuAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, string? title = null)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
@@ -110,19 +116,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
                 },
-                // new[]
-                // {
-                //     InlineKeyboardButton.WithCallbackData("پشتیبانی 📞", "support"),
-                //     InlineKeyboardButton.WithCallbackData("آموزش 📚", "education")
-                // },
-                // new[]
-                // {
-                //     InlineKeyboardButton.WithCallbackData("درخواست نمایندگی 🔒", "request_representative")
-                // },
-                // new[]
-                // {
-                //     InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
-                // },
             });
 
         if (callbackQuery.Message.MessageId != 0)
@@ -132,7 +125,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         await botClient.SendTextMessageAsync(
             chatId: chatId,
-            text: "به منو اصلی بازگشتید 🏠",
+            text: title ?? "به منو اصلی بازگشتید 🏠",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
@@ -828,6 +821,238 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             {
                 await botClient!.DeleteMessageAsync(chatId, message.MessageId, cancellationToken);
             }
+        }
+    }
+
+    public async Task SendUserInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        User? user = await telegramService.GetUserByChatIdAsync(chatId);
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83d\udcb0 افزایش موجودی", "inventory_increase")
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+
+        string information = @$"🗂 اطلاعات حساب کاربری شما :
+
+👤 نام: {user.UserFullName()}
+📱 شماره تماس :🔴 {user.Mobile ?? " ارسال نشده است "} 🔴
+💰 موجودی: {user.Balance} تومان";
+
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: information,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+
+        if (callbackQuery.Message.MessageId != 0)
+        {
+            await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+        }
+    }
+
+    public async Task SendTransactionDetailsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        List<TransactionDetailDto> transactionDetail = await telegramService.GetTransactionDetailAsync();
+
+        string information =
+            $"\ud83d\udcb8 مبلغ را  به تومان وارد کنید:\n\u2705  حداقل مبلغ {transactionDetail[0].MinimalAmount} حداکثر مبلغ {transactionDetail[0].MaximumAmount} تومان می باشد";
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        TelegramMarzbanVpnSession uservalue = user.Value.Value;
+
+        uservalue.State = TelegramMarzbanVpnSessionState.AwatingSendPrice;
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, uservalue,
+                (key, old)
+                    => old = uservalue);
+
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: information,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendCardNumberAndDetailAsync(ITelegramBotClient? botClient, Message? message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        List<TransactionDetailDto> transactionDetail = await telegramService.GetTransactionDetailAsync();
+
+        var uservalue = user.Value.Value;
+
+        if (transactionDetail[0].MaximumAmount < uservalue.Price | transactionDetail[0].MinimalAmount > uservalue.Price)
+        {
+            string exText =
+                $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail[0].MinimalAmount} تومان و حداکثر {transactionDetail[0].MaximumAmount} تومان باشد";
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: exText,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("✅ پرداخت کردم  | ارسال رسید", "send_transaction_image")
+                }
+            });
+
+            string text = $@"برای افزایش موجودی، مبلغ {uservalue.Price}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
+        
+        ==================== 
+        {transactionDetail[0].CardNumber}
+        {transactionDetail[0].CardHolderName}
+        ====================
+
+‼️مبلغ باید همان مبلغی که در بالا ذکر شده واریز نمایید.
+‼️امکان برداشت وجه از کیف پول نیست.
+‼️مسئولیت واریز اشتباهی با شماست.
+🔝بعد از پرداخت  دکمه پرداخت کردم را زده سپس تصویر رسید را ارسال نمایید
+💵بعد از تایید پرداختتون توسط ادمین کیف پول شما شارژ خواهد شد و در صورتی که سفارشی داشته باشین انجام خواهد شد";
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: text,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task WatingForTransactionImageAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        var uservalue = user.Value.Value;
+
+        uservalue.State = TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage;
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, uservalue,
+                (key, old)
+                    => old = uservalue);
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+
+        string text = "🖼 تصویر رسید خود را ارسال نمایید";
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: text,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task AddTrnasactionAsync(ITelegramBotClient? botClient, Message? message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        if (message.Type == MessageType.Photo)
+        {
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+            var uservalue = user.Value.Value;
+
+            uservalue.State = TelegramMarzbanVpnSessionState.None;
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+            var file = await botClient!.GetFileAsync(message.Photo![^1].FileId, cancellationToken: cancellationToken);
+            using var memoryStream = new MemoryStream();
+
+            await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
+
+            memoryStream.Seek(0, SeekOrigin.Begin); // R
+
+            IFormFile formFile =
+                new FormFile(
+                    memoryStream,
+                    0,
+                    memoryStream.Length,
+                    file.FileId, $"{file.FileId}.jpg");
+            
+            
+            AddTransactionDto transaction = new()
+            {
+                AccountName = message.From?.FirstName ?? "بدون اسم",
+                TransactionTime = DateTime.Now,
+                TransactionType = TransactionType.Increase,
+                AvatarTransaction = formFile,
+                Price = uservalue.Price,
+                Title = "افزایش موجودی"
+            };
+
+            CallbackQuery callbackQuery = new CallbackQuery()
+            {
+                Data = "back_to_main",
+                Message = message
+                
+            };
+
+            await telegramService.AddTransactionAsync(transaction, chatId);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken,
+                "\ud83d\ude80 رسید پرداخت  شما ارسال شد پس از تایید توسط مدیریت مبلغ به کیف پول شما واریز خواهد شد");
+        }
+        else
+        {
+            string text = "🖼 لطفا عکس ارسال کنید";
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: text,
+                cancellationToken: cancellationToken);
         }
     }
 }

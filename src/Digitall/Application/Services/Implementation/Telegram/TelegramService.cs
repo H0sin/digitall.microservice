@@ -14,7 +14,9 @@ using Domain.IRepositories.Telegram;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Application.Services.Interface.Marzban;
+using Application.Services.Interface.Transaction;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
 
 namespace Application.Services.Implementation.Telegram;
@@ -23,7 +25,8 @@ public class TelegramService(
     ITelegramBotRepository telegramBotRepository,
     IUserRepository userRepository,
     IAgentService agentService,
-    IMarzbanService marzbanService) : ITelegramService
+    IMarzbanService marzbanService,
+    ITransactionService transactionService) : ITelegramService
 {
     public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
     {
@@ -152,6 +155,17 @@ public class TelegramService(
         User user = await GetUserByChatIdAsync(chatId);
         MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
         return marzbanUser.Subscription_Url;
+    }
+
+    public async Task<List<TransactionDetailDto>> GetTransactionDetailAsync()
+    {
+        return await transactionService.GetTransactionDetailsAsync();
+    }
+
+    public async Task AddTransactionAsync(AddTransactionDto transaction,long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        await transactionService.AddTransactionAsync(transaction,user!.Id);
     }
 
     public async Task StartTelegramBot(StartTelegramBotDto start)

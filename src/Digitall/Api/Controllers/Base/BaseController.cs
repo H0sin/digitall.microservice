@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Base
 {
+    /// <inheritdoc />
     [Route("api/v{v:apiVersion}/[controller]/[action]")]
     [ServiceFilter(typeof(ExceptionHandler))]
     [ApiResultFilter]

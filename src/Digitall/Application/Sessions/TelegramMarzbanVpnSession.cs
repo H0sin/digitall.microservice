@@ -8,6 +8,7 @@ public class TelegramMarzbanVpnSession
     public int? Date { get; set; } = null;
     public TelegramMarzbanVpnSessionState State { get; set; }
     public long? VpnId { get; set; }
+    public int Price { get; set; }
 
     public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,long? vpnId = null)
     {
@@ -24,7 +25,9 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingGb,
     AwaitingDate,
     AwatingFactor,
-    AwaitingSubscibeCount
+    AwatingSendPrice,
+    AwaitingSubscibeCount,
+    AwaitingSendTransactionImage
 }
 
 public static class BotSessions

@@ -41,6 +41,7 @@ public class DigitallDbContext : DbContext
     public DbSet<Category> Category { get; set; }
     public DbSet<Product> Product { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<TransactionDetail> TransactionDetail { get; set; }
     public DbSet<Server> Server { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Vpn> Vpn { get; set; }
