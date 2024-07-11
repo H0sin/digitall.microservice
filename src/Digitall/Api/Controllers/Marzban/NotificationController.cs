@@ -22,13 +22,13 @@ public class NotificationController : ControllerBase
     {
         Log.Information(JsonConvert.SerializeObject(body));
 
-        if (!Directory.Exists(PathExtension.FileOriginOriginServer))
+        if (!Directory.Exists(PathExtension.FileOriginServer))
         {
-            Directory.CreateDirectory(PathExtension.FileOriginOriginServer);
+            Directory.CreateDirectory(PathExtension.FileOriginServer);
         }
 
         using (StreamWriter writer =
-               System.IO.File.CreateText(PathExtension.FileOriginOriginServer + Guid.NewGuid() + ".json"))
+               System.IO.File.CreateText(PathExtension.FileOriginServer + Guid.NewGuid() + ".json"))
         {
             writer.WriteLine(body);
         }

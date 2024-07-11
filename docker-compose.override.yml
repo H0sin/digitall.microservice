@@ -19,27 +19,28 @@ services:
     expose:
       - 5000
     restart: unless-stopped
+    user: root
     environment:
       - ASPNETCORE_HTTP_PORTS=5000
     ports:
       - 5000:5000
     networks:
       - nginx-network
-    # volumes:
-      # - ./digitall/Api/bin/Debug/net8.0/.xml:/app/Digitall.Api.XML
+    volumes:
+      - images-volume:/app/wwwroot/images
     depends_on:
       - sqlserver
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
+    user: root
     environment:
       SA_PASSWORD: "Hossein8916"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    # volumes:
-    #   - sqlserver-data:/var/opt/mssql/data
-    #   - ./src/sqlserver/restore_script.sql:/docker-entrypoint-initdb.d/restore_script.sql
+    volumes:
+      - ./data:/var/opt/mssql/data
     restart: unless-stopped
     networks:
       - nginx-network

@@ -16,3 +16,8 @@ services:
 networks:
   nginx-network:
     driver: bridge
+
+volumes:
+  sqlserver-data:
+    driver: local
+  images-volume:
