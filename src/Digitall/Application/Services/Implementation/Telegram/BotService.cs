@@ -63,27 +63,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
+                    // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("پشتیبانی 📞", "support"),
-                    InlineKeyboardButton.WithCallbackData("آموزش 📚", "education")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("درخواست نمایندگی 🔒", "request_representative")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی", "21"),
-                },
+                }
             });
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: "خوش آمدید بچه هایه دیرین",
+            text: "خوش آمدید بچه هایه خوب",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
@@ -115,7 +102,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 {
                     // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
-                },
+                }
             });
 
         if (callbackQuery.Message.MessageId != 0)

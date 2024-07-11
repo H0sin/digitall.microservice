@@ -62,14 +62,13 @@ public class BotHookController(
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
     {
-        
-        if (message.Photo is not {} photo & message.Text is not { } messageText )
+        if (message.Photo is not { } photo & message.Text is not { } messageText)
             return;
 
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
             .SingleOrDefault(x => x.Key == message.Chat.Id);
 
-        if (user != null)
+        if (user.Value.Value is not { } & user.Value.Value is not null)
         {
             switch (user.Value.Value.State)
             {
@@ -84,7 +83,7 @@ public class BotHookController(
 
                     await botService.SendDaysPriceAsync(_botClient, message, cancellationToken);
                     break;
-                
+
                 case TelegramMarzbanVpnSessionState.AwaitingDate:
                     int date = 0;
                     Int32.TryParse(message?.Text, out date);
@@ -100,7 +99,7 @@ public class BotHookController(
                     int price = 0;
                     Int32.TryParse(message?.Text, out price);
                     user.Value.Value.Price = price;
-                    
+
                     BotSessions
                         .users_Sessions?
                         .AddOrUpdate(message.Chat.Id,
@@ -113,7 +112,7 @@ public class BotHookController(
                     break;
             }
         }
-        
+
         var action = message?.Text?.Split(' ')[0] switch
         {
             "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
