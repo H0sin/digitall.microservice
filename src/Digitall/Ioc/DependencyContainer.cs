@@ -54,9 +54,11 @@ using Application.Services.Implementation.Menu;
 using Application.Services.Implementation.Agent;
 using Application.Senders.Sms;
 using Application.Services.Implementation.Authorization;
+using Application.Services.Implementation.Docker;
 using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
 using Application.Services.Implementation.Telegram;
+using Application.Services.Interface.Docker;
 using Application.Services.Interface.Telegram;
 using Data.Repositories.Telegram;
 using Data.Repositories.Vpn;
@@ -118,7 +120,7 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanService, MarzbanServies>();
         services.AddScoped<ITelegramService, TelegramService>();
         services.AddScoped<IBotService, BotService>();
-
+        services.AddScoped<IDockerService,DockerService>();
         #endregion
 
         return services;
