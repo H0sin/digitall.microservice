@@ -68,7 +68,7 @@ public class BotHookController(
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
             .SingleOrDefault(x => x.Key == message.Chat.Id);
 
-        if (user.Value.Value is not { } & user.Value.Value is not null)
+        if (user.Value.Value is not null)
         {
             switch (user.Value.Value.State)
             {

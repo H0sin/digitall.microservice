@@ -357,45 +357,46 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        long marzbanvpntemplateId = 0;
-        long marzbanvpnid = 0;
-        int days = 0;
-        int gb = 0;
-
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["marzbanvpntemplateId"], out marzbanvpntemplateId);
-            Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
-            Int32.TryParse(queryParameters["days"], out days);
-            Int32.TryParse(queryParameters["gb"], out gb);
-        }
+            long marzbanvpntemplateId = 0;
+            long marzbanvpnid = 0;
+            int days = 0;
+            int gb = 0;
 
-        BuyMarzbanVpnDto buy = new();
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["marzbanvpntemplateId"], out marzbanvpntemplateId);
+                Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
+                Int32.TryParse(queryParameters["days"], out days);
+                Int32.TryParse(queryParameters["gb"], out gb);
+            }
 
-        buy.MarzbanVpnId = marzbanvpnid;
-        buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
-        buy.Count = 1;
-        buy.TotalDay = days;
-        buy.TotalGb = gb;
+            BuyMarzbanVpnDto buy = new();
 
-        MarzbanVpnTemplateDto? template = null;
+            buy.MarzbanVpnId = marzbanvpnid;
+            buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
+            buy.Count = 1;
+            buy.TotalDay = days;
+            buy.TotalGb = gb;
 
-        if (marzbanvpntemplateId != 0)
-            template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
+            MarzbanVpnTemplateDto? template = null;
 
-        List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
+            if (marzbanvpntemplateId != 0)
+                template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
 
-        foreach (MarzbanUser user in marzbanUsers)
-        {
-            byte[] QrImage = await GenerateQrCode
-                .GetQrCodeAsync(user.Subscription_Url);
+            List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
 
-            string caption = $@"
+            foreach (MarzbanUser user in marzbanUsers)
+            {
+                byte[] QrImage = await GenerateQrCode
+                    .GetQrCodeAsync(user.Subscription_Url);
+
+                string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
 
 👤 نام کاربری سرویس: {user.Username.TrimEnd()}
@@ -405,24 +406,33 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 لینک اتصال:
 {user.Subscription_Url.TrimEnd()}
 ";
-            using (var Qr = new MemoryStream(QrImage))
-            {
-                await botClient.SendPhotoAsync(
-                    chatId: callbackQuery.Message.Chat.Id,
-                    photo: new InputFileStream(Qr, user.Subscription_Url),
-                    caption: caption,
-                    cancellationToken: cancellationToken);
+                using (var Qr = new MemoryStream(QrImage))
+                {
+                    await botClient.SendPhotoAsync(
+                        chatId: callbackQuery.Message.Chat.Id,
+                        photo: new InputFileStream(Qr, user.Subscription_Url),
+                        caption: caption,
+                        cancellationToken: cancellationToken);
+                }
             }
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
+
+            await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
         }
-
-        BotSessions
-            .users_Sessions?
-            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
-                (key, old)
-                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
-
-        await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
-        await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+        }
     }
 
     public async Task SendListServicesAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -1009,8 +1019,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     0,
                     memoryStream.Length,
                     file.FileId, $"{file.FileId}.jpg");
-            
-            
+
+
             AddTransactionDto transaction = new()
             {
                 AccountName = message.From?.FirstName ?? "بدون اسم",
@@ -1025,7 +1035,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             {
                 Data = "back_to_main",
                 Message = message
-                
             };
 
             await telegramService.AddTransactionAsync(transaction, chatId);

@@ -322,13 +322,19 @@ public class MarzbanServies(
             // Convert the future date to Unix timestamp (seconds since January 1, 1970)
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
-            object inbounds = new
+            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>()
             {
-                vmess = marzbanVpn.Vmess,
-                vless = marzbanVpn.Vless,
-                trojan = marzbanVpn.Trojan,
-                shadowsocks = marzbanVpn.Shadowsocks
+                // new KeyValuePair<string,List<string>>("vmess",marzbanVpn.Vmess),
+                // vless = marzbanVpn.Vless,
+                // trojan = marzbanVpn.Trojan,
+                // shadowsocks = marzbanVpn.Shadowsocks
             };
+
+            if (marzbanVpn.Vmess != null | marzbanVpn.Vmess?.Count() > 0) inbounds.Add("vmess", marzbanVpn.Vmess);
+            if (marzbanVpn.Vless != null | marzbanVpn.Vless?.Count() > 0) inbounds.Add("vless", marzbanVpn.Vless);
+            if (marzbanVpn.Trojan != null | marzbanVpn.Trojan?.Count() > 0) inbounds.Add("trojan", marzbanVpn.Trojan);
+            if (marzbanVpn.Shadowsocks != null | marzbanVpn.Shadowsocks?.Count() > 0)
+                inbounds.Add("shadowsocks", marzbanVpn.Shadowsocks);
 
             Dictionary<string, object> proxies = new Dictionary<string, object>();
 
@@ -655,16 +661,16 @@ public class MarzbanServies(
     public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
     {
         MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
-        
+
         MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
-        
+
         if (marzbanUser.UserId != userId) marzbanUser = null;
-        
+
         return marzbanUser switch
         {
             null => null,
