@@ -422,7 +422,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     (key, old)
                         => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
 
-            
+
             await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
         }
         catch (Exception e)

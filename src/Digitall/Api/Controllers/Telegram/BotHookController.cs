@@ -158,6 +158,9 @@ public class BotHookController(
             case "createtestsub":
                 await botService.SendTestSubscibeAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "subscription_link":
+                await botService.SendSubscribeAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "get_traffic":
                 await botService.SendConfigsAsync(_botClient, callbackQuery, cancellationToken);
                 break;
