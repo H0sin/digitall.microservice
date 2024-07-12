@@ -322,18 +322,12 @@ public class MarzbanServies(
             // Convert the future date to Unix timestamp (seconds since January 1, 1970)
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
-            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>()
-            {
-                // new KeyValuePair<string,List<string>>("vmess",marzbanVpn.Vmess),
-                // vless = marzbanVpn.Vless,
-                // trojan = marzbanVpn.Trojan,
-                // shadowsocks = marzbanVpn.Shadowsocks
-            };
+            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>() { };
 
-            if (marzbanVpn.Vmess != null | marzbanVpn.Vmess?.Count() > 0) inbounds.Add("vmess", marzbanVpn.Vmess);
-            if (marzbanVpn.Vless != null | marzbanVpn.Vless?.Count() > 0) inbounds.Add("vless", marzbanVpn.Vless);
-            if (marzbanVpn.Trojan != null | marzbanVpn.Trojan?.Count() > 0) inbounds.Add("trojan", marzbanVpn.Trojan);
-            if (marzbanVpn.Shadowsocks != null | marzbanVpn.Shadowsocks?.Count() > 0)
+            if (marzbanVpn.Vmess?.Count() >= 1) inbounds.Add("vmess", marzbanVpn.Vmess);
+            if (marzbanVpn.Vless?.Count() >= 1) inbounds.Add("vless", marzbanVpn.Vless);
+            if (marzbanVpn.Trojan?.Count() >= 1) inbounds.Add("trojan", marzbanVpn.Trojan);
+            if (marzbanVpn.Shadowsocks?.Count() >= 0)
                 inbounds.Add("shadowsocks", marzbanVpn.Shadowsocks);
 
             Dictionary<string, object> proxies = new Dictionary<string, object>();
