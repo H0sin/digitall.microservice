@@ -672,6 +672,34 @@ public class MarzbanServies(
         };
     }
 
+    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(UpdateMarzbanUserDto user,long serverId)
+    {
+        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+        
+        string token = await marzbanApiRequest.LoginAsync();
+        
+        if (string.IsNullOrEmpty(token))
+            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+        MarzbanUser? oldUser =
+            await marzbanApiRequest.CallApiAsync<MarzbanUser>(MarzbanPaths.UserGet + "/" + user.Username,
+                HttpMethod.Get);
+
+        if (oldUser is null)
+            throw new NotFoundException("چنین کاربری در دست رس نیس");
+        
+        
+        MarzbanUserDto? newUser = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+            MarzbanPaths.UserUpdate + "/" + user.Username,
+            HttpMethod.Put,user);
+        
+        await marzbanServerRepository.UpdateEntity(marzbanServer);
+        await marzbanServerRepository.SaveChanges(1);
+
+        return responses;
+    }
+
     private async Task UpdateMarzbanServerCount(long serverId, long count)
     {
         MarzbanServer server = await GetMarzbanServerByIdAsync(serverId);

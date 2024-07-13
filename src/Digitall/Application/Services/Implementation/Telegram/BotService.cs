@@ -253,6 +253,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         string callbackData = callbackQuery.Data;
         int index = callbackData.IndexOf('=');
         long id = 0;
+        long subscribeId = 0;
         if (index != -1) id = Convert.ToInt64(callbackData[(index + 1)..]);
 
         List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
@@ -265,14 +266,15 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     (template!.Days! + " روزه ") +
                     (template.Gb > 200 ? " نامحدود " : template.Gb + " گیگ ")
                     + (template.Price + " تومان "),
-                    "factor_subscribe?id=" + template.Id + "&vpnId=" + id)
+                    "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
             };
             keys.Add(button);
         }
 
         List<InlineKeyboardButton> custom = new()
         {
-            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه", "custom_subscribe?vpnId=" + id)
+            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
+                "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
         };
         List<InlineKeyboardButton> home = new()
         {
@@ -304,7 +306,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         long id = 0;
         long vpnId = 0;
-
+        long subscribeId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
         if (questionMarkIndex >= 0)
@@ -313,9 +315,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int64.TryParse(queryParameters["id"], out id);
             Int64.TryParse(queryParameters["vpnId"], out vpnId);
+            Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
         }
-
+        
         BuyMarzbanVpnDto buy = new();
+        
         buy.MarzbanVpnTemplateId = id;
         buy.MarzbanVpnId = vpnId;
         buy.Count = 1;
@@ -464,7 +468,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             List<InlineKeyboardButton> key = new()
             {
-                InlineKeyboardButton.WithCallbackData(us.Username, $"subscribe_info?id={us.Id}")
+                InlineKeyboardButton.WithCallbackData(us.Username, $"subscribe_info?id={us.Id}&vpnId={us.MarzbanVpnId}")
             };
             keys.Add(key);
         }
@@ -507,6 +511,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long chatId = callbackQuery!.Message!.Chat.Id;
 
         int id = 0;
+        int vpnId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
 
@@ -515,6 +520,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             string? query = callbackData?.Substring(questionMarkIndex);
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int32.TryParse(queryParameters["id"], out id);
+            Int32.TryParse(queryParameters["vpnId"], out vpnId);
         }
 
         SubescribeStatus.ServiceStatus status = await telegramService.GetMarzbanUserByChatIdAsync(id, chatId);
@@ -526,26 +532,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("دریافت ترافیک 🌍", $"get_traffic?id={id}"),
                 InlineKeyboardButton.WithCallbackData("لینک اشتراک 🔗", $"subscription_link?id={id}")
             },
-            // new[]
-            // {
-            //     InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", "renew_service"),
-            //     InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
-            // },
-            // new[]
-            // {
-            //     InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", "delete_service"),
-            //     InlineKeyboardButton.WithCallbackData("خرید حجم اضافه ➕", "buy_extra_volume")
-            // },
-            // new[]
-            // {
-            //     InlineKeyboardButton.WithCallbackData("تغییر وضعیت سرویس ❌", "change_service_status"),
-            //     InlineKeyboardButton.WithCallbackData("خرید زمان اضافه ⏳", "buy_extra_time")
-            // },
-            // new[]
-            // {
-            //     InlineKeyboardButton.WithCallbackData("تغییر لوکیشن 🌐", "change_location"),
-            //     InlineKeyboardButton.WithCallbackData("انتقال سرویس به کاربر دیگر 🚚", "transfer_service")
-            // },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", $"vpn_template?id={vpnId}&subscribeId={id}"),
+                // InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
+            },
             new[]
             {
                 InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_services")

@@ -22,8 +22,9 @@ public static class MarzbanPaths
 
     // user
     public static string UserCreate = "/api/user";
-
     public static string UserGet = "/api/user";
+    public static string UserUpdate = "/api/user";
+    
 
     // inbound
     public static string InboundGet = "/api/inbounds";

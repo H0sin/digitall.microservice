@@ -173,6 +173,12 @@ public class BotHookController(
             case "send_transaction_image":
                 await botService.WatingForTransactionImageAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "renewal_service":
+                await _botClient.SendTextMessageAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    text: callbackQuery.Data,
+                    cancellationToken: cancellationToken);
+                break;
             default:
                 break;
         }

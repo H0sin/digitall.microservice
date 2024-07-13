@@ -40,7 +40,8 @@ public class MarzbanUserDto
     [JsonProperty("links")] public List<string?> Links { get; set; } = new();
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
-
+    
+    public long? MarzbanVpnId { get; set; }
 
     public MarzbanUserDto()
     {
@@ -64,5 +65,6 @@ public class MarzbanUserDto
         Created_At = marzbanUser.Created_At;
         Links = marzbanUser.Links;
         Subscription_Url = marzbanUser.Subscription_Url;
+        MarzbanVpnId = marzbanUser.MarzbanVpnId;
     }
 }

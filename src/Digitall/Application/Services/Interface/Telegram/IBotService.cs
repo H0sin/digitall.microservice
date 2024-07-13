@@ -200,4 +200,15 @@ public interface IBotService
     /// </summary>
     /// <returns></returns>
     Task AddTrnasactionAsync(ITelegramBotClient? botClient, Message? message, CancellationToken cancellationToken);
+    
+    //
+    // /// <summary>
+    // /// update subscribe
+    // /// </summary>
+    // /// <param name="botClient"></param>
+    // /// <param name="callbackQuery"></param>
+    // /// <param name="cancellationToken"></param>
+    // /// <returns></returns>
+    // Task SubscribeExtension(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    //     CancellationToken cancellationToken);
 }
