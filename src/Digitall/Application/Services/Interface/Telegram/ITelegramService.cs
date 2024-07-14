@@ -131,6 +131,9 @@ public interface ITelegramService : IAsyncDisposable
     /// <returns></returns>
     Task<List<TransactionDetailDto>> GetTransactionDetailAsync();
 
+    Task RenewalSubscibe(BuyMarzbanVpnDto buy,long userId,long chatId);
+    
+    
     Task AddTransactionAsync(AddTransactionDto transaction,long chatId);
     
     Task StartTelegramBot(StartTelegramBotDto start);

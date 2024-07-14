@@ -28,4 +28,16 @@ public class BuyMarzbanVpnDto
         return price;
     }
     
+    public long CountingPrice(GetMarzbanVpnDto? vpn)
+    {
+        if (TotalDay > vpn.DayMax || TotalDay < vpn.DayMin)
+            throw new ApplicationException("نمیتواند اینقدر روز برای vpn باشد");
+
+        if (TotalGb > vpn.GbMax || TotalGb < vpn.GbMin)
+            throw new ApplicationException("نمیتواند اینقدر گیگ برای vpn باشد");
+
+        long price = TotalGb * vpn.GbPrice + TotalDay * vpn.DayPrice;
+
+        return price;
+    }
 }

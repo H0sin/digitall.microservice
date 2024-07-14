@@ -672,7 +672,7 @@ public class MarzbanServies(
         };
     }
 
-    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(UpdateMarzbanUserDto user,long serverId)
+    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user,long serverId,long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
@@ -681,23 +681,32 @@ public class MarzbanServies(
         
         if (string.IsNullOrEmpty(token))
             throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
-
-        MarzbanUser? oldUser =
-            await marzbanApiRequest.CallApiAsync<MarzbanUser>(MarzbanPaths.UserGet + "/" + user.Username,
-                HttpMethod.Get);
-
-        if (oldUser is null)
-            throw new NotFoundException("چنین کاربری در دست رس نیس");
         
-        
-        MarzbanUserDto? newUser = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+        MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
             MarzbanPaths.UserUpdate + "/" + user.Username,
             HttpMethod.Put,user);
         
         await marzbanServerRepository.UpdateEntity(marzbanServer);
         await marzbanServerRepository.SaveChanges(1);
 
-        return responses;
+        MarzbanUser? mu = await marzbanUserRepository.GetEntityById(user.Id);
+        
+        mu.Expire = response.Expire;
+        mu.Links = response.Links;
+        mu.Username = response.Username;
+        mu.Subscription_Url = response.Subscription_Url;
+        mu.Status = response.Status;
+        mu.Online_At = response.Online_At;
+        mu.Used_Traffic = response.Used_Traffic;
+        mu.OnHoldExpireDuration = response.OnHoldExpireDuration;
+        mu.Sub_Last_User_Agent = response.Sub_Last_User_Agent;
+        mu.Data_Limit = response.Data_Limit;
+        mu.Sub_Updated_At = response.Sub_Updated_At;
+
+        await marzbanUserRepository.UpdateEntity(mu);
+        await marzbanUserRepository.SaveChanges(userId);
+        
+        return response;
     }
 
     private async Task UpdateMarzbanServerCount(long serverId, long count)

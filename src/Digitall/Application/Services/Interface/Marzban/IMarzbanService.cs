@@ -237,7 +237,6 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId);
-
     
     /// <summary>
     /// update marzban user
@@ -245,6 +244,6 @@ public interface IMarzbanService
     /// <param name="user"></param>
     /// <param name="serverId"></param>
     /// <returns></returns>
-    Task<MarzbanUserDto?> UpdateMarzbanUserAsync(UpdateMarzbanUserDto user,long serverId);
+    // Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUser user,long serverId);
 }
 
