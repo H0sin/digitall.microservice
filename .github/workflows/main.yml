@@ -22,3 +22,6 @@ jobs:
           debug: true
           script: |
             cd /root/app/digitall.microservice
+            docker-compose down
+            docker-compose build
+            docker-compose up
