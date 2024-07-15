@@ -96,6 +96,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 {
                     // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                        "web_information")
                 }
             });
 
@@ -134,9 +139,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
                 },
-                new []
+                new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒", "web_information")
+                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                        "web_information")
                 }
             });
 
