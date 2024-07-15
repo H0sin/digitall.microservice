@@ -6,6 +6,15 @@ namespace Application.Services.Interface.Telegram;
 public interface IBotService
 {
     /// <summary>
+    ///  send user information for login to web
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendUserForLoginToWebAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+    /// <summary>
     /// start bot
     /// </summary>
     /// <param name="botClient"></param>

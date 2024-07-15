@@ -107,7 +107,7 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="id"></param>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByChatIdAsync(long id,long chatId);
+    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByChatIdAsync(long id, long chatId);
 
     /// <summary>
     /// get marzban subscibetion links
@@ -116,7 +116,7 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<List<string>> GetMarzbanSubscibtionLiknsAsync(long id, long chatId);
-    
+
     /// <summary>
     /// get subscribe
     /// </summary>
@@ -131,7 +131,17 @@ public interface ITelegramService : IAsyncDisposable
     /// <returns></returns>
     Task<List<TransactionDetailDto>> GetTransactionDetailAsync();
 
-    Task AddTransactionAsync(AddTransactionDto transaction,long chatId);
-    
+    /// <summary>
+    /// for reset user password when get password
+    /// </summary>
+    /// <param name="chatId">get from telegram</param>
+    /// <param name="charter">for len password defualt is 6</param>
+    /// <returns></returns>
+    Task<string> ResetUserPasswordAsync(long chatId, int charter = 6);
+
+    Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId);
+
+    Task AddTransactionAsync(AddTransactionDto transaction, long chatId);
+
     Task StartTelegramBot(StartTelegramBotDto start);
 }

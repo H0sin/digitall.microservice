@@ -13,9 +13,13 @@ public class GetMarzbanVpnDto
     public long DayMin { get; set; }
     public long DayPrice { get; set; }
     public long MarzbanServerId { get; set; }
-    
+
+    public List<string> Vmess { get; set; }
+    public List<string> Vless { get; set; }
+    public List<string> Shadowsocks { get; set; }
+    public List<string> Trojan { get; set; }
     public bool Test_Active { get; set; } = false;
-    
+
     public long Test_Days { get; set; } = 1;
 
     public long Test_TotalGb { get; set; } = 1;

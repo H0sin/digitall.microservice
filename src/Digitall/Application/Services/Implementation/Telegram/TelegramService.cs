@@ -162,10 +162,35 @@ public class TelegramService(
         return await transactionService.GetTransactionDetailsAsync();
     }
 
-    public async Task AddTransactionAsync(AddTransactionDto transaction,long chatId)
+
+    public async Task<string> ResetUserPasswordAsync(long chatId, int charter = 6)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        await transactionService.AddTransactionAsync(transaction,user!.Id);
+        if (DateTime.UtcNow - user.ModifiedDate >= TimeSpan.FromMinutes(3))
+        {
+            string password = new Random().Next(100000, 999999).ToString();
+            user.Password = password;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
+            return password;
+        }
+        else
+        {
+            throw new AppException("لطفا چند دقیقه دیگر تلاش کنید");
+        }
+
+        return "";
+    }
+
+    public async Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task AddTransactionAsync(AddTransactionDto transaction, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        await transactionService.AddTransactionAsync(transaction, user!.Id);
     }
 
     public async Task StartTelegramBot(StartTelegramBotDto start)

@@ -31,6 +31,37 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     private static ConcurrentDictionary<long, TelegramMarzbanVpnSession>? userSessions =
         new ConcurrentDictionary<long, TelegramMarzbanVpnSession>();
 
+    public async Task SendUserForLoginToWebAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            string? password = await telegramService.ResetUserPasswordAsync(chatId);
+
+            #region message
+
+            string information = $@"
+👤 نام کاربری شما :{chatId}       
+       🔐 کلمه عبور جدید: {password}
+";
+
+            #endregion
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: information,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
+    }
+
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
@@ -96,12 +127,16 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services")
+                    InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
                 },
                 new[]
                 {
                     // InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝", "collaboration"),
                     InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+                },
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒", "web_information")
                 }
             });
 
@@ -276,6 +311,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
                 "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
         };
+
         List<InlineKeyboardButton> home = new()
         {
             InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
@@ -317,9 +353,9 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             Int64.TryParse(queryParameters["vpnId"], out vpnId);
             Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
         }
-        
+
         BuyMarzbanVpnDto buy = new();
-        
+
         buy.MarzbanVpnTemplateId = id;
         buy.MarzbanVpnId = vpnId;
         buy.Count = 1;
@@ -330,7 +366,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس", $"buy_subscribe" +
                                                                            $"?marzbanvpntemplateId={id}" +
-                                                                           $"&marzbanvpnid={vpnId}")
+                                                                           $"&marzbanvpnid={vpnId}" +
+                                                                           $"&subscribeId={subscribeId}")
         };
         List<InlineKeyboardButton> home = new()
         {
@@ -367,6 +404,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             long marzbanvpnid = 0;
             int days = 0;
             int gb = 0;
+            long subscribeId = 0;
 
             string callbackData = callbackQuery.Data;
             int questionMarkIndex = callbackData.IndexOf('?');
@@ -378,6 +416,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
                 Int32.TryParse(queryParameters["days"], out days);
                 Int32.TryParse(queryParameters["gb"], out gb);
+                Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
+            }
+
+            if (subscribeId != 0)
+            {
             }
 
             BuyMarzbanVpnDto buy = new();
