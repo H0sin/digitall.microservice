@@ -162,104 +162,29 @@ public class TelegramService(
         return await transactionService.GetTransactionDetailsAsync();
     }
 
-    public async Task RenewalSubscibe(BuyMarzbanVpnDto buy, long userId, long chatId)
+
+    public async Task<string> ResetUserPasswordAsync(long chatId, int charter = 6)
     {
-        throw new NotFoundException();
         User? user = await GetUserByChatIdAsync(chatId);
-
-        GetMarzbanVpnDto? marzbanVpn = await marzbanService.GetMarzbanVpnByIdAsync(buy.MarzbanVpnId);
-
-        if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
-
-        List<long> agentIds = await agentService.GetAgentRoot(user.AgentId);
-
-        MarzbanVpnTemplateDto? template =
-            await marzbanService.GetMarzbanVpnTemplateByIdAsync(buy.MarzbanVpnTemplateId ?? 0);
-
-        using Percent percent = new(agentService);
-
-        long price = template?.Price ?? buy.CountingPrice(marzbanVpn);
-
-        long productPrice = await percent.Calculate(agentIds, price);
-        long totalPrice = price * buy.Count;
-        List<CalculatorUserIncome> incomes = await percent.CalculateBalanse(agentIds, price);
-
-        if (user.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
-
-        long finallIncome = (productPrice - incomes.Select(x => x.Balance).Sum()) * buy.Count;
-        incomes.Add(new(1, finallIncome));
-
-        foreach (var income in incomes)
+        if (DateTime.UtcNow - user.ModifiedDate >= TimeSpan.FromMinutes(3))
         {
-            User? us = await userRepository.GetEntityById(income.UserId);
-            us.Balance += us.Balance + income.Balance * buy.Count;
-            await userRepository.UpdateEntity(us);
+            string password = new Random().Next(100000, 999999).ToString();
+            user.Password = password;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
+            return password;
+        }
+        else
+        {
+            throw new AppException("لطفا چند دقیقه دیگر تلاش کنید");
         }
 
-        user.Balance -= totalPrice;
+        return "";
+    }
 
-        await userRepository.UpdateEntity(user);
-        await userRepository.SaveChanges(userId);
-
-        long byteSize = 1073741824;
-
-        DateTime today = DateTime.Today;
-        DateTime futureDate = today.AddDays(template?.Days ?? buy.TotalDay);
-
-        long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
-
-        MarzbanUserDto? oldUeer = await marzbanService.GetMarzbanUserByUserIdAsync(userId, user.Id);
-
-        DateTimeOffset dateTimeOffset = DateTimeOffset
-            .FromUnixTimeSeconds(Convert.ToInt64(oldUeer?.Expire));
-
-        new RenewalMarzbanUserDto
-        {
-            Id = userId,
-            Expire = unixTimestamp.ToString(),
-            Data_Limit = (byteSize * (template?.Gb ?? buy.TotalGb)).ToString(),
-        };
-        
-        // List<Domain.Entities.Order.Order> orders = new()
-        // {
-        //     new Domain.Entities.Order.Order()
-        //     {
-        //         Description = "خرید Vpn" + vpn.Title,
-        //         UserId = userId,
-        //         IsPaid = true,
-        //         TracingCode = 1,
-        //         PaymentDate = DateTime.Now,
-        //         OrderDetails = new List<OrderDetail>()
-        //         {
-        //             new()
-        //             {
-        //                 Count = vpn.Count,
-        //                 OrderDeatilType = OrderDeatilType.Vpn,
-        //                 ProductPrice = totalPrice
-        //             }
-        //         }
-        //     }
-        // };
-        //
-        // await orderRepository.AddEntities(orders);
-        // await orderRepository.SaveChanges(userId);
-        //
-        // List<MarzbanUser> marzbanUsers = await AddMarzbanUserAsync(users, marzbanServer.Id);
-
-        // marzbanUsers.ForEach(x =>
-        // {
-        //     x.OrderDetailId = orders.First().OrderDetails.First().Id;
-        //     x.UserId = userId;
-        //     x.MarzbanServerId = marzbanServer.Id;
-        //     x.MarzbanVpnId = marzbanVpn.Id;
-        // });
-        //
-        // await marzbanUserRepository.AddEntities(marzbanUsers);
-        // await marzbanUserRepository.SaveChanges(userId);
-        //
-        // await transaction.CommitAsync();
-        //
-        // return marzbanUsers;
+    public async Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task AddTransactionAsync(AddTransactionDto transaction, long chatId)
