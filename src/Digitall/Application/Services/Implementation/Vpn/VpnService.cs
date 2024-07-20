@@ -113,7 +113,7 @@ public class VpnService(
     //
     //     // counting price
     //     // for percent
-    //     using Percent percent = new(agentService);
+    //     using AgentPercent percent = new(agentService);
     //     long price = marzban.CountingPrice(marzbanServer);
     //     long productPrice = await percent.Calculate(agentIds, price);
     //     long totalPrice = price * marzban.Count;

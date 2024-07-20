@@ -22,9 +22,9 @@ public class User : BaseEntity
     [Display(Name = "کلمه ی عبور")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
-    [Display(Name="کد فعال سازی مبایل")]
+    [Display(Name = "کد فعال سازی مبایل")]
     [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? MobileActiveCode { get; set; }
 
@@ -68,10 +68,10 @@ public class User : BaseEntity
     public string? Description { get; set; }
 
     public bool UserStatus { get; set; } = false; // not active defualt
-    
+
     [Display(Name = "نهایت تعداد اکانت تست")]
     public long FinalCountTestMarzbanAccount { get; set; }
-    
+
     #endregion
 
     #region relations

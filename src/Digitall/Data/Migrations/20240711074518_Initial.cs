@@ -772,7 +772,7 @@ namespace Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Agent",
-                columns: new[] { "Id", "AgentAdminId", "AgentCode", "AgentPath", "BrandAddress", "BrandName", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "Percent", "PersianBrandName" },
+                columns: new[] { "Id", "AgentAdminId", "AgentCode", "AgentPath", "BrandAddress", "BrandName", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "AgentPercent", "PersianBrandName" },
                 values: new object[] { 100001L, 1L, 585123L, Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"), null, "Samani", 1L, new DateTime(2024, 7, 11, 11, 15, 16, 925, DateTimeKind.Local).AddTicks(5775), false, new DateTime(2024, 7, 11, 11, 15, 16, 927, DateTimeKind.Local).AddTicks(2346), 1L, 0L, "سامانی" });
 
             migrationBuilder.InsertData(

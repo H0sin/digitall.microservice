@@ -186,7 +186,7 @@ namespace Data.Migrations
                     b.Property<long>("ModifyBy")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("Percent")
+                    b.Property<long>("AgentPercent")
                         .HasColumnType("bigint");
 
                     b.Property<string>("PersianBrandName")

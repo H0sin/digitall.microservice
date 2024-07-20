@@ -26,7 +26,6 @@ namespace Api.Controllers.Account
     [ApiController]
     public class UserController(IUserService userService) : ControllerBase
     {
-
         #region login
 
         /// <summary>
@@ -48,7 +47,9 @@ namespace Api.Controllers.Account
                 case LoginUserResult.Blocked:
                     return new ApiResult(false, ApiResultStatusCode.Blocked, "حساب کاربری شما مسدود شدع است");
                 case LoginUserResult.Success:
-                    UserDto user = await userService.GetUserByMobileAsync(login.Mobile!);
+                    UserDto? user = string.IsNullOrEmpty(login.Email)
+                        ? await userService.GetUserByChatIdAsync(login.ChatId ?? 0)
+                        : await userService.GetUserByEmailAsync(login.Email);
                     string token = JwtHelper.GenerateToken(user);
                     return new ApiResult<LoginUserResponseDto>
                     (true, ApiResultStatusCode.Success, new LoginUserResponseDto(token, user.UserFullName()),
@@ -78,13 +79,13 @@ namespace Api.Controllers.Account
             {
                 case RegisterUserResult.Success:
                     return new ApiResult(true, ApiResultStatusCode.Success,
-                        "ثبت نام با موفقیت انجام شد کلمه عبور از طریق پیامک ارسال شد");
+                        "ثبت نام با موفقیت انجام شد");
                 case RegisterUserResult.IsExists:
                     return new ApiResult(false, ApiResultStatusCode.Duplicate,
                         "چنین کاربری وجود دارد");
             }
 
-            return NotFound();
+            return BadRequest();
         }
 
         #endregion
@@ -172,7 +173,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> GetUser()
         {
-            UserDto user = await userService.GetUserByIdAsync(User.GetUserId());
+            UserDto? user = await userService.GetUserByIdAsync(User.GetUserId());
 
             return user switch
             {

@@ -25,7 +25,8 @@ public static class JwtHelper
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("BrandId", user.AgentId.ToString()),
-                new Claim(ClaimTypes.MobilePhone, user.Mobile),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim("ChatId", user.ChatId.ToString() ?? "0"),
             },
             expires: DateTime.Now.AddMinutes(1),
             signingCredentials: signinCredentials

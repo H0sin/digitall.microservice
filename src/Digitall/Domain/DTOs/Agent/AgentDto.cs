@@ -14,7 +14,7 @@ public class AgentDto
         AgentAdminId = agent.AgentAdminId;
         AgentCode = agent.AgentCode;
         BrandAddress = agent.BrandAddress;
-        Percent = agent.Percent;
+        Percent = agent.AgentPercent;
         Id = agent.Id;
         //AdminAgentName = user!.FirstName + " " + user!.LastName;
     }

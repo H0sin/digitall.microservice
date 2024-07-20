@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Common;
 using Domain.Entities.Account;
+using Domain.Entities.Telegram;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities.Agent;
@@ -9,12 +10,6 @@ namespace Domain.Entities.Agent;
 [Table("Agent")]
 public class Agent : BaseEntity
 {
-    #region relation
-
-    public ICollection<User>? Users { get; set; } = null;
-
-    #endregion
-
     #region peroperties
 
     [Display(Name = "نام برند")]
@@ -36,10 +31,20 @@ public class Agent : BaseEntity
     public long AgentCode { get; set; }
 
     [Display(Name = "آدرس مغازه")] public string? BrandAddress { get; set; }
+    [Display(Name = "درصد نماینده")] public long AgentPercent { get; set; }
 
-    [Display(Name = "درصد")] public long Percent { get; set; }
-
+    [Display(Name = "درصد کاربران")] public long UserPercent { get; set; }
     public HierarchyId? AgentPath { get; set; }
+
+    public long TelegramBotId { get; set; }
+
+    #endregion
+
+    #region relation
+
+    public ICollection<User>? Users { get; set; } = null;
+
+    public TelegramBot? TelegramBot { get; set; }
 
     #endregion
 }

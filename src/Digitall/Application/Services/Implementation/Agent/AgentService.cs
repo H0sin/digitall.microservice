@@ -122,7 +122,7 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
             BrandAddress = agent.BrandAddress,
             BrandName = agent.BrandName,
             PersianBrandName = agent.PersianBrandName,
-            Percent = agent.Percent
+            AgentPercent = agent.Percent
         };
 
         await agentRepository.AddEntity(newAgent);

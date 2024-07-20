@@ -5,10 +5,10 @@ namespace Domain.DTOs.Account;
 public class LoginUserDto
 {
     [Display(Name = "تلفن همراه")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    [MaxLength(12, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    [MinLength(11, ErrorMessage = "{0} نمی تواند کمتر از {1} کاراکتر باشد")]
-    public string? Mobile { get; set; }
+    public string? Email { get; set; }
+
+    [Display(Name = "شناسه تلگرام")]
+    public long? ChatId { get; set; }
 
     [Display(Name = "کلمه ی عبور")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
