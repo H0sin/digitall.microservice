@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           debug: true
           script: |
-            cd /application/digitall.microservice
+            cd ../application/digitall.microservice
             git pull
             docker-compose down
             docker-compose build
