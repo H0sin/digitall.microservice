@@ -405,7 +405,7 @@ namespace Data.Migrations
                     AgentPercent = table.Column<long>(type: "bigint", nullable: false),
                     UserPercent = table.Column<long>(type: "bigint", nullable: false),
                     AgentPath = table.Column<SqlHierarchyId>(type: "hierarchyid", nullable: true),
-                    TelegramBotId = table.Column<long>(type: "bigint", nullable: false),
+                    TelegramBotId = table.Column<long>(type: "bigint", nullable: true),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreateBy = table.Column<long>(type: "bigint", nullable: false),
@@ -781,30 +781,30 @@ namespace Data.Migrations
             migrationBuilder.InsertData(
                 table: "Agent",
                 columns: new[] { "Id", "AgentAdminId", "AgentCode", "AgentPath", "AgentPercent", "BrandAddress", "BrandName", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "PersianBrandName", "TelegramBotId", "UserPercent" },
-                values: new object[] { 100001L, 1L, 332326L, Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"), 0L, null, "Samani", 1L, new DateTime(2024, 7, 21, 9, 33, 9, 869, DateTimeKind.Local).AddTicks(8735), false, new DateTime(2024, 7, 21, 9, 33, 9, 871, DateTimeKind.Local).AddTicks(6035), 1L, "سامانی", 0L, 0L });
+                values: new object[] { 100001L, 1L, 264184L, Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"), 0L, null, "Samani", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 648, DateTimeKind.Local).AddTicks(9442), false, new DateTime(2024, 7, 21, 9, 55, 3, 650, DateTimeKind.Local).AddTicks(5827), 1L, "سامانی", null, 0L });
 
             migrationBuilder.InsertData(
                 table: "Menu",
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 1L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 45, DateTimeKind.Local).AddTicks(7693), null, false, null, new DateTime(2024, 7, 21, 9, 33, 10, 45, DateTimeKind.Local).AddTicks(7681), 1L, null, 1, "اصلی" },
-                    { 3L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(807), null, false, null, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(802), 1L, null, 3, "عملیات" }
+                    { 1L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7093), null, false, null, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7086), 1L, null, 1, "اصلی" },
+                    { 3L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(286), null, false, null, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(282), 1L, null, 3, "عملیات" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Permissions",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "ParentId", "SystemName", "Title" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(4423), false, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(4428), 1L, null, "FilterUsers", "لیست کاربران" });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(1648), false, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(1661), 1L, null, "FilterUsers", "لیست کاربران" });
 
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "Title" },
                 values: new object[,]
                 {
-                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9668), false, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9695), 1L, "مدیر" },
-                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9721), false, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9722), 1L, "همکار" },
-                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9727), false, new DateTime(2024, 7, 21, 9, 33, 10, 44, DateTimeKind.Local).AddTicks(9727), 1L, "کاربر" }
+                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(571), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(578), 1L, "مدیر" },
+                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(605), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(605), 1L, "همکار" },
+                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(607), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(607), 1L, "کاربر" }
                 });
 
             migrationBuilder.InsertData(
@@ -812,8 +812,8 @@ namespace Data.Migrations
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 2L, "Index", true, "", "Home", 1L, new DateTime(2024, 7, 21, 9, 33, 10, 45, DateTimeKind.Local).AddTicks(8495), "box", false, "/", new DateTime(2024, 7, 21, 9, 33, 10, 45, DateTimeKind.Local).AddTicks(8490), 1L, 1L, 2, "داشبورد" },
-                    { 4L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(810), "list", false, null, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(809), 1L, 3L, 4, "کاربران" }
+                    { 2L, "Index", true, "", "Home", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7896), "box", false, "/", new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7892), 1L, 1L, 2, "داشبورد" },
+                    { 4L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(289), "list", false, null, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(288), 1L, 3L, 4, "کاربران" }
                 });
 
             migrationBuilder.InsertData(
@@ -821,29 +821,29 @@ namespace Data.Migrations
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(803), false, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(808), 1L, 1L },
-                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1799), false, 3L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1811), 1L, 1L },
-                    { 7L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1823), false, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1823), 1L, 2L },
-                    { 9L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1826), false, 3L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1827), 1L, 2L }
+                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(2004), false, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(2011), 1L, 1L },
+                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3631), false, 3L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3632), 1L, 1L },
+                    { 7L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3657), false, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3658), 1L, 2L },
+                    { 9L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3662), false, 3L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3663), 1L, 2L }
                 });
 
             migrationBuilder.InsertData(
                 table: "RolePermissions",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "PermissionId", "RoleId" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(8832), false, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(8837), 1L, 1L, 1L });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(7082), false, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(7087), 1L, 1L, 1L });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Address", "AgentId", "Avatar", "Balance", "ChatId", "CreateBy", "CreateDate", "Description", "Email", "EmailActiveCode", "FinalCountTestMarzbanAccount", "FirstName", "IsBlocked", "IsDelete", "IsEmailActive", "IsMobileActive", "LastName", "Mobile", "MobileActiveCode", "ModifiedDate", "ModifyBy", "Password", "UserStatus" },
-                values: new object[] { 1L, null, 100001L, "", 0L, null, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 43, DateTimeKind.Local).AddTicks(152), null, "h.faraji8079@gmail.com", "a18afe760e7e44a7bce6dd3a933ad7e9", 0L, "حسین", false, false, true, true, "فرجی", "09913737962", "507186", new DateTime(2024, 7, 21, 9, 33, 10, 43, DateTimeKind.Local).AddTicks(169), 1L, "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59", false });
+                values: new object[] { 1L, null, 100001L, "", 0L, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 656, DateTimeKind.Local).AddTicks(1743), null, "h.faraji8079@gmail.com", "61e3ea26ea154bd0bc64047c4534a6b1", 0L, "حسین", false, false, true, true, "فرجی", "09913737962", "199662", new DateTime(2024, 7, 21, 9, 55, 3, 656, DateTimeKind.Local).AddTicks(1756), 1L, "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59", false });
 
             migrationBuilder.InsertData(
                 table: "Menu",
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 5L, "Users", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(814), null, false, "Account/Users", new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(814), 1L, 4L, 5, "لیست کاربران" },
-                    { 6L, "AllUsers", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(825), null, false, "Account/AllUsers", new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(824), 1L, 4L, 6, "لیست همه کاربران" }
+                    { 5L, "Users", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(292), null, false, "Account/Users", new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(291), 1L, 4L, 5, "لیست کاربران" },
+                    { 6L, "AllUsers", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(311), null, false, "Account/AllUsers", new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(310), 1L, 4L, 6, "لیست همه کاربران" }
                 });
 
             migrationBuilder.InsertData(
@@ -851,32 +851,33 @@ namespace Data.Migrations
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1792), false, 2L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1796), 1L, 1L },
-                    { 4L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1813), false, 4L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1813), 1L, 1L },
-                    { 8L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1824), false, 2L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1825), 1L, 2L },
-                    { 10L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1829), false, 4L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1830), 1L, 2L }
+                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3619), false, 2L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3628), 1L, 1L },
+                    { 4L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3634), false, 4L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3634), 1L, 1L },
+                    { 8L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3660), false, 2L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3661), 1L, 2L },
+                    { 10L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3668), false, 4L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3669), 1L, 2L }
                 });
 
             migrationBuilder.InsertData(
                 table: "UserRoles",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "RoleId", "UserId" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(4209), false, new DateTime(2024, 7, 21, 9, 33, 10, 46, DateTimeKind.Local).AddTicks(4213), 1L, 1L, 1L });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(3418), false, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(3423), 1L, 1L, 1L });
 
             migrationBuilder.InsertData(
                 table: "RoleMenus",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 5L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1815), false, 5L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1815), 1L, 1L },
-                    { 6L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1820), false, 6L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1821), 1L, 1L },
-                    { 11L, 1L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1831), false, 5L, new DateTime(2024, 7, 21, 9, 33, 10, 47, DateTimeKind.Local).AddTicks(1832), 1L, 2L }
+                    { 5L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3636), false, 5L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3637), 1L, 1L },
+                    { 6L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3654), false, 6L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3655), 1L, 1L },
+                    { 11L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3670), false, 5L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3673), 1L, 2L }
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Agent_TelegramBotId",
                 table: "Agent",
                 column: "TelegramBotId",
-                unique: true);
+                unique: true,
+                filter: "[TelegramBotId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_InboundId",

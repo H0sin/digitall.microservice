@@ -36,7 +36,7 @@ public class Agent : BaseEntity
     [Display(Name = "درصد کاربران")] public long UserPercent { get; set; }
     public HierarchyId? AgentPath { get; set; }
 
-    public long TelegramBotId { get; set; }
+    public long? TelegramBotId { get; set; }
 
     #endregion
 
@@ -44,7 +44,7 @@ public class Agent : BaseEntity
 
     public ICollection<User>? Users { get; set; } = null;
 
-    public TelegramBot? TelegramBot { get; set; }
+    [ForeignKey(nameof(TelegramBotId))] public TelegramBot? TelegramBot { get; set; }
 
     #endregion
 }
