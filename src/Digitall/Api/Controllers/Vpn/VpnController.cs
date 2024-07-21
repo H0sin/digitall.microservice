@@ -28,7 +28,7 @@ public class VpnController(IVpnService vpnService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<FilterVpnDto>> GetVpns([FromQuery] FilterVpnDto filter)
     {
-        FilterVpnDto vpn = await vpnService.FilterVpnAsync(filter, User.GetUserId());
+        FilterVpnDto vpn = await vpnService.FilterVpnAsync(filter, User.GetId());
         return Ok(filter);
     }
 

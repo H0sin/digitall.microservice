@@ -27,7 +27,7 @@ namespace Api.Controllers.Authorization
         [ProducesDefaultResponseType]
         public async Task<ApiResult> AddRole([FromBody] AddRoleDto role)
         {
-            AddRoleResult response = await authorizeService.AddRoleAsync(role, User.GetUserId());
+            AddRoleResult response = await authorizeService.AddRoleAsync(role, User.GetId());
 
             return response switch
             {
@@ -46,7 +46,7 @@ namespace Api.Controllers.Authorization
         [ProducesDefaultResponseType]
         public async Task<ApiResult> AddUserRole([FromBody] AddUserRolesDto userrole)
         {
-            AddUserRoleResult response = await authorizeService.AddRoleForUser(userrole, User.GetUserId());
+            AddUserRoleResult response = await authorizeService.AddRoleForUser(userrole, User.GetId());
 
             return response switch
             {
@@ -66,7 +66,7 @@ namespace Api.Controllers.Authorization
         [ProducesDefaultResponseType]
         public async Task<ApiResult> AddMenusForRole([FromBody] AddRoleMenuDto roleMenu)
         {
-            AddRoleMenuResult response = await authorizeService.AddRoleMenuAsync(roleMenu, User.GetUserId());
+            AddRoleMenuResult response = await authorizeService.AddRoleMenuAsync(roleMenu, User.GetId());
 
             return response switch
             {

@@ -196,10 +196,9 @@ public class UserService(
             if (await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == registerUser.Email) is not null)
                 return RegisterUserResult.IsExists;
 
-            AgentDto? agent = await agentService.GetAgentByCode(registerUser.AgentCode ?? 0);
-
-            if (agent == null)
-                agent = new AgentDto(AgentItems.Agents.FirstOrDefault());
+            AgentDto? agent = await agentService
+                                  .GetAgentByCode(registerUser.AgentCode ?? 0) ??
+                              new AgentDto(AgentItems.Agents.FirstOrDefault());
 
             User user = new()
             {

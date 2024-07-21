@@ -20,7 +20,7 @@ namespace Api.Utitlities
             {
                 if (!context.HttpContext.User.IsUserSupperAdmin())
                 {
-                    long userId = context.HttpContext.User.GetUserId();
+                    long userId = context.HttpContext.User.GetId();
                     _authorizeService = (IAuthorizeService)context.HttpContext.RequestServices.GetService(typeof(IAuthorizeService));
                     if (!_authorizeService.HasUserPermission(userId, _permission).Result)
                     {

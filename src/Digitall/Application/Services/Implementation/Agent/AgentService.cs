@@ -21,7 +21,6 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
     {
         Domain.Entities.Agent.Agent agent =
             (await agentRepository.GetQuery()
-                .Include(x => x.Users)
                 .SingleOrDefaultAsync(x => x.AgentCode == agentCode))!;
 
         return agent switch

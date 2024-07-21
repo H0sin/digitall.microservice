@@ -8,6 +8,8 @@ using Application.Services.Interface.Agent;
 using Domain.DTOs.Agent;
 using Domain.Enums;
 using Domain.Enums.Agent;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Agent;
@@ -17,6 +19,38 @@ namespace Api.Controllers.Agent;
 public class AgentController(IAgentService agentService) : BaseController
 {
     #region get
+
+    /// <summary>
+    /// get agent information by agent code
+    /// for login and register  
+    /// </summary>
+    /// <param name="code"></param>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    [AllowAnonymous]
+    [HttpGet("{code:long}")]
+    public async Task<ApiResult<AgentDto>> GetAgentByCode([FromRoute] long code)
+    {
+        AgentDto? agent = await agentService.GetAgentByCode(code);
+        return Ok(agent);
+    }
+
+    /// <summary>
+    /// get user agent
+    /// </summary>
+    /// <returns>AgentDto</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<AgentDto>> GetUserAgent()
+    {
+        AgentDto? agent = await agentService.GetAgentByUserIdAsync(User.GetId());
+        return Ok(agent);
+    }
+
 
     /// <summary>
     /// get agent by id
@@ -57,7 +91,7 @@ public class AgentController(IAgentService agentService) : BaseController
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesDefaultResponseType]
     public async Task<ApiResult<AgentDto>> GetAgentInformation() =>
-        Ok(await agentService.GetAgentByUserIdAsync(User.GetUserId()));
+        Ok(await agentService.GetAgentByUserIdAsync(User.GetId()));
 
     #endregion
 
@@ -91,10 +125,10 @@ public class AgentController(IAgentService agentService) : BaseController
     [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
     public async Task<ApiResult> AddAgent([FromBody] AddAgentDto agent)
     {
-        if (User.GetUserId() == 0)
+        if (User.GetId() == 0)
             throw new AppException(ApiResultStatusCode.UnAuthorized);
 
-        AddAgentResult result = await agentService.AddAgentAsync(agent, User.GetUserId());
+        AddAgentResult result = await agentService.AddAgentAsync(agent, User.GetId());
 
         return result switch
         {
@@ -102,6 +136,12 @@ public class AgentController(IAgentService agentService) : BaseController
             _ => BadRequest()
         };
     }
+
+    #endregion
+
+    #region update
+
+    // public async Task<ApiResult<AgentDto>> UpdateAgents([FromBody] )
 
     #endregion
 }

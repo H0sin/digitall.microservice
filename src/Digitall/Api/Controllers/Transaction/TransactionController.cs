@@ -30,7 +30,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddTransaction([FromForm] AddTransactionDto transaction)
     {
-        AddTransactionResult response = await transactionService.AddTransactionAsync(transaction, User.GetUserId());
+        AddTransactionResult response = await transactionService.AddTransactionAsync(transaction, User.GetId());
 
         return response switch
         {
@@ -57,7 +57,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     public async Task<ApiResult> UpdateTransactionStatus([FromForm] UpdateTransactionStatusDto transaction)
     {
         UpdateTransactionStatusResult response =
-            await transactionService.UpdateTransactionStatusAsync(transaction, User.GetUserId());
+            await transactionService.UpdateTransactionStatusAsync(transaction, User.GetId());
 
         return response switch
         {
@@ -96,7 +96,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     public async Task<ApiResult> AddTransactionDetial(
         [FromBody] AddTransactionDetialDto transaction)
     {
-        await transactionService.AddTransactionDetailAsync(transaction, User.GetUserId());
+        await transactionService.AddTransactionDetailAsync(transaction, User.GetId());
         return Ok();
     }
 

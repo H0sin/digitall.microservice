@@ -24,7 +24,7 @@ namespace Api.Controllers.Order
         [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
         public async Task<ApiResult> AddOrder([FromBody] List<AddProductToOrderDto> order)
         {
-            AddProductToOrderResult response = await orderService.AddProductToOrderAsync(order, User.GetUserId());
+            AddProductToOrderResult response = await orderService.AddProductToOrderAsync(order, User.GetId());
 
             return response switch
             {
@@ -63,7 +63,7 @@ namespace Api.Controllers.Order
         [ProducesDefaultResponseType]
         public async Task<ApiResult<FilterOrderDto>> FilterUserOrder([FromQuery] FilterOrderDto filter)
         {
-            filter.UserId = User.GetUserId();
+            filter.UserId = User.GetId();
             FilterOrderDto response = await orderService.FilterOrderAsync(filter);
             return new ApiResult<FilterOrderDto>(true, ApiResultStatusCode.Success, response);
         }

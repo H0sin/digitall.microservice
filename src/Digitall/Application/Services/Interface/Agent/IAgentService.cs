@@ -7,6 +7,11 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService : IAsyncDisposable
 {
+    /// <summary>
+    /// get agent information by code
+    /// </summary>
+    /// <param name="agentCode"></param>
+    /// <returns></returns>
     Task<AgentDto?> GetAgentByCode(long agentCode);
     Task<AgentDto?> GetAgentByIdAsync(long id);
 

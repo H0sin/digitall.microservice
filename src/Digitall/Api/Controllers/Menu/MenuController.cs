@@ -42,7 +42,7 @@ public class MenuController : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMenus([FromBody] AddMenuDto menu)
     {
-        AddMenuResult response = await _menuService.AddMenuAsync(menu, User.GetUserId());
+        AddMenuResult response = await _menuService.AddMenuAsync(menu, User.GetId());
         return response switch
         {
             AddMenuResult.Exists => new ApiResult(false, ApiResultStatusCode.Duplicate, "این منو تکراری است"),
@@ -66,7 +66,7 @@ public class MenuController : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<List<MenuDto>>> GetMenus()
     {
-        List<MenuDto> menus = await _menuService.GetMenuByUserId(User.GetUserId());
+        List<MenuDto> menus = await _menuService.GetMenuByUserId(User.GetId());
         return Ok(menus);
     }
 

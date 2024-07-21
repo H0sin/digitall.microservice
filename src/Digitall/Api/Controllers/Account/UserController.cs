@@ -173,7 +173,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> GetUser()
         {
-            UserDto? user = await userService.GetUserByIdAsync(User.GetUserId());
+            UserDto? user = await userService.GetUserByIdAsync(User.GetId());
 
             return user switch
             {
@@ -194,7 +194,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult<List<UserDto>>> GetAgentUsers()
         {
-            List<UserDto> users = await userService.GetUserByAgentAsync(User.GetUserId());
+            List<UserDto> users = await userService.GetUserByAgentAsync(User.GetId());
 
             return Ok(users);
         }
@@ -208,7 +208,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> UpdateProfile([FromForm] UpdateUserProfileDto user)
         {
-            UpdateUserProfileResult response = await userService.UpdateUserProfileAsync(user, User.GetUserId());
+            UpdateUserProfileResult response = await userService.UpdateUserProfileAsync(user, User.GetId());
             return Ok();
         }
 
@@ -231,7 +231,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> SendMobileActiveCode([FromQuery] string phone)
         {
-            await userService.SendMobileActiveCode(phone, User.GetUserId());
+            await userService.SendMobileActiveCode(phone, User.GetId());
             return Ok();
         }
 
@@ -252,7 +252,7 @@ namespace Api.Controllers.Account
         [ProducesDefaultResponseType]
         public async Task<ApiResult> AddUser([FromForm] AddUserDto user)
         {
-            AddUserResult response = await userService.AddUserAsync(user, User.GetUserId());
+            AddUserResult response = await userService.AddUserAsync(user, User.GetId());
 
             return response switch
             {

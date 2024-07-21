@@ -115,6 +115,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         if (entity != null) DeletePermanent(entity);
     }
 
+    public async Task Deletes(List<TEntity> entities)
+    {
+        _context.RemoveRange(entities);
+        await SaveChanges(1);
+    }
+
     public async Task SaveChanges(long id)
     {
         _context.UserId = id;

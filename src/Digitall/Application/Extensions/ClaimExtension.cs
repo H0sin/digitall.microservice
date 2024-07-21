@@ -16,7 +16,7 @@ namespace Application.Extensions
             return default;
         }
 
-        public static long GetUserId(this ClaimsPrincipal principal)
+        public static long GetId(this ClaimsPrincipal principal)
         {
             var claim = principal.Claims.SingleOrDefault(s => s.Type == ClaimTypes.NameIdentifier);
             if (claim != null)

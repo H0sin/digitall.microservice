@@ -43,7 +43,7 @@ public class CountryController(ICountryService countryService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddCountry(AddCountryDto country)
     {
-        await countryService.AddCountryAsync(country, User.GetUserId());
+        await countryService.AddCountryAsync(country, User.GetId());
         return Ok();
     }
 
