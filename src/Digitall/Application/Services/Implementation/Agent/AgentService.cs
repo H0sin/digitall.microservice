@@ -1,13 +1,10 @@
 ﻿using Application.Services.Interface.Agent;
 using Application.Exceptions;
-using Application.Services.Interface.Account;
-using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Enums.Agent;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Agent;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -80,15 +77,30 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         if (agent is null) throw new NotFoundException("چنین نمایندگی ای وجود ندارد!");
 
         return new AgentDto(agent);
-    }
+    }   
 
     #endregion
 
     #region filter
 
-    public Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
+    public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
-        throw new NotImplementedException();
+        IQueryable<Domain.Entities.Agent.Agent> queryable = agentRepository
+            .GetQuery();
+
+        if (string.IsNullOrEmpty(filter.PersianBrandName))
+            queryable = queryable.Where(a => EF.Functions.Like(a.PersianBrandName, $"%{filter.PersianBrandName}%"));
+
+        if (filter.AdminId is not null and not 0)
+        {
+            AgentDto? agent = await GetAgentByAdminId(filter.AdminId ?? 0);
+                        
+            // List<Domain.Entities.Agent.Agent> agent = await queryable.Where(a=> a
+            //     .AgentPath!
+            //     .GetAncestor(1) == agent!.AgentPath!).ToListAsync();
+        }
+
+        return filter;
     }
 
     #endregion
@@ -109,7 +121,12 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         Domain.Entities.Agent.Agent parentAgent = (await agentRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.AgentAdminId == userId))!;
 
-        if (admin.AgentId != parentAgent.Id) return AddAgentResult.Error;
+        if (admin.AgentId != parentAgent.Id)
+        {
+            admin.AgentId = parentAgent.Id;
+            await userRepository.UpdateEntity(admin);
+            await userRepository.SaveChanges(userId);
+        }
 
         if (await agentRepository.GetQuery().AnyAsync(x => x.AgentAdminId == agent.AgentAdminId))
             return AddAgentResult.AgentAdminExists;

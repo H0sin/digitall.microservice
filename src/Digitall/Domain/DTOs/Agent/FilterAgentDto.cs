@@ -4,6 +4,7 @@ namespace Domain.DTOs.Agent;
 
 public class FilterAgentDto : BasePaging<AgentDto>
 {
-    public string? AgentName { get; set; }
+    public long? AdminId { get; set; }
+    public string? PersianBrandName { get; set; }
     public string? AdminAgentName { get; set; }
 }

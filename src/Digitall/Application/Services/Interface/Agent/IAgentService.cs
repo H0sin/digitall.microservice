@@ -13,6 +13,12 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="agentCode"></param>
     /// <returns></returns>
     Task<AgentDto?> GetAgentByCode(long agentCode);
+    
+    /// <summary>
+    /// get agent by telegram chat id async
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     Task<AgentDto?> GetAgentByIdAsync(long id);
 
     /// <summary>
@@ -21,7 +27,6 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="userId"></param>
     /// <returns>Agent</returns>
     Task<AgentDto> GetAgentByUserIdAsync(long userId);
-
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);

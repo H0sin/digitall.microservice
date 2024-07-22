@@ -83,8 +83,7 @@ public class User : BaseEntity
 
     public ICollection<Transaction.Transaction>? Transaction { get; set; }
 
-
-    public ICollection<Notification.Notification> Notifications { get; set; }
+    public ICollection<Notification.Notification>? Notifications { get; set; }
 
     #endregion
 }

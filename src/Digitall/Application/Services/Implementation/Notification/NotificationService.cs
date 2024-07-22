@@ -23,6 +23,17 @@ public class NotificationService(INotificationRepository notificationRepository)
         await notificationRepository.SaveChanges(userId);
     }
 
+    public async Task<List<NotificationDto>> GetNotificationsAsync(long userId)
+    {
+        List<NotificationDto> notifications = await notificationRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId | x.ForAllMember == true)
+            .Select(x => new NotificationDto(x))
+            .ToListAsync();
+
+        return notifications;
+    }
+
     public async Task DeleteExpireNotificationAsync()
     {
         DateTime now = DateTime.UtcNow;

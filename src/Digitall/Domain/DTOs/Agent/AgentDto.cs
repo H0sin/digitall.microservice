@@ -1,4 +1,6 @@
-﻿namespace Domain.DTOs.Agent;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Domain.DTOs.Agent;
 
 public class AgentDto
 {
@@ -14,8 +16,11 @@ public class AgentDto
         AgentCode = agent.AgentCode;
         BrandAddress = agent.BrandAddress;
         Percent = agent.AgentPercent;
+        AgentPath = agent.AgentPath;
         Id = agent.Id;
     }
+
+    public HierarchyId? AgentPath { get; set; }
 
     public long Id { get; set; }
     public string? BrandName { get; set; }

@@ -29,8 +29,8 @@ public class NotificationController(INotificationService notificationService) : 
     [ProducesDefaultResponseType]
     public ApiResult<List<string>> GetNotificationType()
         => Ok(Enum.GetNames(typeof(NotificationType)).ToList());
-    
-    
+
+
     /// <summary>
     /// add notification
     /// </summary>
@@ -44,4 +44,14 @@ public class NotificationController(INotificationService notificationService) : 
         await notificationService.AddNotificationAsync(notification, User.GetId());
         return Ok();
     }
+
+    /// <summary>
+    /// get list notifications
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<NotificationDto>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<List<NotificationDto>>> GetNotifications()
+        => Ok(await notificationService.GetNotificationsAsync(User.GetId()));
 }

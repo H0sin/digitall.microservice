@@ -48,6 +48,6 @@ public class Agent : BaseEntity
     public ICollection<User>? Users { get; set; } = null;
 
     [ForeignKey(nameof(TelegramBotId))] public TelegramBot? TelegramBot { get; set; }
-
+    
     #endregion
 }

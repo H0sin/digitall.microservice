@@ -79,7 +79,7 @@ public class AuthorizeService(
             RoleMenus? rm = roleMenu.SingleOrDefault(x => x.MenuId == menu.MenuId);
             if (rm != null)
             {
-                rm.IsDelete = menu.Has;
+                rm.IsDelete = !menu.Has;
                 await roleMenuRepository.UpdateEntity(rm);
             }
         }

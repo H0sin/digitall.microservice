@@ -8,6 +8,7 @@ using Application.Utilities;
 using Application.Exceptions;
 using Application.Extensions;
 using Application.Senders.Sms;
+using Application.Static.Template;
 using Data.DefaultData;
 using Domain.Common;
 using Domain.DTOs.Account;
@@ -28,7 +29,9 @@ namespace Application.Services.Implementation.Account;
 
 public class UserService(
     IUserRepository userRepository,
-    IAgentService agentService) : IUserService
+    IAgentService agentService,
+    INotificationService notificationService
+) : IUserService
 {
     public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
     {
@@ -216,6 +219,8 @@ public class UserService(
 
             await userRepository.AddEntity(user);
             await userRepository.SaveChanges(user.Id);
+            await notificationService.
+                AddNotificationAsync(NotificationTemplate.Welcome(userId: user.Id), user.Id);
 
             await transaction.CommitAsync();
             return RegisterUserResult.Success;

@@ -111,6 +111,16 @@ public class AgentController(IAgentService agentService) : BaseController
         FilterAgentDto agents = await agentService.FilterAgentAsync(filter);
         return Ok(agents);
     }
+    
+    // [HttpGet]
+    // [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    // [ProducesResponseType(typeof(ApiResult<FilterAgentDto>), StatusCodes.Status200OK)]
+    // [ProducesDefaultResponseType]
+    // public async Task<ApiResult<List<AgentDto>>> FilterAgents([FromQuery] FilterAgentDto filter)
+    // {
+    //     FilterAgentDto agents = await agentService.FilterAgentAsync(filter);
+    //     return Ok(agents);
+    // }
 
     #endregion
 

@@ -13,5 +13,5 @@ public class AddNotificationDto
     public DateTime Expire { get; set; } = DateTime.Now.AddHours(1);
     public NotificationType NotificationType { get; set; }
     public bool ForAllMember { get; set; }
-    public long? UserId { get; set; }
+    public long? UserId { get; set; } = 0;
 }
