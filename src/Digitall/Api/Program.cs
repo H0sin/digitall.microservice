@@ -134,7 +134,7 @@ builder.Services.AddSwaggerGen(c =>
 
     // string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.XML";
     // string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
+    //
     // c.IncludeXmlComments(xmlPath);
 });
 
