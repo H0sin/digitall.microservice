@@ -82,6 +82,16 @@ public class AuthorizeService(
                 rm.IsDelete = !menu.Has;
                 await roleMenuRepository.UpdateEntity(rm);
             }
+            else
+            {
+                var newRoleMenu = new RoleMenus
+                {
+                    RoleId = rolemenu.RoleId,
+                    MenuId = menu.MenuId,
+                    IsDelete = !menu.Has
+                };
+                await roleMenuRepository.AddEntity(newRoleMenu);
+            }
         }
 
         await roleMenuRepository.SaveChanges(userId);
