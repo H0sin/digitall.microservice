@@ -3,7 +3,7 @@
 [Flags]
 public enum AgentRequestStatus : byte
 {
-    Accept,
-    Wating,
-    Reject
+    accept,
+    wating,
+    reject
 }

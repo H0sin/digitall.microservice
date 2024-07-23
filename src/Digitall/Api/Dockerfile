@@ -8,12 +8,12 @@ EXPOSE 5000
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/Digitall/Api/Api.csproj", "src/Digitall/Api/"]
-COPY ["src/Digitall/Ioc/Ioc.csproj", "src/Digitall/Ioc/"]
-COPY ["src/Digitall/Application/Application.csproj", "src/Digitall/Application/"]
-COPY ["src/Digitall/Data/Data.csproj", "src/Digitall/Data/"]
-COPY ["src/Digitall/Domain/Domain.csproj", "src/Digitall/Domain/"]
-RUN dotnet restore "./src/Digitall/Api/./Api.csproj"
+COPY ["src/digitall/Api/Api.csproj", "src/digitall/Api/"]
+COPY ["src/digitall/Ioc/Ioc.csproj", "src/digitall/Ioc/"]
+COPY ["src/digitall/Application/Application.csproj", "src/digitall/Application/"]
+COPY ["src/digitall/Data/Data.csproj", "src/digitall/Data/"]
+COPY ["src/digitall/Domain/Domain.csproj", "src/digitall/Domain/"]
+RUN dotnet restore "./src/digitall/Api/./Api.csproj"
 ENV ASPNETCORE_URLS=http://+:5000
 COPY . .
 WORKDIR "/src/src/Digitall/Api"
