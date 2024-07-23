@@ -29,5 +29,6 @@ public interface IBaseRepository<TEntity> : IAsyncDisposable where TEntity : Bas
     Task DeleteEntity(long entityId);
     void DeletePermanent(TEntity entity);
     Task DeletePermanent(long entityId);
+    Task Deletes(List<TEntity> entities);
     Task SaveChanges(long id);
 }

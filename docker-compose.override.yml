@@ -7,8 +7,8 @@ services:
       - "443:443"
     volumes:
       - ./src/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt/live/test.samanii.com/fullchain.pem:/etc/letsencrypt/live/test.samanii.com/fullchain.pem
-      - /etc/letsencrypt/live/test.samanii.com/privkey.pem:/etc/letsencrypt/live/test.samanii.com/privkey.pem
+      - /application/certificate/samanii.com.cer:/application/certificate/samanii.com.cer
+      - /application/certificate/samanii.com.key:/application/certificate/samanii.com.key
     restart: unless-stopped
     depends_on:
       - api
@@ -28,6 +28,7 @@ services:
       - nginx-network
     volumes:
       - ./images:/app/wwwroot/images
+      - ./log:/app/log
     depends_on:
       - sqlserver
 
@@ -40,7 +41,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - ./data:/var/opt/mssql/data
+      - ./data/sqlserver:/var/opt/mssql/data
     restart: unless-stopped
     networks:
       - nginx-network

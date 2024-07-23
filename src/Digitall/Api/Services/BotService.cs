@@ -20,17 +20,17 @@ public class BotService(
         ITelegramService telegramService =  scope
             .ServiceProvider.GetRequiredService<ITelegramService>();
 
-        List<TelegramBotDto> bots = await telegramService.GetAllTelegramBotAsync();
+         List<TelegramBotDto> bots = await telegramService.GetAllTelegramBotAsync();
         
-        for (int i = 0; i < bots.Count; i++)
-        {
-            await StartBotAsync(bots[i], cancellationToken);
-            if ((i + 1) == bots.Count)
-            {
-      
-            }
-        }
-        //await telegramService.DisposeAsync();
+         for (int i = 0; i < bots.Count; i++)
+         {
+             await StartBotAsync(bots[i], cancellationToken);
+             // if ((i + 1) == bots.Count)
+             // {
+             //
+             // }
+         }
+        await telegramService.DisposeAsync();
     }
 
     private async Task StartBotAsync(TelegramBotDto bot, CancellationToken cancellationToken)

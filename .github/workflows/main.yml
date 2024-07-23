@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy to Server test.samanii
 
 on:
   push:
@@ -21,7 +21,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           debug: true
           script: |
-            cd /root/app/digitall.microservice
+            cd /application/digitall.microservice
+            git pull
             docker-compose down
             docker-compose build
             docker-compose up -d

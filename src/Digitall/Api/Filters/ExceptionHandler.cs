@@ -21,7 +21,7 @@ public class ExceptionHandler : IAsyncExceptionFilter
             string? action = context.RouteData.Values["action"]?.ToString();
             string? version = context.RouteData.Values["v"]?.ToString();
 
-            long? userId = context.HttpContext.User.GetUserId();
+            long? userId = context.HttpContext.User.GetId();
 
             object information = new
             {

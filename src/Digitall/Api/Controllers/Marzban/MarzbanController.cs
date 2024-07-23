@@ -26,7 +26,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanServer([FromBody] AddMarzbanServerDto marzban)
     {
-        await marzbanService.AddMarzbanServerAsync(marzban, User.GetUserId());
+        await marzbanService.AddMarzbanServerAsync(marzban, User.GetId());
         return Ok();
     }
 
@@ -222,7 +222,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanVpn(AddMarzbanVpnDto vpn)
     {
-        await marzbanService.AddMarzbanVpnAsync(vpn, User.GetUserId());
+        await marzbanService.AddMarzbanVpnAsync(vpn, User.GetId());
         return Ok();
     }
 
@@ -248,7 +248,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> BuyMarzbanVpn(BuyMarzbanVpnDto vpn)
     {
-        await marzbanService.BuyMarzbanVpnAsync(vpn, User.GetUserId());
+        await marzbanService.BuyMarzbanVpnAsync(vpn, User.GetId());
         return Ok();
     }
 
@@ -264,7 +264,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     // [ProducesErrorResponseType(typeof(NotFoundException))]
     public async Task<ApiResult<MarzbanUserInformationDto>> GetMarzbanUser([FromQuery] string Username)
     {
-        return Ok(await marzbanService.GetMarzbanUserInformationAsync(Username, User.GetUserId()));
+        return Ok(await marzbanService.GetMarzbanUserInformationAsync(Username, User.GetId()));
     }
 
     /// <summary>
@@ -276,7 +276,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanVpnTemplate([FromBody] AddMarzbanVpnTemplatesDto template)
     {
-        await marzbanService.AddMarzbanVpnTemplateAsync(template, User.GetUserId());
+        await marzbanService.AddMarzbanVpnTemplateAsync(template, User.GetId());
         return Ok();
     }
 
@@ -290,6 +290,6 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<List<MarzbanVpnTemplateDto>>> GetMarzbanVpnTemplateByVpnId([FromQuery] long vpnId)
     {
-        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId,User.GetUserId()));
+        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId,User.GetId()));
     }
 }

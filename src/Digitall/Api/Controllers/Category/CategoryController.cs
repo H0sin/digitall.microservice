@@ -39,7 +39,7 @@ public class CategoryController : BaseController
     [HttpPost]
     public async Task<ApiResult> AddCategory([FromBody] AddCategoryDto category)
     {
-        AddCategoryResult response = await _categoryService.AddCategoryAsync(category, User.GetUserId());
+        AddCategoryResult response = await _categoryService.AddCategoryAsync(category, User.GetId());
 
         switch (response)
         {

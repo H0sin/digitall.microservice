@@ -7,7 +7,18 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService : IAsyncDisposable
 {
+    /// <summary>
+    /// get agent information by code
+    /// </summary>
+    /// <param name="agentCode"></param>
+    /// <returns></returns>
     Task<AgentDto?> GetAgentByCode(long agentCode);
+    
+    /// <summary>
+    /// get agent by telegram chat id async
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     Task<AgentDto?> GetAgentByIdAsync(long id);
 
     /// <summary>
@@ -17,6 +28,22 @@ public interface IAgentService : IAsyncDisposable
     /// <returns>Agent</returns>
     Task<AgentDto> GetAgentByUserIdAsync(long userId);
 
+    /// <summary>
+    /// add request for agent
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddAgentRequestAsync(AddRequestAgentDto request,long userId);
+
+    /// <summary>
+    /// update request agent
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateAgentRequest(UpdateAgentRequestDto agent,long userId);
+    
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);

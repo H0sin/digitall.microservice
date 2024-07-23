@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.Entities.Account;
 
 namespace Domain.DTOs.Account;
 
@@ -13,7 +14,6 @@ public class UserDto
     public string? Email { get; set; }
 
     [Display(Name = "تلفن همراه")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(12, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     [MinLength(11, ErrorMessage = "{0} نمی تواند کمتر از {1} کاراکتر باشد")]
     public string Mobile { get; set; }
@@ -49,4 +49,28 @@ public class UserDto
     public DateTime ModifiedDate { get; set; }
 
     [Display(Name = "موجودی")] public long Balance { get; set; }
+
+    public long? ChatId { get; set; }
+    
+
+    public UserDto()
+    {
+    }
+
+    public UserDto(User user)
+    {
+        this.Id = user.Id;
+        this.Email = user.Email;
+        this.Mobile = user.Mobile!;
+        this.MobileActiveCode = user.MobileActiveCode!;
+        this.IsMobileActive = user.IsMobileActive;
+        this.FirstName = user.FirstName!;
+        this.LastName = user.LastName!;
+        this.Avatar = user.Avatar;
+        this.Address = user.Address;
+        this.AgentId = user.AgentId;
+        this.ModifiedDate = user.ModifiedDate;
+        this.Balance = user.Balance;
+        this.ChatId = user.ChatId;
+    }
 }

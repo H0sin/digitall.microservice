@@ -29,7 +29,7 @@ public class ProductController : BaseController
     [HttpGet]
     public async Task<ApiResult<FilterProductDto>> GetProductByFilterAsync([FromQuery] FilterProductDto filter)
     {
-        FilterProductDto response = await _productService.FilterProductAsync(filter, User.GetUserId());
+        FilterProductDto response = await _productService.FilterProductAsync(filter, User.GetId());
         return Ok(response);
     }
 
@@ -41,7 +41,7 @@ public class ProductController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddProduct([FromBody] AddProductDto product)
     {
-        var result = await _productService.AddProductAsync(product, User.GetUserId());
+        var result = await _productService.AddProductAsync(product, User.GetId());
         return Ok();
     }
 
@@ -49,7 +49,7 @@ public class ProductController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddVpnProduct([FromForm] AddVpnProductDto product)
     {
-        var result = await _productService.AddVpnProductAsync(product, User.GetUserId());
+        var result = await _productService.AddVpnProductAsync(product, User.GetId());
 
         return Ok();
     }

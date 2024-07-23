@@ -27,6 +27,6 @@ public class TelegramController(
     [ProducesResponseType(typeof(AddTelegramBotDto), (int)HttpStatusCode.OK)]
     public async Task<ApiResult<AddTelegramBotDto>> AddTelegramBot([FromBody] AddTelegramBotDto bot)
     {
-        return Ok(await telegramService.AddTelegramBotAsync(bot, User.GetUserId()));
+        return Ok(await telegramService.AddTelegramBotAsync(bot, User.GetId()));
     }
 }

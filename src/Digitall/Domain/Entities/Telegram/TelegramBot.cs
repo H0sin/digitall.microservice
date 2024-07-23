@@ -32,4 +32,6 @@ public class TelegramBot : BaseEntity
     [Display(Name = "SecretToken ")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? SecretToken { get; set; }
+
+    public Agent.Agent? Agent { get; set; }
 }

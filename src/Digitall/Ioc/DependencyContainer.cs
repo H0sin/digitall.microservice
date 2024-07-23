@@ -57,11 +57,14 @@ using Application.Services.Implementation.Authorization;
 using Application.Services.Implementation.Docker;
 using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
+using Application.Services.Implementation.Notification;
 using Application.Services.Implementation.Telegram;
 using Application.Services.Interface.Docker;
 using Application.Services.Interface.Telegram;
+using Data.Repositories.Notification;
 using Data.Repositories.Telegram;
 using Data.Repositories.Vpn;
+using Domain.IRepositories.Notification;
 using Domain.IRepositories.Telegram;
 
 namespace Ioc;
@@ -98,6 +101,7 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanUserRepository, MarzbanUserRepository>();
         services.AddScoped<IMarzbanVpnTemplatesRepository, MarzbanVpnTemplatesRepository>();
         services.AddScoped<ITelegramBotRepository, TelegramBotRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         #endregion
 
@@ -120,7 +124,9 @@ public static class DependencyContainer
         services.AddScoped<IMarzbanService, MarzbanServies>();
         services.AddScoped<ITelegramService, TelegramService>();
         services.AddScoped<IBotService, BotService>();
-        services.AddScoped<IDockerService,DockerService>();
+        services.AddScoped<IDockerService, DockerService>();
+        services.AddScoped<INotificationService, NotificationService>();
+
         #endregion
 
         return services;

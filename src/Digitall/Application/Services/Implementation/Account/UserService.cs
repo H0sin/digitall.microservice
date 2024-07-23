@@ -8,6 +8,7 @@ using Application.Utilities;
 using Application.Exceptions;
 using Application.Extensions;
 using Application.Senders.Sms;
+using Application.Static.Template;
 using Data.DefaultData;
 using Domain.Common;
 using Domain.DTOs.Account;
@@ -28,13 +29,22 @@ namespace Application.Services.Implementation.Account;
 
 public class UserService(
     IUserRepository userRepository,
-    IAgentService agentService) : IUserService
+    IAgentService agentService,
+    INotificationService notificationService
+) : IUserService
 {
     public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
     {
-        User user = (await userRepository
-            .GetQuery()
-            .SingleOrDefaultAsync(u => u.Mobile == login.Mobile))!;
+        User? user = null;
+
+        if (!string.IsNullOrEmpty(login.Email))
+            user = (await userRepository
+                .GetQuery()
+                .SingleOrDefaultAsync(u => u.Email == login.Email))!;
+        else
+            user = (await userRepository
+                .GetQuery()
+                .SingleOrDefaultAsync(u => u.ChatId == login.ChatId))!;
 
         if (user is null)
             return LoginUserResult.NotFound;
@@ -155,21 +165,7 @@ public class UserService(
 
         if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
 
-        return new UserDto()
-        {
-            Id = user.Id,
-            Mobile = user.Mobile,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Address = user.Address,
-            Avatar = user.Avatar,
-            AgentId = user.AgentId,
-            Email = user.Email,
-            IsMobileActive = user.IsMobileActive,
-            MobileActiveCode = user.MobileActiveCode,
-            Balance = user.Balance,
-            ModifiedDate = user.ModifiedDate
-        };
+        return new UserDto(user);
     }
 
     // public async Task<UserDto?> GetUserByChatIdAsync(long chatId)
@@ -203,10 +199,9 @@ public class UserService(
             if (await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == registerUser.Email) is not null)
                 return RegisterUserResult.IsExists;
 
-            AgentDto? agent = await agentService.GetAgentByCode(registerUser.AgentCode ?? 0);
-
-            if (agent == null)
-                return RegisterUserResult.AgentNotFound;
+            AgentDto? agent = await agentService
+                                  .GetAgentByCode(registerUser.AgentCode ?? 0) ??
+                              new AgentDto(AgentItems.Agents.FirstOrDefault());
 
             User user = new()
             {
@@ -215,7 +210,7 @@ public class UserService(
                 IsEmailActive = false,
                 FirstName = registerUser.FirstName,
                 LastName = registerUser.LastName,
-                Password = PasswordHelper.EncodePasswordMd5(registerUser.Password),
+                Password = PasswordHelper.EncodePasswordMd5(registerUser?.Password),
                 IsDelete = false,
                 MobileActiveCode = new Random().Next(10000, 999999).ToString(),
                 AgentId = agent.Id,
@@ -224,15 +219,8 @@ public class UserService(
 
             await userRepository.AddEntity(user);
             await userRepository.SaveChanges(user.Id);
-
-            // email 
-            EmailDto email = new()
-            {
-                Message = "تست",
-                Receiver = registerUser.Email,
-                Status = 0,
-                Subject = "te4st"
-            };
+            await notificationService.
+                AddNotificationAsync(NotificationTemplate.Welcome(userId: user.Id), user.Id);
 
             await transaction.CommitAsync();
             return RegisterUserResult.Success;
@@ -459,13 +447,7 @@ public class UserService(
 
         if (user is null) return null;
 
-        return new()
-        {
-            Balance = user.Balance,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Id = user.Id
-        };
+        return new(user);
     }
 
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)

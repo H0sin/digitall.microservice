@@ -60,7 +60,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddInbound(AddInboundDto addInbound)
     {
-        await sanaeiService.AddInboundAsync(addInbound, User.GetUserId());
+        await sanaeiService.AddInboundAsync(addInbound, User.GetId());
         return Ok();
     }
 
@@ -78,7 +78,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> UpdateInbound(UpdateInboundDto updateInbound)
     {
-        await sanaeiService.UpdateInboundAsync(updateInbound, User.GetUserId());
+        await sanaeiService.UpdateInboundAsync(updateInbound, User.GetId());
         return Ok();
     }
 

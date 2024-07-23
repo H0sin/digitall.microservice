@@ -32,7 +32,7 @@ public class ServerController : BaseController
     public ServerController(IServerService serverService, IHttpContextAccessor contextAccessor,
         IConfiguration configuration)
     {
-        serverService.UserId = contextAccessor.HttpContext!.User.GetUserId();
+        serverService.UserId = contextAccessor.HttpContext!.User.GetId();
         _serverService = serverService;
         _configuration = configuration;
     }
