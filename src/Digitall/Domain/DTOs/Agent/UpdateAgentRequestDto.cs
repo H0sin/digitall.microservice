@@ -11,7 +11,7 @@ public class UpdateAgentRequestDto
         get { return _agentRequestStatus; }
         set
         {
-            if (!Enum.GetNames(typeof(AgentRequestStatus)).ToList().Contains(value.ToUpper()))
+            if (!Enum.GetNames(typeof(AgentRequestStatus)).ToList().Contains(value.ToLower()))
             {
                 throw new ArgumentException("مقدار ارسالی اشتباه است");
             }

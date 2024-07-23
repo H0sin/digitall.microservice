@@ -87,12 +87,17 @@ public class AgentService(
 
     public async Task UpdateAgentRequest(UpdateAgentRequestDto agent, long userId)
     {
+        AgentDto? parent = await GetAgentByAdminId(userId);
         Domain.Entities.Agent.Agent? ag = await agentRepository.GetEntityById(agent.Id);
+
+        if (ag?.AgentPath?.GetAncestor(1) != parent?.AgentPath)
+            throw new NotFoundException("نمیاندگی وجود ندارد");
+
         if (ag is null) throw new NotFoundException("نمیاندگی وجود ندارد");
-        
+
         if (ag.AgentRequestStatus.ToLower() == "accept")
             throw new BadRequestException("نمیتوانید کاربری که در خواست ان را قبول کردید تغییر بدهید.");
-        
+
         ag!.AgentRequestStatus = agent.AgentRequestStatus;
         await agentRepository.UpdateEntity(ag);
         await agentRepository.SaveChanges(1);
@@ -101,10 +106,30 @@ public class AgentService(
             userId);
     }
 
+    public async Task<AgentTreeDto?> GetAgentsChild(long userId)
+    {
+        AgentDto? agent = await GetAgentByAdminId(userId);
+        var mainAgent = await agentRepository.GetEntityById(agent.Id);
+
+        if (mainAgent == null || mainAgent.AgentPath == null)
+        {
+            return null;
+        }
+
+        // دریافت همه نماینده‌ها و تبدیل به لیست
+        var allAgents = await agentRepository.GetQuery().ToListAsync();
+
+        // تبدیل نماینده‌ها به DTO
+        var mainAgentDto = ConvertToTree(mainAgent, allAgents, 0);
+
+        return mainAgentDto;
+    }
+
     public async Task<List<AgentDto>> GetAgentsListAsync()
     {
         return await agentRepository.GetQuery()
-            .Include(x => x.Users).Select(u => new AgentDto(u)).ToListAsync();
+            .Include(x => x.Users)
+            .Select(u => new AgentDto(u)).ToListAsync();
     }
 
     public async Task<List<long>> GetAgentRoot(long agentId)
@@ -126,7 +151,7 @@ public class AgentService(
         Domain.Entities.Agent.Agent? agent =
             await agentRepository.GetQuery().FirstOrDefaultAsync(x => x.AgentAdminId == adminId);
 
-        if (agent is null) throw new NotFoundException("چنین نمایندگی ای وجود ندارد!");
+        if (agent is null) return null;
 
         return new AgentDto(agent);
     }
@@ -203,5 +228,47 @@ public class AgentService(
     {
         await agentRepository.DisposeAsync();
         await userRepository.DisposeAsync();
+    }
+
+    private AgentTreeDto ConvertToTree(Domain.Entities.Agent.Agent agent, List<Domain.Entities.Agent.Agent> allAgents,
+        int level)
+    {
+        if (level > 2)
+        {
+            return null;
+        }
+
+        var agentDto = new AgentTreeDto()
+        {
+            Id = agent.Id,
+            BrandName = agent.BrandName,
+            PersianBrandName = agent.PersianBrandName,
+            AgentAdminId = agent.AgentAdminId,
+            AgentCode = agent.AgentCode,
+            BrandAddress = agent.BrandAddress,
+            AgentPercent = agent.AgentPercent,
+            UserPercent = agent.UserPercent,
+            CardNumber = agent.CardNumber,
+            AgentRequestStatus = agent.AgentRequestStatus,
+            TelegramBotId = agent.TelegramBotId,
+            SubAgents = new List<AgentTreeDto>()
+        };
+
+        var subAgents = allAgents
+            .Where(a => a.AgentPath.IsDescendantOf(agent.AgentPath) &&
+                        a.AgentPath.GetLevel() == agent.AgentPath.GetLevel() + 1)
+            .ToList();
+
+        foreach (var subAgent in subAgents)
+        {
+            var subAgentDto = ConvertToTree(subAgent, allAgents, level + 1);
+
+            if (subAgentDto != null)
+            {
+                agentDto.SubAgents.Add(subAgentDto);
+            }
+        }
+
+        return agentDto;
     }
 }

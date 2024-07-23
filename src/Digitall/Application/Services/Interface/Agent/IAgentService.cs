@@ -43,6 +43,13 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateAgentRequest(UpdateAgentRequestDto agent,long userId);
+
+    /// <summary>
+    /// get list agent nested object
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<AgentTreeDto> GetAgentsChild(long userId); 
     
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
