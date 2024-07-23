@@ -1,15 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Domain.Enums.Agent;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domain.DTOs.Agent;
 
 public class AgentDto
 {
-    public AgentDto()
-    {
-    }
-
     public AgentDto(Entities.Agent.Agent? agent)
     {
+        AgentRequestStatus = agent.AgentRequestStatus;
         BrandName = agent.BrandName;
         PersianBrandName = agent.PersianBrandName;
         AgentAdminId = agent.AgentAdminId;
@@ -21,7 +19,6 @@ public class AgentDto
     }
 
     public HierarchyId? AgentPath { get; set; }
-
     public long Id { get; set; }
     public string? BrandName { get; set; }
     public string? PersianBrandName { get; set; }
@@ -30,4 +27,5 @@ public class AgentDto
     public string? BrandAddress { get; set; }
     public string? AdminAgentName { get; set; }
     public long Percent { get; set; }
+    public string AgentRequestStatus { get; set; }
 }

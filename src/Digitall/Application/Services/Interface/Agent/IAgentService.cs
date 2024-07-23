@@ -27,6 +27,23 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="userId"></param>
     /// <returns>Agent</returns>
     Task<AgentDto> GetAgentByUserIdAsync(long userId);
+
+    /// <summary>
+    /// add request for agent
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddAgentRequestAsync(AddRequestAgentDto request,long userId);
+
+    /// <summary>
+    /// update request agent
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateAgentRequest(UpdateAgentRequestDto agent,long userId);
+    
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);

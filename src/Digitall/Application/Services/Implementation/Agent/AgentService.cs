@@ -1,5 +1,9 @@
 ﻿using Application.Services.Interface.Agent;
 using Application.Exceptions;
+using Application.Extensions;
+using Application.Services.Interface.Notification;
+using Application.Static.Template;
+using Data.DefaultData;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Enums.Agent;
@@ -10,10 +14,11 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Application.Services.Implementation.Agent;
 
-public class AgentService(IAgentRepository agentRepository, IUserRepository userRepository) : IAgentService
+public class AgentService(
+    IAgentRepository agentRepository,
+    IUserRepository userRepository,
+    INotificationService notificationService) : IAgentService
 {
-    #region get
-
     public async Task<AgentDto?> GetAgentByCode(long agentCode)
     {
         Domain.Entities.Agent.Agent agent =
@@ -49,6 +54,53 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         return await GetAgentByIdAsync(user.AgentId);
     }
 
+    public async Task AddAgentRequestAsync(AddRequestAgentDto request, long userId)
+    {
+        if (await GetAgentByAdminId(userId) is not null)
+            throw new ExistsException("شما قبلا درخواستی ثبت کردید");
+
+        AgentDto? parent = await GetAgentByUserIdAsync(userId);
+
+        Domain.Entities.Agent.Agent agent = new()
+        {
+            BrandAddress = request.BrandAddress,
+            BrandName = request.BrandName,
+            PersianBrandName = request.PersianBrandName,
+            AgentPercent = request.AgentPercent,
+            AgentAdminId = userId,
+            AgentPath = parent.AgentPath,
+            UserPercent = request.UserPercent
+        };
+
+        await agentRepository.AddEntity(agent);
+        await agentRepository.SaveChanges(userId);
+
+        agent.AgentPath = HierarchyId.Parse(parent.AgentPath + agent.Id.ToString() + "/");
+
+        await agentRepository.UpdateEntity(agent);
+        await agentRepository.SaveChanges(userId);
+
+        User? user = await userRepository.GetEntityById(userId);
+        await notificationService.AddNotificationAsync(
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName()), userId);
+    }
+
+    public async Task UpdateAgentRequest(UpdateAgentRequestDto agent, long userId)
+    {
+        Domain.Entities.Agent.Agent? ag = await agentRepository.GetEntityById(agent.Id);
+        if (ag is null) throw new NotFoundException("نمیاندگی وجود ندارد");
+        
+        if (ag.AgentRequestStatus.ToLower() == "accept")
+            throw new BadRequestException("نمیتوانید کاربری که در خواست ان را قبول کردید تغییر بدهید.");
+        
+        ag!.AgentRequestStatus = agent.AgentRequestStatus;
+        await agentRepository.UpdateEntity(ag);
+        await agentRepository.SaveChanges(1);
+        string status = agent.AgentRequestStatus.ToLower() == "accept" ? "پذیرفته" : "رد شده";
+        await notificationService.AddNotificationAsync(NotificationTemplate.ChangeRequestAgent(ag.AgentAdminId, status),
+            userId);
+    }
+
     public async Task<List<AgentDto>> GetAgentsListAsync()
     {
         return await agentRepository.GetQuery()
@@ -77,11 +129,7 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         if (agent is null) throw new NotFoundException("چنین نمایندگی ای وجود ندارد!");
 
         return new AgentDto(agent);
-    }   
-
-    #endregion
-
-    #region filter
+    }
 
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
@@ -94,7 +142,7 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         if (filter.AdminId is not null and not 0)
         {
             AgentDto? agent = await GetAgentByAdminId(filter.AdminId ?? 0);
-                        
+
             // List<Domain.Entities.Agent.Agent> agent = await queryable.Where(a=> a
             //     .AgentPath!
             //     .GetAncestor(1) == agent!.AgentPath!).ToListAsync();
@@ -103,9 +151,6 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         return filter;
     }
 
-    #endregion
-
-    #region add
 
     public async Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId)
     {
@@ -134,7 +179,7 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
         Domain.Entities.Agent.Agent newAgent = new Domain.Entities.Agent.Agent
         {
             AgentAdminId = agent.AgentAdminId,
-            AgentCode = new Random().Next(100000, 999999),
+            AgentCode = new Random().Next(10000, 9999999),
             BrandAddress = agent.BrandAddress,
             BrandName = agent.BrandName,
             PersianBrandName = agent.PersianBrandName,
@@ -153,8 +198,6 @@ public class AgentService(IAgentRepository agentRepository, IUserRepository user
 
         return AddAgentResult.Success;
     }
-
-    #endregion
 
     public async ValueTask DisposeAsync()
     {
