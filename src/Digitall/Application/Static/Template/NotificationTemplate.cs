@@ -16,4 +16,28 @@ public static class NotificationTemplate
             ForAllMember = false
         };
     }
+
+    public static AddNotificationDto NewRequestForAgent(long userId, string userName)
+    {
+        return new AddNotificationDto()
+        {
+            Expire = DateTime.Now.AddHours(24),
+            Message = $"درخواست نمایندگی ثبت کرد  {userName}",
+            NotificationType = NotificationType.Warning,
+            UserId = userId,
+            ForAllMember = false
+        };
+    }
+
+    public static AddNotificationDto ChangeRequestAgent(long userId, string status)
+    {
+        return new AddNotificationDto()
+        {
+            Expire = DateTime.Now.AddHours(24),
+            Message = $"درخواست نمایندگی شما {status}  شد",
+            NotificationType = NotificationType.Warning,
+            UserId = userId,
+            ForAllMember = false
+        };
+    }
 }

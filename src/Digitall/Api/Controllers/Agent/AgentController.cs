@@ -8,6 +8,7 @@ using Application.Services.Interface.Agent;
 using Domain.DTOs.Agent;
 using Domain.Enums;
 using Domain.Enums.Agent;
+using Domain.Enums.Notification;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,20 @@ public class AgentController(IAgentService agentService) : BaseController
 {
     #region get
 
+    /// <summary>
+    /// get agent after login my admin agent information
+    /// </summary>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<AgentDto>> GetAdminAgentInformation()
+    {
+        AgentDto? agent = await agentService.GetAgentByAdminId(User.GetId());
+        return Ok(agent);
+    }
+    
     /// <summary>
     /// get agent information by agent code
     /// for login and register  
@@ -111,7 +126,7 @@ public class AgentController(IAgentService agentService) : BaseController
         FilterAgentDto agents = await agentService.FilterAgentAsync(filter);
         return Ok(agents);
     }
-    
+
     // [HttpGet]
     // [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     // [ProducesResponseType(typeof(ApiResult<FilterAgentDto>), StatusCodes.Status200OK)]
@@ -121,6 +136,15 @@ public class AgentController(IAgentService agentService) : BaseController
     //     FilterAgentDto agents = await agentService.FilterAgentAsync(filter);
     //     return Ok(agents);
     // }
+
+    /// <summary>
+    /// return agent status
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public ApiResult<List<string>> GetAgentStatus() => Ok(Enum.GetNames(typeof(AgentRequestStatus)).ToList());
 
     #endregion
 
@@ -147,11 +171,38 @@ public class AgentController(IAgentService agentService) : BaseController
         };
     }
 
+    /// <summary>
+    /// add request for agent
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+    public async Task<ApiResult> AddRequestForAgent([FromBody] AddRequestAgentDto request)
+    {
+        await agentService.AddAgentRequestAsync(request, User.GetId());
+        return Ok();
+    }
+
     #endregion
 
     #region update
 
-    // public async Task<ApiResult<AgentDto>> UpdateAgents([FromBody] )
+    /// <summary>
+    /// updateRequestStatus
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [ProducesResponseType(typeof(ApiResult),(int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> ChangeRequestStatus([FromBody] UpdateAgentRequestDto request)
+    {
+        await agentService.UpdateAgentRequest(request, User.GetId());
+        return Ok();
+    }
 
     #endregion
 }
