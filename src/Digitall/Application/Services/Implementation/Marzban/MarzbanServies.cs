@@ -259,9 +259,33 @@ public class MarzbanServies(
         await marzbanVpnRepository.SaveChanges(userId);
     }
 
-    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync()
+    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId)
     {
+        // User user = await userRepository.GetEntityById(userId);
+        AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
+
+        int level = agent.AgentPath.GetLevel();
+        
         var response = await marzbanVpnRepository.GetAllAsync();
+        Dictionary<long, long> agentPercents = new Dictionary<long, long>();
+        
+        for (int i = 0; i <= 2; i++)
+        {
+            Domain.Entities.Agent.Agent? agentByPath =
+                await agentService.GetAgentByPath(agent.AgentPath.GetAncestor(level));
+
+            if (agent is null) continue;
+            
+            // agentPercents.Add(agentByPath.UserPercent);
+                
+        }  
+        foreach (MarzbanVpn vpn in response)
+        {
+  
+        }
+        
+        
+
         return response.Select(x => new GetMarzbanVpnDto(x)).ToList();
     }
 
@@ -672,25 +696,25 @@ public class MarzbanServies(
         };
     }
 
-    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user,long serverId,long userId)
+    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
-        
+
         string token = await marzbanApiRequest.LoginAsync();
-        
+
         if (string.IsNullOrEmpty(token))
             throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
-        
+
         MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
             MarzbanPaths.UserUpdate + "/" + user.Username,
-            HttpMethod.Put,user);
-        
+            HttpMethod.Put, user);
+
         await marzbanServerRepository.UpdateEntity(marzbanServer);
         await marzbanServerRepository.SaveChanges(1);
 
         MarzbanUser? mu = await marzbanUserRepository.GetEntityById(user.Id);
-        
+
         mu.Expire = response.Expire;
         mu.Links = response.Links;
         mu.Username = response.Username;
@@ -705,7 +729,7 @@ public class MarzbanServies(
 
         await marzbanUserRepository.UpdateEntity(mu);
         await marzbanUserRepository.SaveChanges(userId);
-        
+
         return response;
     }
 

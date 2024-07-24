@@ -6,7 +6,7 @@ namespace Domain.DTOs.Marzban;
 public class BuyMarzbanVpnDto
 {
     [Display(Name = "تعداد")]
-    [Range(0, 20, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
+    // [Range(0, 20, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public int Count { get; set; }
 
     [MaxLength(50)] [Required] public string? Title { get; set; }

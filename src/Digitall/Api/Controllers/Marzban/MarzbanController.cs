@@ -235,7 +235,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesResponseType(typeof(IReadOnlyList<GetMarzbanVpnDto>), (int)HttpStatusCode.OK)]
     public async Task<ApiResult<IReadOnlyList<GetMarzbanVpnDto>>> GetMarzbanVpn()
     {
-        var respoonse = await marzbanService.GetMarzbanVpnAsync();
+        var respoonse = await marzbanService.GetMarzbanVpnAsync(User.GetId());
         return Ok(respoonse);
     }
 
@@ -290,6 +290,6 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<List<MarzbanVpnTemplateDto>>> GetMarzbanVpnTemplateByVpnId([FromQuery] long vpnId)
     {
-        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId,User.GetId()));
+        return Ok(await marzbanService.GetMarzbanVpnTemplateByVpnIdAsync(vpnId, User.GetId()));
     }
 }
