@@ -31,7 +31,8 @@ public class Transaction : BaseEntity
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? AccountName { get; set; }
 
-    [Display(Name = "زمان تراکنش")] public DateTime TransactionTime { get; set; } = DateTime.Now;
+    [Display(Name = "زمان تراکنش")] 
+    public DateTime TransactionTime { get; set; } = DateTime.Now;
 
     [Display(Name = "شماره کارت")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]

@@ -38,8 +38,6 @@ public class AgentService(
             .Include(x => x.Users)
             .SingleOrDefaultAsync(x => x.Id == id);
 
-        if (agent is null) throw new NotFoundException("چنین نمایندگی وجود ندارد");
-
         return agent switch
         {
             null => null,
@@ -106,7 +104,7 @@ public class AgentService(
             userId);
     }
 
-    public async Task<AgentTreeDto?> GetAgentsChild(long userId)
+    public async Task<AgentTreeDto?> GetAgentsChildByFilterAsync(long userId)
     {
         AgentDto? agent = await GetAgentByAdminId(userId);
         var mainAgent = await agentRepository.GetEntityById(agent.Id);
@@ -123,6 +121,32 @@ public class AgentService(
         var mainAgentDto = ConvertToTree(mainAgent, allAgents, 0);
 
         return mainAgentDto;
+    }
+
+    public async Task<InformationPaymentDto?> GetAgentInformationPaymentAsync(long userId)
+    {
+        User user = await userRepository.GetEntityById(userId);
+        Domain.Entities.Agent.Agent? agent =
+            await agentRepository
+                .GetQuery()
+                .FirstOrDefaultAsync(x => x.Id == user.AgentId);
+
+        return agent switch
+        {
+            null => null,
+            _ => new InformationPaymentDto()
+            {
+                CardNumber = agent.CardNumber,
+                MaximumAmount = agent.MaximumAmount,
+                MinimalAmount = agent.MinimalAmount,
+                CardHolderName = agent.CardHolderName
+            }
+        };
+    }
+
+    public async Task<Domain.Entities.Agent.Agent?> GetAgentByPath(HierarchyId path)
+    {
+        return await agentRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentPath == path);
     }
 
     public async Task<List<AgentDto>> GetAgentsListAsync()

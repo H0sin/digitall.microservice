@@ -9,7 +9,7 @@ public class TransactionDetail : BaseEntity
     public int MaximumAmount { get; set; } = 2000000;
 
     [Display(Name = "کمترین مقدار تراکنش")]
-    public int MinimalAmount { get; set; }
+    public int MinimalAmount { get; set; } = 1000000;
 
     [Display(Name = "شماره کارت")]
     [MaxLength(50, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
