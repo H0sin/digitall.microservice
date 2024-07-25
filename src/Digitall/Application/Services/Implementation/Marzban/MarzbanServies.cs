@@ -261,30 +261,27 @@ public class MarzbanServies(
 
     public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId)
     {
-        // User user = await userRepository.GetEntityById(userId);
+        //User user = await userRepository.GetEntityById(userId);
         AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
 
         int level = agent.AgentPath.GetLevel();
-        
-        var response = await marzbanVpnRepository.GetAllAsync();
+
+        var response = await marzbanVpnRepository.GetQuery().ToListAsync();
         Dictionary<long, long> agentPercents = new Dictionary<long, long>();
-        
+
         for (int i = 0; i <= 2; i++)
         {
             Domain.Entities.Agent.Agent? agentByPath =
-                await agentService.GetAgentByPath(agent.AgentPath.GetAncestor(level));
+                await agentService.GetAgentByPath(agent.AgentPath.GetAncestor(i));
 
             if (agent is null) continue;
-            
-            // agentPercents.Add(agentByPath.UserPercent);
-                
-        }  
-        foreach (MarzbanVpn vpn in response)
-        {
-  
+
+            foreach (var marzbanVpn in response)
+            {
+                marzbanVpn.DayPrice += (marzbanVpn.DayPrice * (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)) / 100;
+                marzbanVpn.GbPrice += (marzbanVpn.GbPrice * (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)) / 100;
+            }
         }
-        
-        
 
         return response.Select(x => new GetMarzbanVpnDto(x)).ToList();
     }
