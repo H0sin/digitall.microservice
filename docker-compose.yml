@@ -11,7 +11,7 @@ services:
     image: ${DOCKER_REGISTRY-}api
     build:
       context: .
-      dockerfile: src/Digitall/Api/Dockerfile
+      dockerfile: src/digitall/Api/Dockerfile
 
 networks:
   nginx-network:
