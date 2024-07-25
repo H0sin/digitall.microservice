@@ -1,6 +1,7 @@
 ﻿using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Enums.Agent;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Application.Services.Interface.Agent;
@@ -13,7 +14,7 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="agentCode"></param>
     /// <returns></returns>
     Task<AgentDto?> GetAgentByCode(long agentCode);
-    
+
     /// <summary>
     /// get agent by telegram chat id async
     /// </summary>
@@ -34,7 +35,7 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="request"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task AddAgentRequestAsync(AddRequestAgentDto request,long userId);
+    Task AddAgentRequestAsync(AddRequestAgentDto request, long userId);
 
     /// <summary>
     /// update request agent
@@ -42,8 +43,29 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="agent"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task UpdateAgentRequest(UpdateAgentRequestDto agent,long userId);
-    
+    Task UpdateAgentRequest(UpdateAgentRequestDto agent, long userId);
+
+    /// <summary>
+    /// get list agent nested object
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<AgentTreeDto> GetAgentsChildByFilterAsync(long userId);
+
+    /// <summary>
+    /// when user wish payment show agent card information
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<InformationPaymentDto?> GetAgentInformationPaymentAsync(long userId);
+
+    /// <summary>
+    /// get agent by path
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    Task<Domain.Entities.Agent.Agent?> GetAgentByPath(HierarchyId path);
+
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);

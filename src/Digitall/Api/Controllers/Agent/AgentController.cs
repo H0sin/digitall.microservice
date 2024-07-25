@@ -25,6 +25,21 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent after login my admin agent information
     /// </summary>
     /// <returns></returns>
+    // [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    // [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    // [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<AgentTreeDto>> GetAgentTree()
+    {
+        AgentTreeDto? agent = await agentService.GetAgentsChildByFilterAsync(User.GetId());
+        return Ok(agent);
+    }
+
+
+    /// <summary>
+    /// get agent after login my admin agent information
+    /// </summary>
+    /// <returns></returns>
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
@@ -34,7 +49,7 @@ public class AgentController(IAgentService agentService) : BaseController
         AgentDto? agent = await agentService.GetAgentByAdminId(User.GetId());
         return Ok(agent);
     }
-    
+
     /// <summary>
     /// get agent information by agent code
     /// for login and register  
@@ -107,6 +122,14 @@ public class AgentController(IAgentService agentService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult<AgentDto>> GetAgentInformation() =>
         Ok(await agentService.GetAgentByUserIdAsync(User.GetId()));
+
+
+    [HttpGet]
+    [ProducesResponseType(typeof(InformationPaymentDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult<InformationPaymentDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<InformationPaymentDto>> GetAgentInformationPayment() =>
+        Ok(await agentService.GetAgentInformationPaymentAsync(User.GetId()));
 
     #endregion
 
@@ -196,7 +219,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
-    [ProducesResponseType(typeof(ApiResult),(int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> ChangeRequestStatus([FromBody] UpdateAgentRequestDto request)
     {
