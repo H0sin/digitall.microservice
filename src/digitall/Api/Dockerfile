@@ -16,7 +16,7 @@ COPY ["src/digitall/Domain/Domain.csproj", "src/digitall/Domain/"]
 RUN dotnet restore "./src/digitall/Api/./Api.csproj"
 ENV ASPNETCORE_URLS=http://+:5000
 COPY . .
-WORKDIR "/src/src/Digitall/Api"
+WORKDIR "/src/src/digitall/Api"
 RUN dotnet build "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
