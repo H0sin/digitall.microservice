@@ -259,28 +259,39 @@ public class MarzbanServies(
         await marzbanVpnRepository.SaveChanges(userId);
     }
 
-    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId)
+    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId,long numberOfAgents=2)
     {
-        //User user = await userRepository.GetEntityById(userId);
-        AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
+        AgentDto? admin = await agentService
+            .GetAgentByAdminId(userId);
 
-        int level = agent.AgentPath.GetLevel();
+        AgentDto? agent =
+            await agentService.GetAgentByUserIdAsync(userId);
+
+        if (agent == null)
+            throw new NotFoundException("نمایندگی شم غیر فعال شده است");
 
         var response = await marzbanVpnRepository.GetQuery().ToListAsync();
-        Dictionary<long, long> agentPercents = new Dictionary<long, long>();
-
-        for (int i = 0; i <= 2; i++)
+        
+        double totalMultiplier = 1.0;
+        
+        for (int i = 0; i < numberOfAgents; i++)
         {
-            Domain.Entities.Agent.Agent? agentByPath =
-                await agentService.GetAgentByPath(agent.AgentPath.GetAncestor(i));
+            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
+            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPath(ancestorPath);
 
-            if (agent is null) continue;
-
-            foreach (var marzbanVpn in response)
+            if (agentByPath != null)
             {
-                marzbanVpn.DayPrice += (marzbanVpn.DayPrice * (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)) / 100;
-                marzbanVpn.GbPrice += (marzbanVpn.GbPrice * (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)) / 100;
+                double percent =  (admin != null
+                    ? (agent.AgentPercent == 0 ? 1 : agent.AgentPercent)
+                    : (agent.UserPercent == 0 ? 1 : agent.UserPercent));
+                totalMultiplier *= 1 + (percent / 100.0);
             }
+        }
+        
+        foreach (var marzbanVpn in response)
+        {
+            marzbanVpn.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
+            marzbanVpn.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
         }
 
         return response.Select(x => new GetMarzbanVpnDto(x)).ToList();
