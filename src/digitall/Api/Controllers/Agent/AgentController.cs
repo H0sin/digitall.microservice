@@ -25,9 +25,9 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent after login my admin agent information
     /// </summary>
     /// <returns></returns>
-    // [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
-    // [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
-    // [ProducesDefaultResponseType]
+    [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResult<AgentTreeDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
     [HttpGet]
     public async Task<ApiResult<AgentTreeDto>> GetAgentTree()
     {
