@@ -14,7 +14,7 @@ public class Percent(IAgentService agentService) : IDisposable
         foreach (long id in agentIds)
         {
             AgentDto? agent = await agentService.GetAgentByIdAsync(id);
-            _price += _price * agent!.Percent / 100;
+            _price += _price * agent!.UserPercent / 100;
         }
 
         return _price;
@@ -29,8 +29,8 @@ public class Percent(IAgentService agentService) : IDisposable
         foreach (long id in agentIds)
         {
             AgentDto? agent = await agentService.GetAgentByIdAsync(id);
-            users.Add(new(agent.AgentAdminId, _price * agent!.Percent / 100));
-            _price += _price * agent!.Percent / 100;
+            users.Add(new(agent.AgentAdminId, _price * agent!.UserPercent / 100));
+            _price += _price * agent!.UserPercent / 100;
         }
         return users;
     }
