@@ -13,7 +13,8 @@ public class AgentDto
         AgentAdminId = agent.AgentAdminId;
         AgentCode = agent.AgentCode;
         BrandAddress = agent.BrandAddress;
-        Percent = agent.AgentPercent;
+        AgentPercent = agent.AgentPercent;
+        UserPercent = agent.UserPercent;
         AgentPath = agent.AgentPath;
         Id = agent.Id;
     }
@@ -26,6 +27,8 @@ public class AgentDto
     public long AgentCode { get; set; }
     public string? BrandAddress { get; set; }
     public string? AdminAgentName { get; set; }
-    public long Percent { get; set; }
     public string AgentRequestStatus { get; set; }
+
+    public long AgentPercent { get; set; }
+    public long UserPercent { get; set; }
 }
