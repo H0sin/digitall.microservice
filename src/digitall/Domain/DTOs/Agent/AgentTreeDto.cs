@@ -6,6 +6,9 @@ public class AgentTreeDto
 {
     public long Id { get; set; }
     public string? BrandName { get; set; }
+    public string? AdminName { get; set; }
+    public string? Mobile { get; set; }
+    public string? Email { get; set; }
     public string? PersianBrandName { get; set; }
     public long AgentAdminId { get; set; }
     public long AgentCode { get; set; }

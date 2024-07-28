@@ -114,18 +114,16 @@ public class AgentService(
             return null;
         }
 
-        // دریافت همه نماینده‌ها و تبدیل به لیست
         var allAgents = await agentRepository.GetQuery().ToListAsync();
 
-        // تبدیل نماینده‌ها به DTO
-        var mainAgentDto = ConvertToTree(mainAgent, allAgents, 0);
+        var mainAgentDto = await ConvertToTree(mainAgent, allAgents, 0);
 
         return mainAgentDto;
     }
 
     public async Task<InformationPaymentDto?> GetAgentInformationPaymentAsync(long userId)
     {
-        User user = await userRepository.GetEntityById(userId);
+        User? user = await userRepository.GetEntityById(userId);
         Domain.Entities.Agent.Agent? agent =
             await agentRepository
                 .GetQuery()
@@ -191,10 +189,6 @@ public class AgentService(
         if (filter.AdminId is not null and not 0)
         {
             AgentDto? agent = await GetAgentByAdminId(filter.AdminId ?? 0);
-
-            // List<Domain.Entities.Agent.Agent> agent = await queryable.Where(a=> a
-            //     .AgentPath!
-            //     .GetAncestor(1) == agent!.AgentPath!).ToListAsync();
         }
 
         return filter;
@@ -254,13 +248,16 @@ public class AgentService(
         await userRepository.DisposeAsync();
     }
 
-    private AgentTreeDto ConvertToTree(Domain.Entities.Agent.Agent agent, List<Domain.Entities.Agent.Agent> allAgents,
+    private async Task<AgentTreeDto> ConvertToTree(Domain.Entities.Agent.Agent agent,
+        List<Domain.Entities.Agent.Agent> allAgents,
         int level)
     {
         if (level > 2)
         {
             return null;
         }
+
+        User? user = await userRepository.GetEntityById(agent.AgentAdminId);
 
         var agentDto = new AgentTreeDto()
         {
@@ -275,22 +272,24 @@ public class AgentService(
             CardNumber = agent.CardNumber,
             AgentRequestStatus = agent.AgentRequestStatus,
             TelegramBotId = agent.TelegramBotId,
+            AdminName = user?.UserFullName(),
+            Mobile = user?.Mobile,
+            Email = user?.Email,
             SubAgents = new List<AgentTreeDto>()
         };
 
         var subAgents = allAgents
-            .Where(a => a.AgentPath.IsDescendantOf(agent.AgentPath) &&
+            .Where(a => agent.AgentPath != null &&
+                        a.AgentPath != null &&
+                        a.AgentPath.IsDescendantOf(agent.AgentPath) &&
                         a.AgentPath.GetLevel() == agent.AgentPath.GetLevel() + 1)
             .ToList();
 
         foreach (var subAgent in subAgents)
         {
-            var subAgentDto = ConvertToTree(subAgent, allAgents, level + 1);
+            var subAgentDto = await ConvertToTree(subAgent, allAgents, level + 1);
 
-            if (subAgentDto != null)
-            {
-                agentDto.SubAgents.Add(subAgentDto);
-            }
+            agentDto.SubAgents.Add(subAgentDto);
         }
 
         return agentDto;
