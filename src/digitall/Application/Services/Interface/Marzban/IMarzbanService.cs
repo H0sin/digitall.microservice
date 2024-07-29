@@ -146,7 +146,7 @@ public interface IMarzbanService
     /// get list marzban vpn for buy vpn from vpn service
     /// </summary>
     /// <returns></returns>
-    Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId,long numberOfAgents=2);
+    Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId,int numberOfAgents=2);
 
     /// <summary>
     /// buy marzban vpn
