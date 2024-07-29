@@ -10,7 +10,7 @@ using Domain.Enums.Transaction;
 using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
-using Application.Exceptions;
+using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Transaction;
 

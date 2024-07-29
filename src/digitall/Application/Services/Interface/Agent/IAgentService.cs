@@ -64,7 +64,14 @@ public interface IAgentService : IAsyncDisposable
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    Task<Domain.Entities.Agent.Agent?> GetAgentByPath(HierarchyId path);
+    Task<Domain.Entities.Agent.Agent?> GetAgentByPathAsync(HierarchyId path);
+
+    /// <summary>
+    /// get admin by agent id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<User?> GetAdminAgentUserAsync(long id);
 
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);

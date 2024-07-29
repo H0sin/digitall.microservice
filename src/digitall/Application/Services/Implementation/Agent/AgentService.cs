@@ -1,5 +1,4 @@
 ﻿using Application.Services.Interface.Agent;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Static.Template;
@@ -7,6 +6,7 @@ using Data.DefaultData;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Enums.Agent;
+using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Agent;
 using Microsoft.EntityFrameworkCore;
@@ -142,9 +142,14 @@ public class AgentService(
         };
     }
 
-    public async Task<Domain.Entities.Agent.Agent?> GetAgentByPath(HierarchyId path)
+    public async Task<Domain.Entities.Agent.Agent?> GetAgentByPathAsync(HierarchyId path)
     {
         return await agentRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentPath == path);
+    }
+
+    public async Task<User?> GetAdminAgentUserAsync(long id)
+    {
+        return await userRepository.GetEntityById(id);
     }
 
     public async Task<List<AgentDto>> GetAgentsListAsync()

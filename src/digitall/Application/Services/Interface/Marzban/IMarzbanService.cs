@@ -235,7 +235,16 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId);
+
+    /// <summary>
+    /// update marzban vpn async
+    /// </summary>
+    /// <param name="vpnDto"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto,long userId);
     
+    Task<>
     /// <summary>
     /// update marzban user
     /// </summary>

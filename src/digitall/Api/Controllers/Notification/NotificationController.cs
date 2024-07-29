@@ -3,7 +3,6 @@ using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
 using Api.Filters;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Utilities;

@@ -1,7 +1,7 @@
 ﻿using Application.Services.Interface.Country;
 using Azure.Core;
-using Application.Exceptions;
 using Domain.DTOs.Country;
+using Domain.Exceptions;
 using Domain.IRepositories.Country;
 using Microsoft.EntityFrameworkCore;
 

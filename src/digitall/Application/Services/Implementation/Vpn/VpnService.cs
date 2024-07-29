@@ -3,7 +3,6 @@ using Domain.IRepositories.Vpn;
 using Domain.Entities.Account;
 using Domain.IRepositories.Account;
 using Microsoft.EntityFrameworkCore;
-using Application.Exceptions;
 using Domain.DTOs.Account;
 using Domain.DTOs.Country;
 using Domain.DTOs.Marzban;
@@ -27,6 +26,7 @@ using Application.Services.Interface.Server;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Sanaei;
 using Application.Services.Interface.Marzban;
+using Domain.Exceptions;
 
 
 namespace Application.Services.Implementation.Vpn;

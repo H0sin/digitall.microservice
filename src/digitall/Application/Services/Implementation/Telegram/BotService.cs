@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Web;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Helper;
 using Application.Services.Interface.Telegram;

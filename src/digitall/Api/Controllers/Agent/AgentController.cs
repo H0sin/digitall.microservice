@@ -2,13 +2,13 @@
 using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Services.Interface.Agent;
 using Domain.DTOs.Agent;
 using Domain.Enums;
 using Domain.Enums.Agent;
 using Domain.Enums.Notification;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

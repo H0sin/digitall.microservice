@@ -5,7 +5,6 @@ using Asp.Versioning;
 using Api.Controllers.Base;
 using Api.Filters;
 using Api.Utitlities;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Helper;
 using Application.Services.Interface.Account;
