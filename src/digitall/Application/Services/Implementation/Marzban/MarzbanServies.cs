@@ -259,42 +259,14 @@ public class MarzbanServies(
         await marzbanVpnRepository.SaveChanges(userId);
     }
 
-    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId,long numberOfAgents=2)
+    public async Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId, int numberOfAgents = 2)
     {
-        AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
-
-        AgentDto? agent =
-            await agentService.GetAgentByUserIdAsync(userId);
-
-        if (agent == null)
-            throw new NotFoundException("نمایندگی شم غیر فعال شده است");
-
-        var response = await marzbanVpnRepository.GetQuery().ToListAsync();
-        
-        double totalMultiplier = 1.0;
-        
-        for (int i = 0; i < numberOfAgents; i++)
-        {
-            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPath(ancestorPath);
-
-            if (agentByPath != null)
-            {
-                double percent =  (admin != null
-                    ? (agent.AgentPercent == 0 ? 1 : agent.AgentPercent)
-                    : (agent.UserPercent == 0 ? 1 : agent.UserPercent));
-                totalMultiplier *= 1 + (percent / 100.0);
-            }
-        }
-        
-        foreach (var marzbanVpn in response)
-        {
-            marzbanVpn.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
-            marzbanVpn.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
-        }
-
-        return response.Select(x => new GetMarzbanVpnDto(x)).ToList();
+        List<MarzbanVpn> response = await marzbanVpnRepository
+            .GetQuery()
+            .ToListAsync();
+        Percent percent = new Percent(agentService);
+        List<MarzbanVpn> result = await percent.CalcuteVpnPrice(response, userId, numberOfAgents);
+        return result.Select(x => new GetMarzbanVpnDto(x)).ToList();
     }
 
     public async Task<List<MarzbanUser>> BuyMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
@@ -647,9 +619,6 @@ public class MarzbanServies(
 
         if (user == null) throw new NotFoundException("کاربری با این شناسه یافت نشد");
 
-        var agentIds = await agentService.GetAgentRoot(user.AgentId);
-
-        using Percent percent = new(agentService);
         List<MarzbanVpnTemplateDto> templates = await marzbanVpnTemplatesRepository
             .GetQuery()
             .Where(x => x.MarzbanVpnId == vpnId)
@@ -662,12 +631,9 @@ public class MarzbanServies(
                 Id = x.Id
             }).ToListAsync();
 
-        foreach (MarzbanVpnTemplateDto template in templates)
-        {
-            template.Price = await percent.Calculate(agentIds, template.Price);
-        }
+        Percent percent = new Percent(agentService);
 
-        return templates;
+        return await percent.CalcuteVpnTemplatePrice(templates, userId);
     }
 
     public async Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter)
