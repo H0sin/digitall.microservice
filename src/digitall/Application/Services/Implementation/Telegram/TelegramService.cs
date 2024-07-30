@@ -16,6 +16,7 @@ using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Transaction;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
+using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 using Domain.Exceptions;
 
@@ -100,19 +101,18 @@ public class TelegramService(
 
         var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
-        using Percent percent = new(agentService);
+        using Percent percent = new(agentService, marzbanService);
 
         SubscribeFactorBotDto factor = new();
 
         factor.Title = buy.Title ?? "خرید سرویس کاهش پینگ";
-        factor.Balance = user?.Balance ?? 0;
+        factor.Balance = user.Balance;
 
         if ((buy.MarzbanVpnTemplateId ?? 0) == 0)
         {
-            GetMarzbanVpnDto? vpn = await GetMarzbanVpnInformationByIdAsync(buy.MarzbanVpnId);
+            GetMarzbanVpnDto? vpn = await percent.CalcuteVpnPrice(buy.MarzbanVpnId, user.Id);
             factor.Count = buy.Count == 0 ? 1 : buy.Count;
-            // factor.Description = buy. todo
-            factor.Price = ((buy.TotalGb * vpn.GbPrice) + (buy.TotalDay * vpn.DayPrice)) * buy.Count;
+            factor.Price = buy.CountingPrice(vpn);
             factor.Days = buy.TotalDay;
             factor.Gb = buy.TotalGb;
             factor.Price = await percent.Calculate(agentIds, factor.Price);
@@ -121,9 +121,10 @@ public class TelegramService(
 
         MarzbanVpnTemplateDto? template =
             await marzbanService.GetMarzbanVpnTemplateByIdAsync(buy.MarzbanVpnTemplateId ?? 0);
+
         factor.Days = template.Days;
         factor.Gb = template.Gb;
-        factor.Price = (await percent.Calculate(agentIds, template.Price)) * buy.Count;
+        factor.Price = (await percent.CalculatorVpnPrice(template.Price, user.Id)) * buy.Count;
         factor.Count = buy.Count;
 
         return factor;
@@ -157,9 +158,10 @@ public class TelegramService(
         return marzbanUser.Subscription_Url;
     }
 
-    public async Task<List<TransactionDetailDto>> GetTransactionDetailAsync()
+    public async Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId)
     {
-        return await transactionService.GetTransactionDetailsAsync();
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await transactionService.GetTransactionDetailsAsync(user?.AgentId ?? 0);
     }
 
 
@@ -193,18 +195,20 @@ public class TelegramService(
         await transactionService.AddTransactionAsync(transaction, user!.Id);
     }
 
-    public async Task StartTelegramBot(StartTelegramBotDto start)
+    public async Task<AgentOptionDto?> StartTelegramBot(StartTelegramBotDto start)
     {
-        AgentDto? agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);
-
-        if (agent == null)
-            agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
-
         User? user = await GetUserByChatIdAsync(start.ChatId);
+
+        AgentDto? agent = await agentService.GetAgentByUserIdAsync(user?.Id ?? 0);
 
         if (user is null)
         {
-            await userRepository.AddEntity(new User()
+            agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);
+
+            if (agent == null)
+                agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
+
+            User newUser = new User()
             {
                 Balance = 0,
                 AgentId = agent!.Id,
@@ -213,10 +217,13 @@ public class TelegramService(
                 Password = PasswordHelper.EncodePasswordMd5(start.ChatId.ToString()),
                 EmailActiveCode = Guid.NewGuid().ToString("N"),
                 ChatId = start.ChatId
-            });
+            };
 
-            await userRepository.SaveChanges(1);
+            await userRepository.AddEntity(newUser);
+            await userRepository.SaveChanges(newUser.Id);
         }
+
+        return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
     }
 
     public async ValueTask DisposeAsync()

@@ -278,7 +278,7 @@ public class MarzbanServies(
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
-            //get agent 
+            //get agent     
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
 
             if (agent is null)
@@ -687,10 +687,10 @@ public class MarzbanServies(
         marzbanVpn.Test_Active = vpnDto.Test_Active;
         marzbanVpn.Test_Days = vpnDto.Test_Days;
         marzbanVpn.Test_TotalMg = vpnDto.Test_TotalMg;
-        marzbanVpn.Vmess = vpnDto.Vmess;
-        marzbanVpn.Vless = vpnDto.Vless;
-        marzbanVpn.Shadowsocks = vpnDto.Shadowsocks;
-        marzbanVpn.Trojan = vpnDto.Trojan;
+        // marzbanVpn.Vmess = vpnDto.Vmess;
+        // marzbanVpn.Vless = vpnDto.Vless;
+        // marzbanVpn.Shadowsocks = vpnDto.Shadowsocks;
+        // marzbanVpn.Trojan = vpnDto.Trojan;
 
         // Save changes
         await marzbanVpnRepository.UpdateEntity(marzbanVpn);

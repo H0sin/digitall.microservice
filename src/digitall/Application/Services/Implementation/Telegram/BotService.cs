@@ -6,9 +6,11 @@ using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Application.Utilities;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 using Domain.Enums.Transaction;
 using Microsoft.AspNetCore.Http;
@@ -64,16 +66,16 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
-        string parameter = "";
+        long agentId = 0;
 
         if (message.Text != null && message.Text.StartsWith("/start"))
         {
-            parameter = message.Text.Substring(6);
+            Int64.TryParse((message.Text.Substring(6)), out agentId);
         }
 
-        await telegramService.StartTelegramBot(new StartTelegramBotDto()
+        AgentOptionDto? agentOptions = await telegramService.StartTelegramBot(new StartTelegramBotDto()
         {
-            AgentCode = 10001,
+            AgentCode = agentId,
             ChatId = message.Chat.Id,
             FirstName = message.From.FirstName,
             LastName = message.From.LastName
@@ -105,7 +107,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: "خوش آمدید بچه هایه خوب",
+            text: agentOptions!.WelcomeMessage ?? "خوش آمدید",
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
@@ -333,7 +335,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
 
-        // حذف منوی قبلی اگر شماره پیام ارسالی موجود باشد
         if (callbackQuery.Message.MessageId != 0)
         {
             await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
@@ -370,7 +371,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         List<InlineKeyboardButton> bu = new()
         {
             InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس", $"buy_subscribe" +
-                                                                           $"?marzbanvpntemplateId={id}" +
+                                                                           $"?templateId={id}" +
                                                                            $"&marzbanvpnid={vpnId}" +
                                                                            $"&subscribeId={subscribeId}")
         };
@@ -391,8 +392,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             text: sub.GetInfo(),
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
-        // حذف منوی قبلی اگر شماره پیام ارسالی موجود باش
-        // د
+
         if (callbackQuery.Message.MessageId != 0)
         {
             await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
@@ -405,7 +405,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long chatId = callbackQuery!.Message!.Chat.Id;
         try
         {
-            long marzbanvpntemplateId = 0;
+            long templateId = 0;
             long marzbanvpnid = 0;
             int days = 0;
             int gb = 0;
@@ -417,7 +417,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             {
                 string? query = callbackData?.Substring(questionMarkIndex);
                 NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-                Int64.TryParse(queryParameters["marzbanvpntemplateId"], out marzbanvpntemplateId);
+                Int64.TryParse(queryParameters["templateId"], out templateId);
                 Int64.TryParse(queryParameters["marzbanvpnid"], out marzbanvpnid);
                 Int32.TryParse(queryParameters["days"], out days);
                 Int32.TryParse(queryParameters["gb"], out gb);
@@ -431,15 +431,15 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             BuyMarzbanVpnDto buy = new();
 
             buy.MarzbanVpnId = marzbanvpnid;
-            buy.MarzbanVpnTemplateId = marzbanvpntemplateId;
+            buy.MarzbanVpnTemplateId = templateId;
             buy.Count = 1;
             buy.TotalDay = days;
             buy.TotalGb = gb;
 
             MarzbanVpnTemplateDto? template = null;
 
-            if (marzbanvpntemplateId != 0)
-                template = await telegramService.GetMarzbanTemplateByIdAsync(marzbanvpntemplateId);
+            if (templateId != 0)
+                template = await telegramService.GetMarzbanTemplateByIdAsync(templateId);
 
             List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
 
@@ -903,10 +903,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
-        List<TransactionDetailDto> transactionDetail = await telegramService.GetTransactionDetailAsync();
-
-        string information =
-            $"\ud83d\udcb8 مبلغ را  به تومان وارد کنید:\n\u2705  حداقل مبلغ {transactionDetail[0].MinimalAmount} حداکثر مبلغ {transactionDetail[0].MaximumAmount} تومان می باشد";
+        TransactionDetailDto? transactionDetail = await telegramService.GetTransactionDetailAsync(chatId);
 
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
             .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
@@ -915,13 +912,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         uservalue.State = TelegramMarzbanVpnSessionState.AwatingSendPrice;
 
-        BotSessions
-            .users_Sessions?
-            .AddOrUpdate(chatId, uservalue,
-                (key, old)
-                    => old = uservalue);
-
-
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
             new[]
@@ -929,6 +919,19 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
             }
         });
+        string information = "";
+
+        if (string.IsNullOrEmpty(transactionDetail.CardNumber))
+        {
+            information = "نماینده شما شماره کارتی برای پرداخت ثبت نکرده است";
+            uservalue.State = TelegramMarzbanVpnSessionState.None;
+        }
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, uservalue,
+                (key, old)
+                    => old = uservalue);
 
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
@@ -945,14 +948,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
             .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
 
-        List<TransactionDetailDto> transactionDetail = await telegramService.GetTransactionDetailAsync();
+        TransactionDetailDto? transactionDetail = await telegramService.GetTransactionDetailAsync(chatId);
 
         var uservalue = user.Value.Value;
 
-        if (transactionDetail[0].MaximumAmount < uservalue.Price | transactionDetail[0].MinimalAmount > uservalue.Price)
+        if (transactionDetail.MaximumAmount < uservalue.Price | transactionDetail.MinimalAmount > uservalue.Price)
         {
             string exText =
-                $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail[0].MinimalAmount} تومان و حداکثر {transactionDetail[0].MaximumAmount} تومان باشد";
+                $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail.MinimalAmount} تومان و حداکثر {transactionDetail.MaximumAmount} تومان باشد";
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
@@ -972,8 +975,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             string text = $@"برای افزایش موجودی، مبلغ {uservalue.Price}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
         
         ==================== 
-        {transactionDetail[0].CardNumber}
-        {transactionDetail[0].CardHolderName}
+        {transactionDetail.CardNumber}
+        {transactionDetail.CardHolderName}
         ====================
 
 ‼️مبلغ باید همان مبلغی که در بالا ذکر شده واریز نمایید.

@@ -244,7 +244,7 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto,long userId);
     
-    Task<>
+    // Task<>
     /// <summary>
     /// update marzban user
     /// </summary>

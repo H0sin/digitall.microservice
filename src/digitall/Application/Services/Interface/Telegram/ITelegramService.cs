@@ -1,8 +1,10 @@
 ﻿using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
+using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 
 namespace Application.Services.Interface.Telegram;
@@ -129,7 +131,7 @@ public interface ITelegramService : IAsyncDisposable
     /// get transaction deatil
     /// </summary>
     /// <returns></returns>
-    Task<List<TransactionDetailDto>> GetTransactionDetailAsync();
+    Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId);
 
     /// <summary>
     /// for reset user password when get password
@@ -143,5 +145,10 @@ public interface ITelegramService : IAsyncDisposable
 
     Task AddTransactionAsync(AddTransactionDto transaction, long chatId);
 
-    Task StartTelegramBot(StartTelegramBotDto start);
+    /// <summary>
+    /// started bot async
+    /// </summary>
+    /// <param name="start"></param>
+    /// <returns>welcome message</returns>
+    Task<AgentOptionDto?> StartTelegramBot(StartTelegramBotDto start);
 }

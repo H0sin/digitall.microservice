@@ -1,4 +1,5 @@
 ﻿using Application.Services.Interface.Agent;
+using Application.Services.Interface.Marzban;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Helper;
 
-public class Percent(IAgentService agentService) : IDisposable
+public class Percent(IAgentService agentService,IMarzbanService? marzbanService = null) : IDisposable
 {
     // public async Task<>
 
@@ -116,17 +117,53 @@ public class Percent(IAgentService agentService) : IDisposable
                 totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
             }
         }
-        
+
         marzbanVpn.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
         marzbanVpn.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
 
         return marzbanVpn;
     }
 
+    public async Task<GetMarzbanVpnDto?> CalcuteVpnPrice(long vpnId,long userId,
+        int numberOfAgents = 2)
+    {
+        AgentDto? admin = await agentService
+            .GetAgentByAdminId(userId);
+
+        AgentDto? agent =
+            await agentService.GetAgentByUserIdAsync(userId);
+
+        if (agent == null)
+            throw new NotFoundException("نمایندگی شم غیر فعال شده است");
+
+        double totalMultiplier = 1.0;
+
+        for (int i = 0; i < numberOfAgents; i++)
+        {
+            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
+            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+
+            if (agentByPath != null)
+            {
+                double percent = (admin != null
+                    ? (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent)
+                    : (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent));
+                totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
+            }
+        }
+
+        GetMarzbanVpnDto? marzbanVpn = await marzbanService.GetMarzbanVpnByIdAsync(vpnId);
+        
+        marzbanVpn.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
+        marzbanVpn.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
+
+        return marzbanVpn;
+    }
+    
     public async Task<List<User>> CalculateAgentIncome(
         long userId,
         long price,
-        int count=1,
+        int count = 1,
         int numberOfAgents = 2)
     {
         AgentDto? admin = await agentService.GetAgentByAdminId(userId);

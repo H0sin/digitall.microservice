@@ -5,6 +5,7 @@ using Application.Static.Template;
 using Data.DefaultData;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
+using Domain.Entities.Agent;
 using Domain.Enums.Agent;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -17,6 +18,7 @@ namespace Application.Services.Implementation.Agent;
 public class AgentService(
     IAgentRepository agentRepository,
     IUserRepository userRepository,
+    IAgentOptionRepository agentOptionRepository,
     INotificationService notificationService) : IAgentService
 {
     public async Task<AgentDto?> GetAgentByCode(long agentCode)
@@ -45,11 +47,11 @@ public class AgentService(
         };
     }
 
-    public async Task<AgentDto> GetAgentByUserIdAsync(long userId)
+    public async Task<AgentDto?> GetAgentByUserIdAsync(long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
-
-        return await GetAgentByIdAsync(user.AgentId);
+        if (user is null) return null;
+        return await GetAgentByIdAsync(user!.AgentId);
     }
 
     public async Task AddAgentRequestAsync(AddRequestAgentDto request, long userId)
@@ -134,10 +136,10 @@ public class AgentService(
             null => null,
             _ => new InformationPaymentDto()
             {
-                CardNumber = agent.CardNumber,
-                MaximumAmount = agent.MaximumAmount,
-                MinimalAmount = agent.MinimalAmount,
-                CardHolderName = agent.CardHolderName
+                // CardNumber = agent.CardNumber,
+                // MaximumAmount = agent.MaximumAmount,
+                // MinimalAmount = agent.MinimalAmount,
+                // CardHolderName = agent.CardHolderName
             }
         };
     }
@@ -150,6 +152,15 @@ public class AgentService(
     public async Task<User?> GetAdminAgentUserAsync(long id)
     {
         return await userRepository.GetEntityById(id);
+    }
+
+    public async Task<AgentOptionDto?> GetAgentOptionByAgentIdAsync(long id)
+    {
+        AgentOptions? agent = await agentOptionRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(x => x.AgentId == id);
+
+        return new(agent);
     }
 
     public async Task<List<AgentDto>> GetAgentsListAsync()
@@ -274,7 +285,7 @@ public class AgentService(
             BrandAddress = agent.BrandAddress,
             AgentPercent = agent.AgentPercent,
             UserPercent = agent.UserPercent,
-            CardNumber = agent.CardNumber,
+            // CardNumber = agent.CardNumber,
             AgentRequestStatus = agent.AgentRequestStatus,
             TelegramBotId = agent.TelegramBotId,
             AdminName = user?.UserFullName(),

@@ -7,16 +7,16 @@ public class AgentDto
 {
     public AgentDto(Entities.Agent.Agent? agent)
     {
-        AgentRequestStatus = agent.AgentRequestStatus;
-        BrandName = agent.BrandName;
-        PersianBrandName = agent.PersianBrandName;
-        AgentAdminId = agent.AgentAdminId;
-        AgentCode = agent.AgentCode;
-        BrandAddress = agent.BrandAddress;
-        AgentPercent = agent.AgentPercent;
-        UserPercent = agent.UserPercent;
-        AgentPath = agent.AgentPath;
-        Id = agent.Id;
+        AgentRequestStatus = agent!.AgentRequestStatus;
+        BrandName = agent!.BrandName;
+        PersianBrandName = agent!.PersianBrandName;
+        AgentAdminId = agent!.AgentAdminId;
+        AgentCode = agent!.AgentCode;
+        BrandAddress = agent!.BrandAddress;
+        AgentPercent = agent!.AgentPercent;
+        UserPercent = agent!.UserPercent;
+        AgentPath = agent!.AgentPath;
+        Id = agent!.Id;
     }
 
     public HierarchyId? AgentPath { get; set; }

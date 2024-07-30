@@ -10,6 +10,7 @@ using Domain.Enums.Transaction;
 using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
+using Domain.Entities.Transaction;
 using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Transaction;
@@ -37,7 +38,7 @@ public class TransactionService(
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
-            UserId = userId
+            // UserId = userId
         };
 
         //transaction.AvatarTransaction.IsImage()
@@ -53,7 +54,7 @@ public class TransactionService(
         }
 
         await transactionRepository.AddEntity(newTransaction);
-        await transactionRepository.SaveChanges(newTransaction.UserId);
+        // await transactionRepository.SaveChanges(newTransaction.UserId);
 
         return AddTransactionResult.Success;
     }
@@ -127,16 +128,20 @@ public class TransactionService(
         return filter;
     }
 
-    public async Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId)
+    public async Task AddTransactionDetailAsync(AddTransactionDetialDto transaction, long userId)
     {
         if (await transactionDetailRepository.GetQuery()
-            .AnyAsync(x => x.CardNumber == transaction.CardNumber))
+                .AnyAsync(x => x.CardNumber == transaction.CardNumber))
             throw new ExistsException("این شماره کارت از قبل ثبت شده است");
 
         await transactionDetailRepository.AddEntity(transaction._GenerateTransaction());
         await transactionDetailRepository.SaveChanges(userId);
     }
 
-    public async Task<List<TransactionDetailDto>> GetTransactionDetailsAsync() =>
-        await transactionDetailRepository.GetQuery().Select(x => new TransactionDetailDto(x)).ToListAsync();
+    public async Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agentId)
+    {
+        TransactionDetail transactionDetail = await transactionDetailRepository.GetQuery()
+            .SingleOrDefaultAsync(x => x.AgentId == agentId);
+        return new TransactionDetailDto(transactionDetail);
+    }
 }

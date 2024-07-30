@@ -4,6 +4,7 @@ using Domain.Common;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Telegram;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,20 +39,6 @@ public class Agent : BaseEntity
 
     [Display(Name = "درصد کاربران")] public long UserPercent { get; set; }
 
-    [Display(Name = "شماره کارت نماینده")]
-    [Length(16, 16, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
-    public string? CardNumber { get; set; }
-
-    [Display(Name = "صاحب کارت")]
-    [MaxLength(300, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string? CardHolderName { get; set; }
-
-    [Display(Name = "بیشترین مقدار تراکنش")]
-    public int MaximumAmount { get; set; } = 2000000;
-
-    [Display(Name = "کمترین مقدار تراکنش")]
-    public int MinimalAmount { get; set; } = 1000000;
-
     [Display(Name = "وضعیت درخواست نمایندگی")]
     public string? AgentRequestStatus { get; set; } = "wating";
 
@@ -66,5 +53,9 @@ public class Agent : BaseEntity
 
     [ForeignKey(nameof(TelegramBotId))] public TelegramBot? TelegramBot { get; set; }
 
+    public AgentOptions? AgentOptions { get; set; }
+
+    public TransactionDetail? TransactionDetail { get; set; }
+    
     #endregion
 }
