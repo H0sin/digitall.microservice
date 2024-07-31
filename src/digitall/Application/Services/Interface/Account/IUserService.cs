@@ -20,10 +20,16 @@ public interface IUserService
     Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter);
     Task<UserDto?> GetUserByIdAsync(long id);
     Task<UserDto?> GetUserByEmailAsync(string email);
-    // Task<UserDto?> GetUserByChatIdAsync(long chatId);
-    Task UpdateUserBalance(long balance, long userId, long updateBy);
     Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId);
     Task<List<UserDto>> GetUserByAgentAsync(long userId);
     Task SendMobileActiveCode(string phone, long userId);
-    Task<UserDto?> GetUserByChatIdAsync(long chatId);
+    Task<UserDto?> GetUserByChatIdAsync(long chatId); 
+    
+    /// <summary>
+    /// for update balanced user after append transaction
+    /// </summary>
+    /// <param name="price"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateUserBalanceAsync(long price, long userId);
 }

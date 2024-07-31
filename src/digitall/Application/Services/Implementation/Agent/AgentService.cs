@@ -38,6 +38,7 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository.GetQuery()
             .Include(x => x.Users)
+            .Include(c=>c.TransactionDetail)
             .SingleOrDefaultAsync(x => x.Id == id);
 
         return agent switch
@@ -69,9 +70,10 @@ public class AgentService(
             AgentPercent = request.AgentPercent,
             AgentAdminId = userId,
             AgentPath = parent.AgentPath,
-            UserPercent = request.UserPercent
+            UserPercent = request.UserPercent,
+            TransactionDetail = request.transactionDetial._GenerateTransaction()
         };
-
+        
         await agentRepository.AddEntity(agent);
         await agentRepository.SaveChanges(userId);
 

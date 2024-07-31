@@ -10,21 +10,28 @@ using Domain.Enums.Transaction;
 using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
+using Application.Services.Interface.Agent;
+using Domain.DTOs.Agent;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Application.Services.Implementation.Transaction;
 
 public class TransactionService(
     ITransactionRepository transactionRepository,
     ITransactionDetailRepository transactionDetailRepository,
+    IAgentService agentService,
     IUserService userService)
     : ITransactionService
 {
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
     {
-        if (await userService.GetUserByIdAsync(userId) is null)
+        UserDto? user = await userService.GetUserByIdAsync(userId);
+        if (user is null)
             return AddTransactionResult.NotUserExists;
+
+        AgentDto? agent = await agentService.GetAgentByIdAsync(user.AgentId);
 
         Domain.Entities.Transaction.Transaction newTransaction = new()
         {
@@ -38,7 +45,7 @@ public class TransactionService(
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
-            // UserId = userId
+            TransactionDetailId = agent?.TransactionDeatilId ?? 0
         };
 
         //transaction.AvatarTransaction.IsImage()
@@ -54,30 +61,49 @@ public class TransactionService(
         }
 
         await transactionRepository.AddEntity(newTransaction);
-        // await transactionRepository.SaveChanges(newTransaction.UserId);
+        await transactionRepository.SaveChanges(userId);
 
         return AddTransactionResult.Success;
     }
 
-    public async Task<UpdateTransactionStatusResult> UpdateTransactionStatusAsync(
+
+    public async Task UpdateTransactionStatusAsync(
         UpdateTransactionStatusDto transaction, long userId)
     {
-        Domain.Entities.Transaction.Transaction? newTransaction =
-            await transactionRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == transaction.TransactionId);
+        using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            Domain.Entities.Transaction.Transaction? transe =
+                await transactionRepository.GetEntityById(transaction.TransactionId);
+            TransactionDetail? transactionDetail =
+                await transactionDetailRepository.GetEntityById(transe.TransactionDetailId);
+            AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
+            UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
-        if (newTransaction is null)
-            return UpdateTransactionStatusResult.Error;
+            if (transe.Price > (user?.Balance ?? 0))
+                throw new BadRequestException("مبلغ شارج درخواستی بیشتر از موجودی حساب شما است!");
 
-        if (transaction.TransactionStatus == TransactionStatus.Accepted &&
-            newTransaction.TransactionStatus != TransactionStatus.Accepted)
-            await userService.UpdateUserBalance(newTransaction.Price, newTransaction.CreateBy, userId);
+            if (transaction.TransactionStatus == TransactionStatus.Accepted &&
+                transe.TransactionStatus == TransactionStatus.Waiting)
+            {
+                await userService.UpdateUserBalanceAsync(transe.Price, transe.CreateBy);
+                await userService.UpdateUserBalanceAsync(-transe.Price, user!.Id);
+            }
 
-        newTransaction!.TransactionStatus = transaction.TransactionStatus;
+            else
+                throw new BadRequestException("شما قبلا این تراکنش را برسی کردید!");
 
-        await transactionRepository.UpdateEntity(newTransaction);
-        await transactionRepository.SaveChanges(userId);
+            transe!.TransactionStatus = transaction.TransactionStatus;
 
-        return UpdateTransactionStatusResult.Success;
+            await transactionRepository.UpdateEntity(transe);
+            await transactionRepository.SaveChanges(userId);
+            await t.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await t.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<bool> ChangeTransactionStatusAsync(TransactionDto transaction, TransactionStatus status)
@@ -101,7 +127,7 @@ public class TransactionService(
 
     public async Task<TransactionDto> GetTransactionByIdAsync(long id)
     {
-        throw new NotImplementedException();
+        return new TransactionDto(await transactionRepository.GetEntityById(id));
     }
 
     public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter)
@@ -140,7 +166,7 @@ public class TransactionService(
 
     public async Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agentId)
     {
-        TransactionDetail transactionDetail = await transactionDetailRepository.GetQuery()
+        TransactionDetail? transactionDetail = await transactionDetailRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.AgentId == agentId);
         return new TransactionDetailDto(transactionDetail);
     }

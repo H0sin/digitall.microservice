@@ -54,21 +54,10 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     [ProducesDefaultResponseType]
-    public async Task<ApiResult> UpdateTransactionStatus([FromForm] UpdateTransactionStatusDto transaction)
+    public async Task<ApiResult> UpdateTransactionStatus([FromBody] UpdateTransactionStatusDto transaction)
     {
-        UpdateTransactionStatusResult response =
-            await transactionService.UpdateTransactionStatusAsync(transaction, User.GetId());
-
-        return response switch
-        {
-            UpdateTransactionStatusResult.Success =>
-                new ApiResult(true, ApiResultStatusCode.Success,
-                    "عملیات با موفقیت انجام شد"),
-            UpdateTransactionStatusResult.Error =>
-                new ApiResult(false, ApiResultStatusCode.LogicError,
-                    "عملیات با خطا مواجع شد با پشتیبانی تماس بگیرید"),
-            _ => new NotFoundResult()
-        };
+        await transactionService.UpdateTransactionStatusAsync(transaction, User.GetId());
+        return Ok();
     }
 
     /// <summary>

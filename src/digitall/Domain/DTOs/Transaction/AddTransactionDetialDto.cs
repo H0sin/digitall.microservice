@@ -13,15 +13,17 @@ public class AddTransactionDetialDto
 
     [Display(Name = "شماره کارت")]
     [MaxLength(50, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string CardNumber { get; set; }
+    public string? CardNumber { get; set; }
 
     [Display(Name = "صاحب کارت")]
     [MaxLength(300, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string CardHolderName { get; set; }
+    public string? CardHolderName { get; set; }
 
     [Display(Name = "توضیحات")]
     [MaxLength(3000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? Description { get; set; }
+
+    public long AgentId { get; set; }
 
     public TransactionDetail _GenerateTransaction()
     {
@@ -31,7 +33,8 @@ public class AddTransactionDetialDto
             CardNumber = CardNumber,
             Description = Description,
             MinimalAmount = MinimalAmount,
-            CardHolderName = CardHolderName
+            CardHolderName = CardHolderName,
+            AgentId = AgentId
         };
     }
 }
