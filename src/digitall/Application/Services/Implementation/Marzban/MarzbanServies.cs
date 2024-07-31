@@ -7,7 +7,6 @@ using Application.Http.Request;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
 using Application.Utilities;
-using Application.Exceptions;
 // using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
@@ -17,6 +16,7 @@ using Domain.Entities.Marzban;
 using Domain.Entities.Order;
 using Domain.Enums;
 using Domain.Enums.Order;
+using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Marzban;
 using Domain.IRepositories.Order;
@@ -278,38 +278,40 @@ public class MarzbanServies(
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
+            //get agent     
+            AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
+
+            if (agent is null)
+                throw new NotFoundException("نمایندکی شما غیر فعال است");
+
             // get user
             User? user = await userRepository.GetEntityById(userId);
-
-            //get agent ids
-            List<long> agentIds = await agentService.GetAgentRoot(user.AgentId);
-            AgentDto agent = await agentService.GetAgentByUserIdAsync(userId);
 
             // get marzban server by id
             MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
 
             // counting price
             // for percent
-            MarzbanVpnTemplateDto? template = await GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
+            MarzbanVpnTemplateDto? template = await
+                GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
 
             using Percent percent = new(agentService);
 
-            long price = template?.Price ?? vpn.CountingPrice(marzbanVpn);
+            MarzbanVpn? mv = await percent.CalcuteVpnPrice(marzbanVpn, userId);
 
-            long productPrice = await percent.Calculate(agentIds, price);
+            long price = template is not null
+                ? await percent.CalculatorVpnPrice(template.Price, userId)
+                : (vpn.CountingPrice(mv));
+
             long totalPrice = price * vpn.Count;
-            List<CalculatorUserIncome> incomes = await percent.CalculateBalanse(agentIds, price);
-
             if (user.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
+            // List<CalculatorUserIncome> incomes = await percent.CalculateBalanse(agentIds, price);
+            //
 
-            long finallIncome = (productPrice - incomes.Select(x => x.Balance).Sum()) * vpn.Count;
-            incomes.Add(new(1, finallIncome));
-
-            foreach (var income in incomes)
+            List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
+            foreach (var u in updatedUsers)
             {
-                User? us = await userRepository.GetEntityById(income.UserId);
-                us.Balance += us.Balance + income.Balance * vpn.Count;
-                await userRepository.UpdateEntity(us);
+                await userRepository.UpdateEntity(u);
             }
 
             user.Balance -= totalPrice;
@@ -481,7 +483,6 @@ public class MarzbanServies(
                 proxies.Add("vless", new { });
             if (marzbanVpn.Shadowsocks.Count > 0)
                 proxies.Add("shadowsocks", new { });
-
 
             users.Add(new()
             {
@@ -668,6 +669,33 @@ public class MarzbanServies(
             null => null,
             _ => response
         };
+    }
+
+    public async Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto, long userId)
+    {
+        MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnDto.Id);
+
+        if (marzbanVpn is null) throw new NotFoundException("وی پی ان پیدا نشد");
+           
+        marzbanVpn.Name = vpnDto.Name;
+        marzbanVpn.GbMax = vpnDto.GbMax;
+        marzbanVpn.GbMin = vpnDto.GbMin;
+        marzbanVpn.GbPrice = vpnDto.GbPrice;
+        marzbanVpn.DayMax = vpnDto.DayMax;
+        marzbanVpn.DayMin = vpnDto.DayMin;
+        marzbanVpn.DayPrice = vpnDto.DayPrice;
+        marzbanVpn.Test_Active = vpnDto.Test_Active;
+        marzbanVpn.Test_Days = vpnDto.Test_Days;
+        marzbanVpn.Test_TotalMg = vpnDto.Test_TotalMg;
+        // marzbanVpn.Vmess = vpnDto.Vmess;
+        // marzbanVpn.Vless = vpnDto.Vless;
+        // marzbanVpn.Shadowsocks = vpnDto.Shadowsocks;
+        // marzbanVpn.Trojan = vpnDto.Trojan;
+
+        // Save changes
+        await marzbanVpnRepository.UpdateEntity(marzbanVpn);
+        await marzbanServerRepository.SaveChanges(userId);
+        return vpnDto;
     }
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)

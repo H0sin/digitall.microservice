@@ -15,5 +15,5 @@ public interface ITransactionService
 
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
     Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId);
-    Task<List<TransactionDetailDto>> GetTransactionDetailsAsync();
+    Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);
 }

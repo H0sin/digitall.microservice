@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Agent;
 using Domain.Entities.Account;
+using Domain.Entities.Agent;
 using Domain.Enums.Agent;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,7 @@ public interface IAgentService : IAsyncDisposable
     /// </summary>
     /// <param name="userId"></param>
     /// <returns>Agent</returns>
-    Task<AgentDto> GetAgentByUserIdAsync(long userId);
+    Task<AgentDto?> GetAgentByUserIdAsync(long userId);
 
     /// <summary>
     /// add request for agent
@@ -64,7 +65,21 @@ public interface IAgentService : IAsyncDisposable
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    Task<Domain.Entities.Agent.Agent?> GetAgentByPath(HierarchyId path);
+    Task<Domain.Entities.Agent.Agent?> GetAgentByPathAsync(HierarchyId path);
+
+    /// <summary>
+    /// get admin by agent id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<User?> GetAdminAgentUserAsync(long id);
+
+    /// <summary>
+    /// get agent option by agent id 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<AgentOptionDto?> GetAgentOptionByAgentIdAsync(long id);
 
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);

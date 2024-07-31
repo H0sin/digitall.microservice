@@ -7,7 +7,6 @@ using Domain.Entities.Authorization;
 using Domain.Entities.Category;
 using Domain.Entities.Country;
 using Domain.Entities.Marzban;
-
 using Domain.Entities.Menu;
 using Domain.Entities.Notification;
 using Domain.Entities.Order;
@@ -58,6 +57,8 @@ public class DigitallDbContext : DbContext
     public DbSet<MarzbanVpnTemplate> MarzbanVpnTemplates { get; set; }
     public DbSet<TelegramBot> TelegramBots { get; set; }
     public DbSet<Notification> Notification { get; set; }
+    public DbSet<AgentOptions> AgentOptions { get; set; }
+
     #endregion
 
     #region properties

@@ -1,5 +1,4 @@
-﻿using Application.Exceptions;
-using Domain.DTOs.Account;
+﻿using Domain.DTOs.Account;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Enums.Account;

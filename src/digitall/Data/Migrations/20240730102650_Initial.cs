@@ -203,6 +203,7 @@ namespace Data.Migrations
                     Route = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     HostAddress = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     SecretToken = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    AgentId = table.Column<long>(type: "bigint", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreateBy = table.Column<long>(type: "bigint", nullable: false),
@@ -212,28 +213,6 @@ namespace Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TelegramBots", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TransactionDetail",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MaximumAmount = table.Column<int>(type: "int", nullable: false),
-                    MinimalAmount = table.Column<int>(type: "int", nullable: false),
-                    CardNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CardHolderName = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(3000)", maxLength: 3000, nullable: true),
-                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreateBy = table.Column<long>(type: "bigint", nullable: false),
-                    ModifyBy = table.Column<long>(type: "bigint", nullable: false),
-                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TransactionDetail", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -404,6 +383,7 @@ namespace Data.Migrations
                     BrandAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AgentPercent = table.Column<long>(type: "bigint", nullable: false),
                     UserPercent = table.Column<long>(type: "bigint", nullable: false),
+                    AgentRequestStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AgentPath = table.Column<SqlHierarchyId>(type: "hierarchyid", nullable: true),
                     TelegramBotId = table.Column<long>(type: "bigint", nullable: true),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -554,6 +534,60 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AgentOption",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WelcomeMessage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    AgentId = table.Column<long>(type: "bigint", nullable: false),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreateBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifyBy = table.Column<long>(type: "bigint", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AgentOption", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AgentOption_Agent_AgentId",
+                        column: x => x.AgentId,
+                        principalTable: "Agent",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TransactionDetail",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MaximumAmount = table.Column<int>(type: "int", nullable: false),
+                    MinimalAmount = table.Column<int>(type: "int", nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CardHolderName = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(3000)", maxLength: 3000, nullable: true),
+                    AgentId = table.Column<long>(type: "bigint", nullable: false),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreateBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifyBy = table.Column<long>(type: "bigint", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransactionDetail_Agent_AgentId",
+                        column: x => x.AgentId,
+                        principalTable: "Agent",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -634,6 +668,7 @@ namespace Data.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    TransactionDetailId = table.Column<long>(type: "bigint", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Price = table.Column<long>(type: "bigint", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
@@ -644,7 +679,6 @@ namespace Data.Migrations
                     AvatarTransaction = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TransactionType = table.Column<int>(type: "int", nullable: false),
                     TransactionStatus = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreateBy = table.Column<long>(type: "bigint", nullable: false),
@@ -655,7 +689,35 @@ namespace Data.Migrations
                 {
                     table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transactions_Users_UserId",
+                        name: "FK_Transactions_TransactionDetail_TransactionDetailId",
+                        column: x => x.TransactionDetailId,
+                        principalTable: "TransactionDetail",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notification",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Expire = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NotificationType = table.Column<byte>(type: "tinyint", nullable: false),
+                    ForAllMember = table.Column<bool>(type: "bit", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    UserId = table.Column<long>(type: "bigint", nullable: true),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreateBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifyBy = table.Column<long>(type: "bigint", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notification", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notification_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -780,31 +842,31 @@ namespace Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Agent",
-                columns: new[] { "Id", "AgentAdminId", "AgentCode", "AgentPath", "AgentPercent", "BrandAddress", "BrandName", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "PersianBrandName", "TelegramBotId", "UserPercent" },
-                values: new object[] { 100001L, 1L, 264184L, Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"), 0L, null, "Samani", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 648, DateTimeKind.Local).AddTicks(9442), false, new DateTime(2024, 7, 21, 9, 55, 3, 650, DateTimeKind.Local).AddTicks(5827), 1L, "سامانی", null, 0L });
+                columns: new[] { "Id", "AgentAdminId", "AgentCode", "AgentPath", "AgentPercent", "AgentRequestStatus", "BrandAddress", "BrandName", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "PersianBrandName", "TelegramBotId", "UserPercent" },
+                values: new object[] { 100001L, 1L, 737566L, Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"), 0L, "wating", null, "Samani", 1L, new DateTime(2024, 7, 30, 13, 56, 48, 675, DateTimeKind.Local).AddTicks(8638), false, new DateTime(2024, 7, 30, 13, 56, 48, 675, DateTimeKind.Local).AddTicks(9070), 1L, "سامانی", null, 0L });
 
             migrationBuilder.InsertData(
                 table: "Menu",
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 1L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7093), null, false, null, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7086), 1L, null, 1, "اصلی" },
-                    { 3L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(286), null, false, null, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(282), 1L, null, 3, "عملیات" }
+                    { 1L, null, true, null, null, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(856), null, false, null, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(839), 1L, null, 1, "اصلی" },
+                    { 3L, null, true, null, null, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5609), null, false, null, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5601), 1L, null, 3, "عملیات" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Permissions",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "ParentId", "SystemName", "Title" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(1648), false, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(1661), 1L, null, "FilterUsers", "لیست کاربران" });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(177), false, new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(185), 1L, null, "FilterUsers", "لیست کاربران" });
 
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "Title" },
                 values: new object[,]
                 {
-                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(571), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(578), 1L, "مدیر" },
-                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(605), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(605), 1L, "همکار" },
-                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(607), false, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(607), 1L, "کاربر" }
+                    { 1L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8760), false, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8786), 1L, "مدیر" },
+                    { 2L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8823), false, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8825), 1L, "همکار" },
+                    { 3L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8827), false, new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8827), 1L, "کاربر" }
                 });
 
             migrationBuilder.InsertData(
@@ -812,8 +874,8 @@ namespace Data.Migrations
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 2L, "Index", true, "", "Home", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7896), "box", false, "/", new DateTime(2024, 7, 21, 9, 55, 3, 658, DateTimeKind.Local).AddTicks(7892), 1L, 1L, 2, "داشبورد" },
-                    { 4L, null, true, null, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(289), "list", false, null, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(288), 1L, 3L, 4, "کاربران" }
+                    { 2L, "Index", true, "", "Home", 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(2022), "box", false, "/", new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(2016), 1L, 1L, 2, "داشبورد" },
+                    { 4L, null, true, null, null, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5613), "list", false, null, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5612), 1L, 3L, 4, "کاربران" }
                 });
 
             migrationBuilder.InsertData(
@@ -821,29 +883,29 @@ namespace Data.Migrations
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(2004), false, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(2011), 1L, 1L },
-                    { 3L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3631), false, 3L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3632), 1L, 1L },
-                    { 7L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3657), false, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3658), 1L, 2L },
-                    { 9L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3662), false, 3L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3663), 1L, 2L }
+                    { 1L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(3381), false, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(3397), 1L, 1L },
+                    { 3L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4588), false, 3L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4588), 1L, 1L },
+                    { 7L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4610), false, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4611), 1L, 2L },
+                    { 9L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4616), false, 3L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4617), 1L, 2L }
                 });
 
             migrationBuilder.InsertData(
                 table: "RolePermissions",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "PermissionId", "RoleId" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(7082), false, new DateTime(2024, 7, 21, 9, 55, 3, 661, DateTimeKind.Local).AddTicks(7087), 1L, 1L, 1L });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(7716), false, new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(7722), 1L, 1L, 1L });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Address", "AgentId", "Avatar", "Balance", "ChatId", "CreateBy", "CreateDate", "Description", "Email", "EmailActiveCode", "FinalCountTestMarzbanAccount", "FirstName", "IsBlocked", "IsDelete", "IsEmailActive", "IsMobileActive", "LastName", "Mobile", "MobileActiveCode", "ModifiedDate", "ModifyBy", "Password", "UserStatus" },
-                values: new object[] { 1L, null, 100001L, "", 0L, null, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 656, DateTimeKind.Local).AddTicks(1743), null, "h.faraji8079@gmail.com", "61e3ea26ea154bd0bc64047c4534a6b1", 0L, "حسین", false, false, true, true, "فرجی", "09913737962", "199662", new DateTime(2024, 7, 21, 9, 55, 3, 656, DateTimeKind.Local).AddTicks(1756), 1L, "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59", false });
+                values: new object[] { 1L, null, 100001L, "", 0L, null, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 682, DateTimeKind.Local).AddTicks(9360), null, "h.faraji8079@gmail.com", "2fb0cc7cbef04a41b7a44377b9e723fa", 0L, "حسین", false, false, true, true, "فرجی", "09913737962", "202223", new DateTime(2024, 7, 30, 13, 56, 48, 682, DateTimeKind.Local).AddTicks(9380), 1L, "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59", false });
 
             migrationBuilder.InsertData(
                 table: "Menu",
                 columns: new[] { "Id", "Action", "Active", "Area", "Controller", "CreateBy", "CreateDate", "Icon", "IsDelete", "Link", "ModifiedDate", "ModifyBy", "ParentId", "Sorted", "Title" },
                 values: new object[,]
                 {
-                    { 5L, "Users", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(292), null, false, "Account/Users", new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(291), 1L, 4L, 5, "لیست کاربران" },
-                    { 6L, "AllUsers", true, "", "Account", 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(311), null, false, "Account/AllUsers", new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(310), 1L, 4L, 6, "لیست همه کاربران" }
+                    { 5L, "Users", true, "", "Account", 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5618), null, false, "Account/Users", new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5617), 1L, 4L, 5, "لیست کاربران" },
+                    { 6L, "AllUsers", true, "", "Account", 1L, new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5645), null, false, "Account/AllUsers", new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5644), 1L, 4L, 6, "لیست همه کاربران" }
                 });
 
             migrationBuilder.InsertData(
@@ -851,25 +913,25 @@ namespace Data.Migrations
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 2L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3619), false, 2L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3628), 1L, 1L },
-                    { 4L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3634), false, 4L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3634), 1L, 1L },
-                    { 8L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3660), false, 2L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3661), 1L, 2L },
-                    { 10L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3668), false, 4L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3669), 1L, 2L }
+                    { 2L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4579), false, 2L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4585), 1L, 1L },
+                    { 4L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4590), false, 4L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4591), 1L, 1L },
+                    { 8L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4614), false, 2L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4614), 1L, 2L },
+                    { 10L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4620), false, 4L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4621), 1L, 2L }
                 });
 
             migrationBuilder.InsertData(
                 table: "UserRoles",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "ModifiedDate", "ModifyBy", "RoleId", "UserId" },
-                values: new object[] { 1L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(3418), false, new DateTime(2024, 7, 21, 9, 55, 3, 659, DateTimeKind.Local).AddTicks(3423), 1L, 1L, 1L });
+                values: new object[] { 1L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 688, DateTimeKind.Local).AddTicks(1356), false, new DateTime(2024, 7, 30, 13, 56, 48, 688, DateTimeKind.Local).AddTicks(1361), 1L, 1L, 1L });
 
             migrationBuilder.InsertData(
                 table: "RoleMenus",
                 columns: new[] { "Id", "CreateBy", "CreateDate", "IsDelete", "MenuId", "ModifiedDate", "ModifyBy", "RoleId" },
                 values: new object[,]
                 {
-                    { 5L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3636), false, 5L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3637), 1L, 1L },
-                    { 6L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3654), false, 6L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3655), 1L, 1L },
-                    { 11L, 1L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3670), false, 5L, new DateTime(2024, 7, 21, 9, 55, 3, 660, DateTimeKind.Local).AddTicks(3673), 1L, 2L }
+                    { 5L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4592), false, 5L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4593), 1L, 1L },
+                    { 6L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4608), false, 6L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4608), 1L, 1L },
+                    { 11L, 1L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4623), false, 5L, new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4623), 1L, 2L }
                 });
 
             migrationBuilder.CreateIndex(
@@ -878,6 +940,12 @@ namespace Data.Migrations
                 column: "TelegramBotId",
                 unique: true,
                 filter: "[TelegramBotId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AgentOption_AgentId",
+                table: "AgentOption",
+                column: "AgentId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_InboundId",
@@ -913,6 +981,11 @@ namespace Data.Migrations
                 name: "IX_Menu_ParentId",
                 table: "Menu",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_UserId",
+                table: "Notification",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetail_OrderId",
@@ -966,9 +1039,15 @@ namespace Data.Migrations
                 column: "CountryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_UserId",
+                name: "IX_TransactionDetail_AgentId",
+                table: "TransactionDetail",
+                column: "AgentId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_TransactionDetailId",
                 table: "Transactions",
-                column: "UserId");
+                column: "TransactionDetailId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_RoleId",
@@ -1000,6 +1079,9 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AgentOption");
+
+            migrationBuilder.DropTable(
                 name: "Clients");
 
             migrationBuilder.DropTable(
@@ -1009,6 +1091,9 @@ namespace Data.Migrations
                 name: "MarzbanVpnTemplates");
 
             migrationBuilder.DropTable(
+                name: "Notification");
+
+            migrationBuilder.DropTable(
                 name: "RoleMenus");
 
             migrationBuilder.DropTable(
@@ -1016,9 +1101,6 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Subscriptions");
-
-            migrationBuilder.DropTable(
-                name: "TransactionDetail");
 
             migrationBuilder.DropTable(
                 name: "Transactions");
@@ -1043,6 +1125,9 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Permissions");
+
+            migrationBuilder.DropTable(
+                name: "TransactionDetail");
 
             migrationBuilder.DropTable(
                 name: "Roles");

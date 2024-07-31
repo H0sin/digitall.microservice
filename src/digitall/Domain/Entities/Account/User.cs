@@ -81,8 +81,6 @@ public class User : BaseEntity
 
     [ForeignKey(nameof(AgentId))] public Agent.Agent Agent { get; set; }
 
-    public ICollection<Transaction.Transaction>? Transaction { get; set; }
-
     public ICollection<Notification.Notification>? Notifications { get; set; }
 
     #endregion

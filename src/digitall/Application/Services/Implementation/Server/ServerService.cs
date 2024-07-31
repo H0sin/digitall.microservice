@@ -3,10 +3,10 @@ using Domain.Enums.Server;
 using Domain.IRepositories.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Application.Exceptions;
 using Domain.DTOs.Country;
 using Application.Services.Interface.Country;
 using Application.Services.Interface.Server;
+using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Server;
 

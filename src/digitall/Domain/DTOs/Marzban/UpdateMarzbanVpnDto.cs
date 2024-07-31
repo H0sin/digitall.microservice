@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography.X509Certificates;
-using Domain.Common;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Entities.Marzban;
+namespace Domain.DTOs.Marzban;
 
-public class MarzbanVpn : BaseEntity
+public class UpdateMarzbanVpnDto
 {
+    public long Id { get; set; }
     [Display(Name = "نام")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(50, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
@@ -37,13 +35,6 @@ public class MarzbanVpn : BaseEntity
     public long DayPrice { get; set; }
     public bool Test_Active { get; set; } = false;
     [Display(Name = "تعداد روز تست")] public int Test_Days { get; set; } = 1;
+
     [Display(Name = "حجم تست")] public int Test_TotalMg { get; set; } = 1;
-    public List<string>? Vmess { get; set; }
-    public List<string>? Vless { get; set; }
-    public List<string>? Shadowsocks { get; set; }
-    public List<string>? Trojan { get; set; }
-    public List<string>? Proxies { get; set; }
-    public long MarzbanServerId { get; set; }
-    public MarzbanServer? MarzbanServer { get; set; }
-    public ICollection<MarzbanVpnTemplate>? MarzbanVpnTemplate { get; set; }
 }

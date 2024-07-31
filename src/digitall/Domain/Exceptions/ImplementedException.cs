@@ -1,6 +1,6 @@
 ﻿using Domain.Enums;
 
-namespace Application.Exceptions;
+namespace Domain.Exceptions;
 
 public class ImplementedException : AppException
 {

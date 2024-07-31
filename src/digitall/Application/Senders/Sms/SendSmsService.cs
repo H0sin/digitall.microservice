@@ -1,10 +1,10 @@
 ﻿using Application.Services.Interface.Notification;
-using Application.Exceptions;
 using Application.Services.Interface.Account;
 using Domain.Common;
 using Domain.DTOs.Sms;
 using Domain.Entities.Account;
 using Domain.Enums.Notification;
+using Domain.Exceptions;
 using IPE.SmsIrClient;
 using IPE.SmsIrClient.Models.Requests;
 using IPE.SmsIrClient.Models.Results;

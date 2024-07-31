@@ -3,7 +3,6 @@ using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Services.Interface.Marzban;
 using Domain.DTOs.Marzban;

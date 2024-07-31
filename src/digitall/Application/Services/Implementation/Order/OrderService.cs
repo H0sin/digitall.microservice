@@ -2,7 +2,6 @@
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Order;
 using Application.Services.Interface.Product;
-using Application.Exceptions;
 using Application.Services.Implementation.Vpn;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Order;
@@ -11,6 +10,7 @@ using Domain.DTOs.Sanaei.Client;
 using Domain.Entities.Account;
 using Domain.Entities.Order;
 using Domain.Enums.Order;
+using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Order;
 using Domain.IRepositories.Sanaei;

@@ -8,7 +8,6 @@ using Domain.IRepositories.Product;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
-using Application.Exceptions;
 using Application.Extensions;
 using Application.Services.Implementation.Agent;
 using Application.Utilities;
@@ -23,6 +22,7 @@ using Application.Utilities;
 using Application.Services.Interface.Product;
 using Application.Services.Interface.Vpn;
 using Application.Services.Interface.Agent;
+using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Product;
 

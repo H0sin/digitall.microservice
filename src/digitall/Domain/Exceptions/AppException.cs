@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Domain.Enums;
 
-namespace Application.Exceptions;
+namespace Domain.Exceptions;
 
 public class AppException : Exception
 {

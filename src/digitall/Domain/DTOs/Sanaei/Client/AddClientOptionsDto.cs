@@ -1,4 +1,4 @@
-﻿using Domain.DTOs.Sanaei.Client;
+﻿namespace Domain.DTOs.Sanaei.Client;
 
 public class AddClientOptionsDto
 {

@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using Api.Filters;
-using Application.Exceptions;
 using Application.Extensions;
 using Domain.DTOs.Marzban;
 using Domain.Enums;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;

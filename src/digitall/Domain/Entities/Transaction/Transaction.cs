@@ -7,12 +7,9 @@ namespace Domain.Entities.Transaction;
 
 public class Transaction : BaseEntity
 {
-    #region releation
-
-    public User User { get; set; }
-
-    #endregion
-
+    public long TransactionDetailId { get; set; }
+    public TransactionDetail TransactionDetail { get; set; }
+    
     #region properties
 
     [Display(Name = "عنوان تراکنش")]
@@ -26,13 +23,11 @@ public class Transaction : BaseEntity
     [Display(Name = "توضیحات تراکنش")]
     [MaxLength(2000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? Description { get; set; }
-    
+
     [Display(Name = "نام صاحب حساب")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? AccountName { get; set; }
-
-    [Display(Name = "زمان تراکنش")] 
-    public DateTime TransactionTime { get; set; } = DateTime.Now;
+    [Display(Name = "زمان تراکنش")] public DateTime TransactionTime { get; set; } = DateTime.Now;
 
     [Display(Name = "شماره کارت")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
@@ -46,13 +41,11 @@ public class Transaction : BaseEntity
 
     [Display(Name = "نوع تراکنش")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public TransactionType TransactionType { get; set; }
+    public TransactionType TransactionType { get; set; } = TransactionType.Increase;
 
     [Display(Name = "وضعیت تراکنش")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public TransactionStatus TransactionStatus { get; set; }
-
-    public long UserId { get; set; }
+    public TransactionStatus TransactionStatus { get; set; } = TransactionStatus.Waiting;
 
     #endregion
 }
