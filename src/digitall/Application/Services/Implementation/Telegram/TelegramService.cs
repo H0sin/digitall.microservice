@@ -172,7 +172,7 @@ public class TelegramService(
         if (DateTime.UtcNow - user.ModifiedDate >= TimeSpan.FromMinutes(3))
         {
             string password = new Random().Next(100000, 999999).ToString();
-            user.Password = password;
+            user.Password = PasswordHelper.EncodePasswordMd5(password);
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(user.Id);
             return password;
