@@ -919,7 +919,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
             }
         });
-        string information = "";
+        string information = transactionDetail.GetTransactionMessage();
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber))
         {
@@ -1032,7 +1032,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = message!.Chat.Id;
-
+        
         if (message.Type == MessageType.Photo)
         {
             KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions

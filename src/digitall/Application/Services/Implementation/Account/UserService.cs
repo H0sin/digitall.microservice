@@ -219,8 +219,7 @@ public class UserService(
 
             await userRepository.AddEntity(user);
             await userRepository.SaveChanges(user.Id);
-            await notificationService.
-                AddNotificationAsync(NotificationTemplate.Welcome(userId: user.Id), user.Id);
+            await notificationService.AddNotificationAsync(NotificationTemplate.Welcome(userId: user.Id), user.Id);
 
             await transaction.CommitAsync();
             return RegisterUserResult.Success;
@@ -398,16 +397,7 @@ public class UserService(
 
         return UpdateUserProfileResult.Success;
     }
-
-    public async Task UpdateUserBalance(long balance, long userId, long updateBy)
-    {
-        User user = await userRepository.GetEntityById(userId);
-        user.Balance += balance;
-
-        await userRepository.UpdateEntity(user);
-        await userRepository.SaveChanges(updateBy);
-    }
-
+    
     public async Task SendMobileActiveCode(string phone, long userId)
     {
         UserDto? user = await GetUserByIdAsync(userId);
@@ -448,6 +438,17 @@ public class UserService(
         if (user is null) return null;
 
         return new(user);
+    }
+
+    public async Task UpdateUserBalanceAsync(long price, long userId)
+    {
+        User? user = await userRepository.GetEntityById(userId);
+        if (user is not null)
+        {
+            user.Balance += price;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(userId);
+        }
     }
 
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)

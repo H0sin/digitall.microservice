@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.DTOs.Transaction;
 using Domain.Enums.Agent;
 
 namespace Domain.DTOs.Agent;
@@ -22,4 +23,6 @@ public class AddRequestAgentDto
     [Display(Name = "درصد کاربر")] public long UserPercent { get; set; } = 0;
 
     [Display(Name = "توضیحات")] public string? Description { get; set; }
+
+    public AddTransactionDetialDto transactionDetial { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.DTOs.Transaction;
 
 namespace Domain.DTOs.Agent;
 
@@ -19,4 +20,6 @@ public class AddAgentDto
     [Display(Name = "آدرس مغازه")] public string? BrandAddress { get; set; }
 
     [Display(Name = "درصد")] public long Percent { get; set; }
+
+    public AddTransactionDetialDto? AddTransactionDetialDto { get; set; }
 }

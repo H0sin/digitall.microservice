@@ -58,7 +58,8 @@ public class TelegramService(
 
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
-        return await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
+        return await userRepository.GetQuery()
+            .SingleOrDefaultAsync(x => x.ChatId == chatId);
     }
 
     public async Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnTestAsync()

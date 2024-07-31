@@ -8,6 +8,7 @@ public class AgentDto
     public AgentDto(Entities.Agent.Agent? agent)
     {
         AgentRequestStatus = agent!.AgentRequestStatus;
+        TransactionDeatilId = agent?.TransactionDetail?.Id ?? 0;
         BrandName = agent!.BrandName;
         PersianBrandName = agent!.PersianBrandName;
         AgentAdminId = agent!.AgentAdminId;
@@ -28,7 +29,7 @@ public class AgentDto
     public string? BrandAddress { get; set; }
     public string? AdminAgentName { get; set; }
     public string AgentRequestStatus { get; set; }
-
+    public long TransactionDeatilId { get; set; }
     public long AgentPercent { get; set; }
     public long UserPercent { get; set; }
 }

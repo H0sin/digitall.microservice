@@ -1,6 +1,7 @@
 ﻿namespace Domain.Enums.Transaction;
 
-public enum TransactionStatus
+[Flags]
+public enum TransactionStatus : byte
 {
     Accepted = 1,
     NotAccepted = 2,
