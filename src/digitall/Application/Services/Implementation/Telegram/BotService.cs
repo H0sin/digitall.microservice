@@ -357,6 +357,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long subscribeId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
+
         if (questionMarkIndex >= 0)
         {
             string? query = callbackData?.Substring(questionMarkIndex);
@@ -367,7 +368,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
 
         BuyMarzbanVpnDto buy = new();
-        
+
         buy.MarzbanVpnTemplateId = id;
         buy.MarzbanVpnId = vpnId;
         buy.Count = 1;
@@ -393,9 +394,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         SubscribeFactorBotDto sub = await telegramService.SendFactorSubscribeAsync(buy, chatId);
 
+        KeyValuePair<long, TelegramMarzbanVpnSession>? userSesstion = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        TelegramMarzbanVpnSession? uservalue = userSesstion?.Value;
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
-            text: sub.GetInfo(),
+            text: uservalue.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
 
@@ -429,12 +435,12 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 Int32.TryParse(queryParameters["gb"], out gb);
                 Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
             }
-            
+
             KeyValuePair<long, TelegramMarzbanVpnSession>? userSesstion = BotSessions
                 .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
 
             var uservalue = userSesstion?.Value;
-            
+
             BuyMarzbanVpnDto buy = new();
 
             buy.MarzbanVpnId = marzbanvpnid;
@@ -443,7 +449,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             buy.TotalDay = days;
             buy.TotalGb = gb;
             buy.MarzbanUserId = uservalue?.UserSubscribeId;
-            
+
             MarzbanVpnTemplateDto? template = null;
 
             if (templateId != 0)
@@ -566,7 +572,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
-        int id = 0;
+        long id = 0;
         int vpnId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
@@ -575,7 +581,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             string? query = callbackData?.Substring(questionMarkIndex);
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int32.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["id"], out id);
             Int32.TryParse(queryParameters["vpnId"], out vpnId);
         }
 
@@ -584,7 +590,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
             .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
 
-        var uservalue = user.Value.Value;
+        TelegramMarzbanVpnSession? uservalue = user?.Value;
+
+        if (uservalue is null)
+            uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None, UserSubscribeId: id);
 
         uservalue.UserSubscribeId = id;
 
@@ -606,7 +615,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", $"vpn_template" +
                                                                         $"?id={vpnId}&" +
                                                                         $"subscribeId={id}"),
-                // InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
             },
             new[]
             {
@@ -883,7 +891,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
-                text: sub.GetInfo(),
+                text: uservalue.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
 

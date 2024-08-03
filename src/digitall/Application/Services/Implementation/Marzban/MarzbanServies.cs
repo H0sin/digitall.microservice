@@ -303,9 +303,7 @@ public class MarzbanServies(
                 : (vpn.CountingPrice(mv));
 
             long totalPrice = price * vpn.Count;
-            if (user.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
-            // List<CalculatorUserIncome> incomes = await percent.CalculateBalanse(agentIds, price);
-            //
+            if (user?.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
 
             List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
             foreach (var u in updatedUsers)
@@ -313,7 +311,7 @@ public class MarzbanServies(
                 await userRepository.UpdateEntity(u);
             }
 
-            user.Balance -= totalPrice;
+            user!.Balance -= totalPrice;
 
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
@@ -324,7 +322,7 @@ public class MarzbanServies(
 
             DateTime today = DateTime.Today;
             DateTime futureDate = today.AddDays(template?.Days ?? vpn.TotalDay);
-            // Convert the future date to Unix timestamp (seconds since January 1, 1970)
+
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
             Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>() { };
@@ -697,7 +695,7 @@ public class MarzbanServies(
         return vpnDto;
     }
 
-    public async Task<MarzbanUser> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
+    public async Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
     {
         IDbContextTransaction transaction = await marzbanVpnRepository.context.Database.BeginTransactionAsync();
         try
@@ -709,9 +707,9 @@ public class MarzbanServies(
 
             if (agent is null)
                 throw new NotFoundException("نمایندکی شما غیر فعال است");
-            
+
             User? user = await userRepository.GetEntityById(userId);
-            
+
             MarzbanVpnTemplateDto? template = await
                 GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
 
@@ -724,7 +722,7 @@ public class MarzbanServies(
                 : (vpn.CountingPrice(mv));
 
             long totalPrice = price * vpn.Count;
-            if (user.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
+            if (user?.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
 
             List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
 
@@ -733,20 +731,18 @@ public class MarzbanServies(
                 await userRepository.UpdateEntity(u);
             }
 
-            user.Balance -= totalPrice;
+            user!.Balance -= totalPrice;
 
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
 
-            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(vpn.MarzbanUserId ?? 0,userId);
-            
+            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(vpn.MarzbanUserId ?? 0, userId);
+
             long byteSize = 1073741824;
-            
-            DateTime today = DateTime.Today;
-            DateTime futureDate = today.AddDays(template?.Days ?? vpn.TotalDay);
+            DateTime dt = DateTimeOffset.FromUnixTimeSeconds(marzbanUser?.Expire ?? 0).DateTime;
+            DateTime futureDate = dt.AddDays(template?.Days ?? vpn.TotalDay);
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
 
-            
             MarzbanUserDto newMarzbanUser = new()
             {
                 Expire = unixTimestamp,
@@ -755,8 +751,7 @@ public class MarzbanServies(
                 Status = "active",
                 Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)) + marzbanUser?.Data_Limit ?? 0,
             };
-            
-            
+
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
@@ -768,8 +763,8 @@ public class MarzbanServies(
             MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
-            
-            return new();
+
+            return response;
         }
         catch (Exception e)
         {

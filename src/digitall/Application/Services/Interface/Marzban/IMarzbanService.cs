@@ -258,6 +258,6 @@ public interface IMarzbanService
     /// <param name="buy"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<MarzbanUser> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId);
+    Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId);
 }
 
