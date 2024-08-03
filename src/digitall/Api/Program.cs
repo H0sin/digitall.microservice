@@ -20,6 +20,7 @@ using Api.Factory;
 using Application.Jobs;
 using Application.Utilities;
 using Quartz;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,8 @@ builder.Services.AddSingleton<BotService>();
 builder.Services.AddSingleton<TelegramBotClientFactory>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
+
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
 #region cors config
 

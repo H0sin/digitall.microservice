@@ -93,7 +93,15 @@ public class TelegramService(
     public async Task<List<MarzbanUser>> BuySubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        return await marzbanService.BuyMarzbanVpnAsync(buy, user.Id);
+
+        if (buy.MarzbanUserId != null && buy.MarzbanUserId != 0)
+        {
+            var d = await marzbanService.RenewalMarzbanVpnAsync(buy, user?.Id ?? 0);
+            var s = new List<MarzbanUser>();
+            s.Add(d);
+            return s;
+        }
+        else return await marzbanService.BuyMarzbanVpnAsync(buy, user?.Id ?? 0);
     }
 
     public async Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId)

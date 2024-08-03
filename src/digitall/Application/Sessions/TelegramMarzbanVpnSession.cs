@@ -9,13 +9,16 @@ public class TelegramMarzbanVpnSession
     public TelegramMarzbanVpnSessionState State { get; set; }
     public long? VpnId { get; set; }
     public int Price { get; set; }
+    
+    public long? UserSubscribeId { get; set; }
 
-    public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,long? vpnId = null)
+    public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,long? vpnId = null,string? UserSubscribeId = null)
     {
         Gb = gb;
         Date = date;
         State = state;
         VpnId = vpnId;
+        UserSubscribeId = UserSubscribeId;
     }
 }
 
