@@ -13,6 +13,7 @@ public class BuyMarzbanVpnDto
     public int TotalGb { get; set; } = 1;
     public int TotalDay { get; set; } = 1;
     public long? MarzbanVpnTemplateId { get; set; } = null;
+    public long? MarzbanUserId { get; set; } = null;
 
     public long CountingPrice(MarzbanVpn vpn)
     {

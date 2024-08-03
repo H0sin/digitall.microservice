@@ -292,11 +292,17 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
-        string callbackData = callbackQuery.Data;
-        int index = callbackData.IndexOf('=');
         long id = 0;
         long subscribeId = 0;
-        if (index != -1) id = Convert.ToInt64(callbackData[(index + 1)..]);
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
+        }
 
         List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
 
@@ -351,6 +357,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long subscribeId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
+
         if (questionMarkIndex >= 0)
         {
             string? query = callbackData?.Substring(questionMarkIndex);
@@ -387,9 +394,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         SubscribeFactorBotDto sub = await telegramService.SendFactorSubscribeAsync(buy, chatId);
 
+        KeyValuePair<long, TelegramMarzbanVpnSession>? userSesstion = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        TelegramMarzbanVpnSession? uservalue = userSesstion?.Value;
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
-            text: sub.GetInfo(),
+            text: uservalue.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
 
@@ -424,9 +436,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
             }
 
-            if (subscribeId != 0)
-            {
-            }
+            KeyValuePair<long, TelegramMarzbanVpnSession>? userSesstion = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+            var uservalue = userSesstion?.Value;
 
             BuyMarzbanVpnDto buy = new();
 
@@ -435,6 +448,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             buy.Count = 1;
             buy.TotalDay = days;
             buy.TotalGb = gb;
+            buy.MarzbanUserId = uservalue?.UserSubscribeId;
 
             MarzbanVpnTemplateDto? template = null;
 
@@ -446,7 +460,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             foreach (MarzbanUser user in marzbanUsers)
             {
                 byte[] QrImage = await GenerateQrCode
-                    .GetQrCodeAsync(user.Subscription_Url);
+                    .GetQrCodeAsync(user?.Subscription_Url);
 
                 string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
@@ -558,7 +572,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
-        int id = 0;
+        long id = 0;
         int vpnId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
@@ -567,11 +581,27 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             string? query = callbackData?.Substring(questionMarkIndex);
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int32.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["id"], out id);
             Int32.TryParse(queryParameters["vpnId"], out vpnId);
         }
 
-        SubescribeStatus.ServiceStatus status = await telegramService.GetMarzbanUserByChatIdAsync(id, chatId);
+        SubescribeStatus.ServiceStatus? status = await telegramService.GetMarzbanUserByChatIdAsync(id, chatId);
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+        TelegramMarzbanVpnSession? uservalue = user?.Value;
+
+        if (uservalue is null)
+            uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None, UserSubscribeId: id);
+
+        uservalue.UserSubscribeId = id;
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, uservalue,
+                (key, old)
+                    => old = uservalue);
 
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
@@ -582,8 +612,9 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", $"vpn_template?id={vpnId}&subscribeId={id}"),
-                // InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", "change_link")
+                InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊", $"vpn_template" +
+                                                                        $"?id={vpnId}&" +
+                                                                        $"subscribeId={id}"),
             },
             new[]
             {
@@ -685,21 +716,30 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         int vpnId = 0;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
+        long subscribeId = 0;
 
         if (questionMarkIndex >= 0)
         {
             string? query = callbackData?.Substring(questionMarkIndex);
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int32.TryParse(queryParameters["vpnId"], out vpnId);
+            Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
         }
 
-        GetMarzbanVpnDto vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId);
+        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId);
+
+        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+        var uservalue = user.Value.Value;
+
+        uservalue.VpnId = vpnId;
+        uservalue.State = TelegramMarzbanVpnSessionState.AwaitingGb;
 
         BotSessions
             .users_Sessions?
             .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId),
                 (key, old)
-                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId));
+                    => old = old);
 
         string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
 🔔قیمت هر گیگ حجم {vpn?.GbPrice ?? 0} تومان می باشد.
@@ -781,10 +821,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
             .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
         var uservalue = user.Value.Value;
 
         GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0);
-        User mainUser = await telegramService.GetUserByChatIdAsync(chatId);
+        User? mainUser = await telegramService.GetUserByChatIdAsync(chatId);
 
 
         if (uservalue.Date > vpn?.DayMax | uservalue.Date < vpn?.DayMin | uservalue.Date == 0)
@@ -821,12 +862,13 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     (key, old)
                         => old = uservalue);
 
+            string payment = uservalue.UserSubscribeId == null ? "دریافت سرویس" : $"تمدید سرویس";
 
             var inlineKeyboard = new InlineKeyboardMarkup(new[]
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس", $"buy_subscribe" +
+                    InlineKeyboardButton.WithCallbackData($"پرداخت و {payment}", $"buy_subscribe" +
                         $"?marzbanvpnid={uservalue.VpnId}" +
                         $"&gb={uservalue.Gb}" +
                         $"&days={uservalue.Date}")
@@ -849,7 +891,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
-                text: sub.GetInfo(),
+                text: uservalue.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
 
@@ -1032,7 +1074,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = message!.Chat.Id;
-        
+
         if (message.Type == MessageType.Photo)
         {
             KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions

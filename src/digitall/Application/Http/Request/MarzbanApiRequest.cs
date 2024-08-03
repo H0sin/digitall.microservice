@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using Application.Extensions;
 using Application.Utilities;
@@ -19,6 +20,13 @@ public class MarzbanApiRequest
 
     public MarzbanApiRequest(MarzbanServer marzbanServer)
     {
+        // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        //
+        // var handler = new HttpClientHandler()
+        // {
+        //     SslProtocols = SslProtocols.Tls12,
+        // };
+        
         _httpClient = new HttpClient();
         _marzbanServer = marzbanServer;
     }
@@ -27,14 +35,14 @@ public class MarzbanApiRequest
     {
         try
         {
-            var loginData = new Dictionary<string, string>()
+            var loginData = new Dictionary<string, string?>()
             {
-                { "username", _marzbanServer.UserName },
-                { "password", _marzbanServer.Password }
+                { "username", _marzbanServer?.UserName },
+                { "password", _marzbanServer?.Password }
             };
 
             var content = new FormUrlEncodedContent(loginData);
-            var response = await _httpClient.PostAsync(_marzbanServer.GetFullIpAddress() + MarzbanPaths.Login, content);
+            var response = await _httpClient.PostAsync(_marzbanServer?.GetFullIpAddress() + MarzbanPaths.Login, content);
 
             if (response.StatusCode == HttpStatusCode.NotFound) throw new LogicException("سرور در دست رس نیست");
 

@@ -244,7 +244,6 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto,long userId);
     
-    // Task<>
     /// <summary>
     /// update marzban user
     /// </summary>
@@ -252,5 +251,13 @@ public interface IMarzbanService
     /// <param name="serverId"></param>
     /// <returns></returns>
     // Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUser user,long serverId);
+    
+    /// <summary>
+    /// reveval marzban user
+    /// </summary>
+    /// <param name="buy"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId);
 }
 
