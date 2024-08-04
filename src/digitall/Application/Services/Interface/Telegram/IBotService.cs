@@ -14,6 +14,7 @@ public interface IBotService
     /// <returns></returns>
     Task SendUserForLoginToWebAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
+
     /// <summary>
     /// start bot
     /// </summary>
@@ -32,7 +33,7 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendMainMenuAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,string? title = null);
+        CancellationToken cancellationToken, string? title = null);
 
     /// <summary>
     /// send list exist vpn
@@ -191,9 +192,10 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SendCardNumberAndDetailAsync(ITelegramBotClient? botClient, Message? message, CancellationToken cancellationToken);
+    Task SendCardNumberAndDetailAsync(ITelegramBotClient? botClient, Message? message,
+        CancellationToken cancellationToken);
 
-    
+
     /// <summary>
     /// affter wating for transaction images
     /// </summary>
@@ -209,15 +211,56 @@ public interface IBotService
     /// </summary>
     /// <returns></returns>
     Task AddTrnasactionAsync(ITelegramBotClient? botClient, Message? message, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send factor for append gb for service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendFactorAppendGbAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+
+    /// <summary>
+    /// send factor for append days for service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendFactorAppendDaysAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+
+    /// <summary>
+    /// accept after show factor for buy gb append
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AcceptAppendGbAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// accept after show factor for buy days append
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AcceptAppendDaysAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
     
-    //
-    // /// <summary>
-    // /// update subscribe
-    // /// </summary>
-    // /// <param name="botClient"></param>
-    // /// <param name="callbackQuery"></param>
-    // /// <param name="cancellationToken"></param>
-    // /// <returns></returns>
-    // Task SubscribeExtension(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-    //     CancellationToken cancellationToken);
+    /// <summary>
+    /// send days price
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendDaysPriceForAppendDaysAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 }

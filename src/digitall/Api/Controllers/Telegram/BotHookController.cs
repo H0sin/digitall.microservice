@@ -72,6 +72,18 @@ public class BotHookController(
         {
             switch (user.Value.Value.State)
             {
+                case TelegramMarzbanVpnSessionState.AwaitingSendAppendDaysForService:
+                    int day = 0;
+                    Int32.TryParse(message?.Text, out day);
+                    user.Value.Value.Date = day;
+                    await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken);
+                    break;
+                case TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService:
+                    int gig = 0;
+                    Int32.TryParse(message?.Text, out gig);
+                    user.Value.Value.Gb = gig;
+                    await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken);
+                    break;
                 case TelegramMarzbanVpnSessionState.AwaitingGb:
                     int gb = 0;
                     Int32.TryParse(message?.Text, out gb);
@@ -175,6 +187,15 @@ public class BotHookController(
                 break;
             case "web_information":
                 await botService.SendUserForLoginToWebAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "accept_gb":
+                await botService.AcceptAppendGbAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "accept_date":
+                await botService.AcceptAppendDaysAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "append_date":
+                await botService.SendDaysPriceForAppendDaysAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "renewal_service":
                 await _botClient.SendTextMessageAsync(

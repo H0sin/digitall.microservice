@@ -65,7 +65,7 @@ public interface ITelegramService : IAsyncDisposable
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId);
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId,long chatId);
 
     /// <summary>
     /// get marzban template by vpn id

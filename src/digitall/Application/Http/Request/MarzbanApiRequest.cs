@@ -20,13 +20,6 @@ public class MarzbanApiRequest
 
     public MarzbanApiRequest(MarzbanServer marzbanServer)
     {
-        // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        //
-        // var handler = new HttpClientHandler()
-        // {
-        //     SslProtocols = SslProtocols.Tls12,
-        // };
-        
         _httpClient = new HttpClient();
         _marzbanServer = marzbanServer;
     }

@@ -10,8 +10,8 @@ public class BuyMarzbanVpnDto
 
     [MaxLength(50)] [Required] public string? Title { get; set; }
     public long MarzbanVpnId { get; set; }
-    public int TotalGb { get; set; } = 1;
-    public int TotalDay { get; set; } = 1;
+    public int TotalGb { get; set; } = 0;
+    public int TotalDay { get; set; } = 0;
     public long? MarzbanVpnTemplateId { get; set; } = null;
     public long? MarzbanUserId { get; set; } = null;
 

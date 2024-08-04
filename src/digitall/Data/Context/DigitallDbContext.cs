@@ -43,7 +43,7 @@ public class DigitallDbContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<TransactionDetail> TransactionDetail { get; set; }
     public DbSet<Server> Server { get; set; }
-    public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<Subscribtion> Subscriptions { get; set; }
     public DbSet<Vpn> Vpn { get; set; }
     public DbSet<Order> Order { get; set; }
     public DbSet<OrderDetail> OrderDetail { get; set; }
@@ -136,6 +136,7 @@ public class DigitallDbContext : DbContext
         modelBuilder.AddData(RoleMenuItems.RoleMenus);
         modelBuilder.AddData(PermissionsItems.Permissions);
         modelBuilder.AddData(RolePermissionItems.RolePermissions);
+        modelBuilder.AddData(TransactionDetailItems.TransactionDetails);
 
         #endregion
 

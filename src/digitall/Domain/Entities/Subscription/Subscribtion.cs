@@ -3,7 +3,7 @@ using Domain.Common;
 
 namespace Domain.Entities.Subscription;
 
-public class Subscription : BaseEntity
+public class Subscribtion : BaseEntity
 {
     [Display(Name = "نام ساب")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]

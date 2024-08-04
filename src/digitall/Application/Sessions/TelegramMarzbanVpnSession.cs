@@ -30,7 +30,9 @@ public enum TelegramMarzbanVpnSessionState
     AwatingFactor,
     AwatingSendPrice,
     AwaitingSubscibeCount,
-    AwaitingSendTransactionImage
+    AwaitingSendTransactionImage,
+    AwaitingSendAppendGbForService,
+    AwaitingSendAppendDaysForService
 }
 
 public static class BotSessions
