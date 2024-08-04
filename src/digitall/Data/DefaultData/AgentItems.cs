@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Agent;
+using Domain.Entities.Transaction;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.DefaultData;
@@ -18,7 +19,7 @@ public class AgentItems
             AgentAdminId = 1,
             PersianBrandName = "سامانی",
             AgentCode = new Random().Next(100000,999999),
-            AgentPath = HierarchyId.Parse("/")
+            AgentPath = HierarchyId.Parse("/"),
         }
     };
 }

@@ -79,9 +79,10 @@ public class TelegramService(
         return await marzbanService.GetMarzbanUserInformationAsync(marzbanUser.Username);
     }
 
-    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId)
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId,long chatId)
     {
-        return await marzbanService.GetMarzbanVpnByIdAsync(vpnId);
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await marzbanService.GetMarzbanVpnByIdAsync(vpnId,user.Id);
     }
 
     public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId)

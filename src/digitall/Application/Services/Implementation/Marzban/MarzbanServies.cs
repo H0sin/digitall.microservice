@@ -273,30 +273,25 @@ public class MarzbanServies(
         IDbContextTransaction transaction = await marzbanVpnRepository.context.Database.BeginTransactionAsync();
         try
         {
-            //get vpn
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
-            //get agent     
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
 
             if (agent is null)
                 throw new NotFoundException("نمایندکی شما غیر فعال است");
 
-            // get user
+
             User? user = await userRepository.GetEntityById(userId);
 
-            // get marzban server by id
             MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
 
-            // counting price
-            // for percent
             MarzbanVpnTemplateDto? template = await
                 GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
 
-            using Percent percent = new(agentService);
+            using Percent percent = new(agentService, this);
 
-            MarzbanVpn? mv = await percent.CalcuteVpnPrice(marzbanVpn, userId);
+            GetMarzbanVpnDto? mv = await percent.CalcuteVpnPrice(marzbanVpn.Id, userId);
 
             long price = template is not null
                 ? await percent.CalculatorVpnPrice(template.Price, userId)
@@ -564,22 +559,34 @@ public class MarzbanServies(
             }).ToListAsync();
     }
 
-    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId)
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId, long userId)
     {
-        MarzbanVpn? vpn = await marzbanVpnRepository.GetEntityById(vpnId);
+        MarzbanVpn? vpn = await marzbanVpnRepository
+            .GetEntityById(vpnId);
+
+        using Percent percent = new(agentService, this);
+
         return vpn switch
         {
             null => null,
-            _ => new GetMarzbanVpnDto(vpn)
+            _ => await percent.CalcuteVpnPrice(vpn.Id, userId)
+        };
+    }
+
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId)
+    {
+        MarzbanVpn? vpn = await marzbanVpnRepository
+            .GetEntityById(vpnId);
+
+        return vpn switch
+        {
+            null => null,
+            _ => new(vpn)
         };
     }
 
     public async Task AddMarzbanVpnTemplateAsync(AddMarzbanVpnTemplatesDto template, long userId)
     {
-        GetMarzbanVpnDto? vpn = await GetMarzbanVpnByIdAsync(template.MarzbanVpnId);
-
-        if (vpn is null) throw new NotFoundException("چنین vpn وجود ندارد");
-
         MarzbanVpnTemplate vpnTemplate = new()
         {
             Days = template.Days,
@@ -771,6 +778,11 @@ public class MarzbanServies(
             await transaction.RollbackAsync();
             throw e;
         }
+    }
+
+    public Task<bool> ChangeMarzbanUserStatus(bool status, long userId)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)

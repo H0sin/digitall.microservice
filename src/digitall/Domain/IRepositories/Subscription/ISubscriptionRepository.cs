@@ -2,6 +2,6 @@
 
 namespace Domain.IRepositories.Subscription;
 
-public interface ISubscriptionRepository : IBaseRepository<Entities.Subscription.Subscription>
+public interface ISubscriptionRepository : IBaseRepository<Entities.Subscription.Subscribtion>
 {
 }

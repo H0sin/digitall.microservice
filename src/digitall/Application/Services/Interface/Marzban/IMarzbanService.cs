@@ -197,8 +197,15 @@ public interface IMarzbanService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId,long userId);
 
+    /// <summary>
+    /// get marzban vpn by id async
+    /// </summary>
+    /// <param name="vpnId"></param>
+    /// <returns></returns>
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
+    
     /// <summary>
     /// add marzban vpn template
     /// </summary>
@@ -259,5 +266,13 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId);
+
+    /// <summary>
+    /// when disiable user status
+    /// </summary>
+    /// <param name="status"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> ChangeMarzbanUserStatus(bool status,long userId);
 }
 

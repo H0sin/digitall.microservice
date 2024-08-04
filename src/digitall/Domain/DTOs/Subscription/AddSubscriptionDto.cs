@@ -12,9 +12,9 @@ public class AddSubscriptionDto
 
     public string Name { get; set; }
 
-    public Entities.Subscription.Subscription Sub(string? Name)
+    public Entities.Subscription.Subscribtion Sub(string? Name)
     {
-        return new Entities.Subscription.Subscription
+        return new Entities.Subscription.Subscribtion
         {
             Name = Name
         };
