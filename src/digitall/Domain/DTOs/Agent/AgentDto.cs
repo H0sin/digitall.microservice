@@ -7,7 +7,6 @@ public class AgentDto
 {
     public AgentDto(Entities.Agent.Agent? agent)
     {
-        AgentRequestStatus = agent!.AgentRequestStatus;
         TransactionDeatilId = agent?.TransactionDetail?.Id ?? 0;
         BrandName = agent!.BrandName;
         PersianBrandName = agent!.PersianBrandName;

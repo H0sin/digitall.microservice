@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Marzban;
 using Domain.Entities.Marzban;
+using Domain.Enums.Marzban;
 
 namespace Application.Services.Interface.Marzban;
 
@@ -146,7 +147,7 @@ public interface IMarzbanService
     /// get list marzban vpn for buy vpn from vpn service
     /// </summary>
     /// <returns></returns>
-    Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId,int numberOfAgents=2);
+    Task<IReadOnlyList<GetMarzbanVpnDto>> GetMarzbanVpnAsync(long userId, int numberOfAgents = 2);
 
     /// <summary>
     /// buy marzban vpn
@@ -172,7 +173,7 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<List<string>> GetMarzbanUsersByUserId(long userId);
-    
+
     /// <summary>
     /// total price 0
     /// test account in marzban
@@ -197,7 +198,7 @@ public interface IMarzbanService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId,long userId);
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId, long userId);
 
     /// <summary>
     /// get marzban vpn by id async
@@ -205,7 +206,7 @@ public interface IMarzbanService
     /// <param name="vpnId"></param>
     /// <returns></returns>
     Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
-    
+
     /// <summary>
     /// add marzban vpn template
     /// </summary>
@@ -249,16 +250,16 @@ public interface IMarzbanService
     /// <param name="vpnDto"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto,long userId);
-    
+    Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto, long userId);
+
     /// <summary>
-    /// update marzban user
+    /// update marzban user just my database
     /// </summary>
     /// <param name="user"></param>
     /// <param name="serverId"></param>
     /// <returns></returns>
-    // Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUser user,long serverId);
-    
+    Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUserDto user,long userId);
+
     /// <summary>
     /// reveval marzban user
     /// </summary>
@@ -271,8 +272,8 @@ public interface IMarzbanService
     /// when disiable user status
     /// </summary>
     /// <param name="status"></param>
+    /// <param name="marzbanUserId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<bool> ChangeMarzbanUserStatus(bool status,long userId);
+    Task<bool> ChangeMarzbanUserStatus(MarzbanUserStatus status, long marzbanUserId, long userId);
 }
-

@@ -13,7 +13,9 @@ using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -74,7 +76,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             Int64.TryParse((message.Text.Substring(6)), out agentId);
         }
 
-        AgentOptionDto? agentOptions = await telegramService.StartTelegramBot(new StartTelegramBotDto()
+        AgentOptionDto? agentOptions = await telegramService.StartTelegramBotAsync(new StartTelegramBotDto()
         {
             AgentCode = agentId,
             ChatId = message.Chat.Id,
@@ -629,9 +631,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", $"vpn_template" +
                                                                      $"?id={vpnId}&" +
                                                                      $"subscribeId={id}"),
-                InlineKeyboardButton.WithCallbackData("تغییر وضعیت سرویس ❌", $"vpn_template" +
-                                                                             $"?id={vpnId}&" +
-                                                                             $"subscribeId={id}"),
+            },
+            new []
+            {
+                InlineKeyboardButton.WithCallbackData("فعال کردن 🤞", "active_service"),
+                InlineKeyboardButton.WithCallbackData(" غیر فعال کردن ❌", "disabled_service"),
             },
             new[]
             {
@@ -1410,4 +1414,94 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
     }
+
+    public async Task ActiveMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        try
+        {
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+            TelegramMarzbanVpnSession? uservalue = user?.Value;
+
+            if (uservalue.UserSubscribeId is null)
+            {
+                throw new NotFoundException("با عرض پوزش سرور پاسخگو نمیباشد");
+            }
+
+            await telegramService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, uservalue.UserSubscribeId ?? 0,
+                chatId);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: "سرویس شما با موفقیت فعال شد",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+        }
+    }
+
+    public async Task DisabledMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        try
+        {
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+            TelegramMarzbanVpnSession? uservalue = user?.Value;
+
+            if (uservalue.UserSubscribeId is null)
+            {
+                throw new NotFoundException("با عرض پوزش سرور پاسخگو نمیباشد");
+            }
+
+            await telegramService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.disabled,
+                uservalue.UserSubscribeId ?? 0,
+                chatId);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: "سرویس شما با موفقیت غیر فعال شد",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            // await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+        }
+    }
+
+    // public Task RequestForAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    //     CancellationToken cancellationToken)
+    // {
+    //     long chatId = callbackQuery!.Message!.Chat.Id;
+    //     try
+    //     {
+    //         
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         // await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+    //         await botClient!.SendTextMessageAsync(
+    //             chatId: chatId,
+    //             text: e.Message,
+    //             cancellationToken: cancellationToken);
+    //         await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+    //     }
+    // }
 }

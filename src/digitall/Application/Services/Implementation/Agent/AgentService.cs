@@ -3,6 +3,7 @@ using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Static.Template;
 using Data.DefaultData;
+using Data.Repositories.Agent;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
@@ -17,6 +18,7 @@ namespace Application.Services.Implementation.Agent;
 
 public class AgentService(
     IAgentRepository agentRepository,
+    IAgentRequestRepository agentRequestRepository,
     IUserRepository userRepository,
     IAgentOptionRepository agentOptionRepository,
     INotificationService notificationService) : IAgentService
@@ -38,7 +40,7 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository.GetQuery()
             .Include(x => x.Users)
-            .Include(c=>c.TransactionDetail)
+            .Include(c => c.TransactionDetail)
             .SingleOrDefaultAsync(x => x.Id == id);
 
         return agent switch
@@ -62,50 +64,58 @@ public class AgentService(
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
 
-        Domain.Entities.Agent.Agent agent = new()
-        {
-            BrandAddress = request.BrandAddress,
-            BrandName = request.BrandName,
-            PersianBrandName = request.PersianBrandName,
-            AgentPercent = request.AgentPercent,
-            AgentAdminId = userId,
-            AgentPath = parent.AgentPath,
-            UserPercent = request.UserPercent,
-            TransactionDetail = request.transactionDetial._GenerateTransaction()
-        };
-        
-        await agentRepository.AddEntity(agent);
-        await agentRepository.SaveChanges(userId);
-
-        agent.AgentPath = HierarchyId.Parse(parent.AgentPath + agent.Id.ToString() + "/");
-
-        await agentRepository.UpdateEntity(agent);
-        await agentRepository.SaveChanges(userId);
+        await agentRequestRepository.AddEntity(request._GenerateAgentRequest(userId));
+        await agentRequestRepository.SaveChanges(userId);
 
         User? user = await userRepository.GetEntityById(userId);
         await notificationService.AddNotificationAsync(
             NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName()), userId);
     }
 
-    public async Task UpdateAgentRequest(UpdateAgentRequestDto agent, long userId)
+    public async Task UpdateAgentRequest(UpdateAgentRequestDto agentRequest, long userId)
     {
-        AgentDto? parent = await GetAgentByAdminId(userId);
-        Domain.Entities.Agent.Agent? ag = await agentRepository.GetEntityById(agent.Id);
+        AgentRequest? request = await agentRequestRepository.GetEntityById(agentRequest.Id);
 
-        if (ag?.AgentPath?.GetAncestor(1) != parent?.AgentPath)
-            throw new NotFoundException("نمیاندگی وجود ندارد");
+        AgentDto? parent = await GetAgentByAdminId(request.UserId);
 
-        if (ag is null) throw new NotFoundException("نمیاندگی وجود ندارد");
+        if (request is null) throw new NotFoundException("درخواستی یافت نشد");
 
-        if (ag.AgentRequestStatus.ToLower() == "accept")
-            throw new BadRequestException("نمیتوانید کاربری که در خواست ان را قبول کردید تغییر بدهید.");
+        switch (agentRequest.AgentRequestStatus.ToLower())
+        {
+            case "accept":
+                Domain.Entities.Agent.Agent agent = new()
+                {
+                    TransactionDetail = new()
+                    {
+                        Description = request.PaymentDescription,
+                        CardNumber = request.CardNumber,
+                        MaximumAmount = request.MaximumAmount,
+                        MinimalAmount = request.MinimalAmount,
+                        CardHolderName = request.CardHolderName,
+                    },
+                    AgentPercent = request.AgentPercent,
+                    UserPercent = request.UserPercent,
+                    BrandAddress = request.BrandAddress,
+                    BrandName = request.BrandName,
+                    PersianBrandName = request.PersianBrandName,
+                    AgentAdminId = request.UserId
+                };
 
-        ag!.AgentRequestStatus = agent.AgentRequestStatus;
-        await agentRepository.UpdateEntity(ag);
-        await agentRepository.SaveChanges(1);
-        string status = agent.AgentRequestStatus.ToLower() == "accept" ? "پذیرفته" : "رد شده";
-        await notificationService.AddNotificationAsync(NotificationTemplate.ChangeRequestAgent(ag.AgentAdminId, status),
-            userId);
+                await agentRepository.AddEntity(agent);
+                await agentRepository.SaveChanges(userId);
+
+                agent.AgentPath = HierarchyId.Parse(parent.AgentPath + agent.Id.ToString() + "/");
+
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.ChangeRequestAgent(agent.AgentAdminId, "درخواست نمایندگی شما تایید شد"),
+                    userId);
+                break;
+            case "reject":
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.ChangeRequestAgent(request.UserId, "درخواست نمایندگی شما رد شد"),
+                    userId);
+                break;
+        }
     }
 
     public async Task<AgentTreeDto?> GetAgentsChildByFilterAsync(long userId)
@@ -163,6 +173,14 @@ public class AgentService(
             .SingleOrDefaultAsync(x => x.AgentId == id);
 
         return new(agent);
+    }
+
+    public async Task<List<AgentRequestDto>> GetListAgentRequest(long userId)
+    {
+        return await agentRequestRepository.GetQuery()
+            .Where(x => x.UserId == userId)
+            .Include(x => x.User)
+            .Select(x => new AgentRequestDto(x)).ToListAsync();
     }
 
     public async Task<List<AgentDto>> GetAgentsListAsync()
@@ -287,8 +305,6 @@ public class AgentService(
             BrandAddress = agent.BrandAddress,
             AgentPercent = agent.AgentPercent,
             UserPercent = agent.UserPercent,
-            // CardNumber = agent.CardNumber,
-            AgentRequestStatus = agent.AgentRequestStatus,
             TelegramBotId = agent.TelegramBotId,
             AdminName = user?.UserFullName(),
             Mobile = user?.Mobile,

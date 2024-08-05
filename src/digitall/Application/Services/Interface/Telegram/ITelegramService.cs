@@ -6,6 +6,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Enums.Marzban;
 
 namespace Application.Services.Interface.Telegram;
 
@@ -31,6 +32,13 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="name"></param>
     /// <returns></returns>
     Task<string?> GetTelegramBotAsyncByName(string name);
+
+    /// <summary>
+    /// for get agent by telegram token
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    Task<AgentDto?> GetAgentByTelegramToken(string token);
 
     /// <summary>
     /// get user by chat id
@@ -150,5 +158,14 @@ public interface ITelegramService : IAsyncDisposable
     /// </summary>
     /// <param name="start"></param>
     /// <returns>welcome message</returns>
-    Task<AgentOptionDto?> StartTelegramBot(StartTelegramBotDto start);
+    Task<AgentOptionDto?> StartTelegramBotAsync(StartTelegramBotDto start);
+    
+    /// <summary>
+    /// change marzban user status
+    /// </summary>
+    /// <param name="status"></param>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status,long marzbanUserId,long chatId);
 }

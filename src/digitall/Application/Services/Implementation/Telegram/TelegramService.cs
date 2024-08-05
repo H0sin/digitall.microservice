@@ -18,6 +18,7 @@ using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Enums.Marzban;
 using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Telegram;
@@ -56,6 +57,16 @@ public class TelegramService(
         return bot?.Token ?? null;
     }
 
+    public async Task<AgentDto?> GetAgentByTelegramToken(string token)
+    {
+        TelegramBot? telegramBot = await telegramBotRepository.GetQuery().Include(z=>z.Agent)
+            .SingleOrDefaultAsync(x => x.Token == token);
+
+        AgentDto? agent = await agentService.GetAgentByIdAsync(telegramBot.AgentId);
+
+        return agent;
+    }
+
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
         return await userRepository.GetQuery()
@@ -79,10 +90,10 @@ public class TelegramService(
         return await marzbanService.GetMarzbanUserInformationAsync(marzbanUser.Username);
     }
 
-    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId,long chatId)
+    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        return await marzbanService.GetMarzbanVpnByIdAsync(vpnId,user.Id);
+        return await marzbanService.GetMarzbanVpnByIdAsync(vpnId, user.Id);
     }
 
     public async Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId)
@@ -104,7 +115,7 @@ public class TelegramService(
     }
 
     public async Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
-        {
+    {
         User? user = await GetUserByChatIdAsync(chatId);
 
         var agentIds = await agentService.GetAgentRoot(user.AgentId);
@@ -203,7 +214,7 @@ public class TelegramService(
         await transactionService.AddTransactionAsync(transaction, user!.Id);
     }
 
-    public async Task<AgentOptionDto?> StartTelegramBot(StartTelegramBotDto start)
+    public async Task<AgentOptionDto?> StartTelegramBotAsync(StartTelegramBotDto start)
     {
         User? user = await GetUserByChatIdAsync(start.ChatId);
 
@@ -232,6 +243,12 @@ public class TelegramService(
         }
 
         return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
+    }
+
+    public async Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long chatId)
+    {
+        User user = await GetUserByChatIdAsync(chatId);
+        await marzbanService.ChangeMarzbanUserStatus(status, marzbanUserId, user.Id);
     }
 
     public async ValueTask DisposeAsync()

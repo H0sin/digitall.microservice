@@ -7,6 +7,8 @@ using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Application.Utilities;
+using Data.DefaultData;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
@@ -26,6 +28,7 @@ public class BotHookController(
 ) : ControllerBase
 {
     private ITelegramBotClient? _botClient;
+    private string? _token;
 
     [HttpPost("{botName}")]
     public async Task<IActionResult> Post(string botName,
@@ -33,10 +36,13 @@ public class BotHookController(
         CancellationToken cancellationToken)
     {
         string? token = await telegramService.GetTelegramBotAsyncByName(botName);
+
         if (token == null)
         {
             return NotFound();
         }
+
+        _token = token;
 
         _botClient = new TelegramBotClient(token);
 
@@ -125,6 +131,13 @@ public class BotHookController(
             }
         }
 
+        if (message.Text?.Split(' ')[0] == "/start" && message.Text?.Length < 8)
+        {
+            AgentDto? agent = await telegramService.GetAgentByTelegramToken(_token);
+
+            message.Text = "/start=" + (agent?.AgentCode ?? AgentItems.Agents[0].AgentCode);
+        }
+
         var action = message?.Text?.Split(' ')[0] switch
         {
             "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
@@ -196,6 +209,12 @@ public class BotHookController(
                 break;
             case "append_date":
                 await botService.SendDaysPriceForAppendDaysAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "active_service":
+                await botService.ActiveMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "disabled_service":
+                await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "renewal_service":
                 await _botClient.SendTextMessageAsync(
