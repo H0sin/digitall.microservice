@@ -59,7 +59,7 @@ public class TelegramService(
 
     public async Task<AgentDto?> GetAgentByTelegramToken(string token)
     {
-        TelegramBot? telegramBot = await telegramBotRepository.GetQuery().Include(z=>z.Agent)
+        TelegramBot? telegramBot = await telegramBotRepository.GetQuery().Include(z => z.Agent)
             .SingleOrDefaultAsync(x => x.Token == token);
 
         AgentDto? agent = await agentService.GetAgentByIdAsync(telegramBot.AgentId);
@@ -249,6 +249,24 @@ public class TelegramService(
     {
         User user = await GetUserByChatIdAsync(chatId);
         await marzbanService.ChangeMarzbanUserStatus(status, marzbanUserId, user.Id);
+    }
+
+    public async Task<bool> HaveRequestForAgentAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await agentService.HaveRequestAgentAsync(user!.Id);
+    }
+
+    public async Task AddRequestAgentAsync(string description, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        AddRequestAgentDto request = new()
+        {
+            Description = description
+        };
+
+        await agentService.AddAgentRequestAsync(request, user!.Id);
     }
 
     public async ValueTask DisposeAsync()

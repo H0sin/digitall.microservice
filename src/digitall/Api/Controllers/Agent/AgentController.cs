@@ -231,7 +231,7 @@ public class AgentController(IAgentService agentService) : BaseController
     [HttpGet]
     public async Task<ApiResult<List<AgentRequestDto>>> GetAgentRequests()
     {
-        return Ok(await agentService.GetListAgentRequest(User.GetId()));
+        return Ok(await agentService.GetListAgentRequestAsync(User.GetId()));
     }
     
     #endregion

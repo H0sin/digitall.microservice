@@ -8,7 +8,7 @@ namespace Domain.Entities.Agent;
 public class AgentRequest : BaseEntity
 {
     public long UserId { get; set; }
-    public User? User { get; set; }
+    public User User { get; set; }
     
     [Display(Name = "نام برند")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
@@ -20,11 +20,11 @@ public class AgentRequest : BaseEntity
 
     [Display(Name = "آدرس مغازه")] public string? BrandAddress { get; set; }
 
-    [Display(Name = "درصد نماینده")] public long AgentPercent { get; set; } = 0;
+    [Display(Name = "درصد نماینده")] public long? AgentPercent { get; set; } = 0;
 
-    [Display(Name = "درصد کاربر")] public long UserPercent { get; set; } = 0;
+    [Display(Name = "درصد کاربر")] public long? UserPercent { get; set; } = 0;
 
-    [Display(Name = "توضیحات")] public string? Description { get; set; }
+    [Display(Name = "توضیحات")] public string? Description { get; set; } = "";
     
     [Display(Name = "بیشترین مقدار تراکنش")]
     public int MaximumAmount { get; set; } = 2000000;

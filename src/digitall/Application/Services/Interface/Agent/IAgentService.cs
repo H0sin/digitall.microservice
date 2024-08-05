@@ -86,11 +86,13 @@ public interface IAgentService : IAsyncDisposable
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<List<AgentRequestDto>> GetListAgentRequest(long userId);
+    Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId);
+
+    Task<bool> HaveRequestAgentAsync(long userId);
     
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
-    Task<AgentDto?> GetAgentByAdminId(long adminId);
+    Task<AgentDto?> GetAgentByAdminId(long? adminId);
 }

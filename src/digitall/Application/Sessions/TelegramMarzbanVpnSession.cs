@@ -32,7 +32,8 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSubscibeCount,
     AwaitingSendTransactionImage,
     AwaitingSendAppendGbForService,
-    AwaitingSendAppendDaysForService
+    AwaitingSendAppendDaysForService,
+    AwaitingSendDescriptionForAddAgentRequest
 }
 
 public static class BotSessions

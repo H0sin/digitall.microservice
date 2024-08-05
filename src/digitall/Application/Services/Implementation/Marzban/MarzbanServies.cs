@@ -299,7 +299,10 @@ public class MarzbanServies(
                 : (vpn.CountingPrice(mv));
 
             long totalPrice = price * vpn.Count;
-            if (user?.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
+
+            AgentDto? isAgent = await agentService.GetAgentByUserIdAsync(userId);
+
+            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
 
             List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
             foreach (var u in updatedUsers)

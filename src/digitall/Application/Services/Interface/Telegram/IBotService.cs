@@ -288,10 +288,10 @@ public interface IBotService
     /// send request for agent
     /// </summary>
     /// <param name="botClient"></param>
-    /// <param name="callbackQuery"></param>
+    /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    // Task RequestForAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-    //     CancellationToken cancellationToken);
+    Task RequestForAgentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
     
 }

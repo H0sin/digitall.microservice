@@ -27,8 +27,8 @@ public class AgentRequestDto
         BrandName = agentRequest.BrandName;
         PersianBrandName = agentRequest.PersianBrandName;
         BrandAddress = agentRequest.BrandAddress;
-        AgentPercent = agentRequest.AgentPercent;
-        UserPercent = agentRequest.UserPercent;
+        AgentPercent = agentRequest.AgentPercent ?? 0;
+        UserPercent = agentRequest.UserPercent ?? 0;
         Description = agentRequest.Description;
         MaximumAmount = agentRequest.MaximumAmount;
         MinimalAmount = agentRequest.MinimalAmount;

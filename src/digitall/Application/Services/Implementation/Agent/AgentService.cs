@@ -93,8 +93,8 @@ public class AgentService(
                         MinimalAmount = request.MinimalAmount,
                         CardHolderName = request.CardHolderName,
                     },
-                    AgentPercent = request.AgentPercent,
-                    UserPercent = request.UserPercent,
+                    AgentPercent = request.AgentPercent ?? 0,
+                    UserPercent = request.UserPercent ?? 0,
                     BrandAddress = request.BrandAddress,
                     BrandName = request.BrandName,
                     PersianBrandName = request.PersianBrandName,
@@ -175,12 +175,25 @@ public class AgentService(
         return new(agent);
     }
 
-    public async Task<List<AgentRequestDto>> GetListAgentRequest(long userId)
+    public async Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId)
     {
         return await agentRequestRepository.GetQuery()
             .Where(x => x.UserId == userId)
             .Include(x => x.User)
             .Select(x => new AgentRequestDto(x)).ToListAsync();
+    }
+
+    public async Task<bool> HaveRequestAgentAsync(long userId)
+    {
+        AgentRequest? agentRequest = await agentRequestRepository
+            .GetQuery()
+            .FirstOrDefaultAsync(x => x.UserId == userId);
+
+        return agentRequest switch
+        {
+            null => false,
+            _ => true
+        };
     }
 
     public async Task<List<AgentDto>> GetAgentsListAsync()
@@ -204,7 +217,7 @@ public class AgentService(
         return paths.Select(long.Parse).ToList();
     }
 
-    public async Task<AgentDto?> GetAgentByAdminId(long adminId)
+    public async Task<AgentDto?> GetAgentByAdminId(long? adminId)
     {
         Domain.Entities.Agent.Agent? agent =
             await agentRepository.GetQuery().FirstOrDefaultAsync(x => x.AgentAdminId == adminId);

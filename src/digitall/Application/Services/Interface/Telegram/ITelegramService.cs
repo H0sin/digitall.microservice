@@ -168,4 +168,19 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status,long marzbanUserId,long chatId);
+    
+    /// <summary>
+    /// have chat id request for agent 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<bool> HaveRequestForAgentAsync(long chatId);
+
+    /// <summary>
+    /// for add request agent
+    /// </summary>
+    /// <param name="description"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task AddRequestAgentAsync(string description, long chatId);
 }
