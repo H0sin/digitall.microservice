@@ -7,6 +7,8 @@ using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Application.Utilities;
+using Data.DefaultData;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
@@ -26,6 +28,7 @@ public class BotHookController(
 ) : ControllerBase
 {
     private ITelegramBotClient? _botClient;
+    private string? _token;
 
     [HttpPost("{botName}")]
     public async Task<IActionResult> Post(string botName,
@@ -33,10 +36,13 @@ public class BotHookController(
         CancellationToken cancellationToken)
     {
         string? token = await telegramService.GetTelegramBotAsyncByName(botName);
+
         if (token == null)
         {
             return NotFound();
         }
+
+        _token = token;
 
         _botClient = new TelegramBotClient(token);
 
@@ -72,17 +78,35 @@ public class BotHookController(
         {
             switch (user.Value.Value.State)
             {
+                case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
+                    await botService.RequestForAgentAsync(_botClient, message, cancellationToken);
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+                    break;
                 case TelegramMarzbanVpnSessionState.AwaitingSendAppendDaysForService:
                     int day = 0;
                     Int32.TryParse(message?.Text, out day);
                     user.Value.Value.Date = day;
                     await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken);
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
                     break;
                 case TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService:
                     int gig = 0;
                     Int32.TryParse(message?.Text, out gig);
                     user.Value.Value.Gb = gig;
                     await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken);
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
                     break;
                 case TelegramMarzbanVpnSessionState.AwaitingGb:
                     int gb = 0;
@@ -92,7 +116,6 @@ public class BotHookController(
                         .users_Sessions?
                         .AddOrUpdate(message.Chat.Id,
                             user.Value.Value, (key, old) => old = user.Value.Value);
-
                     await botService.SendDaysPriceAsync(_botClient, message, cancellationToken);
                     break;
 
@@ -124,6 +147,13 @@ public class BotHookController(
                     break;
             }
         }
+
+        // if (message.Text?.Split(' ')[0] == "/start" && message.Text?.Length < 8)
+        // {
+        //     AgentDto? agent = await telegramService.GetAgentByTelegramToken(_token);
+        //
+        //     message.Text = "/start=" + (agent?.AgentCode ?? AgentItems.Agents[0].AgentCode);
+        // }
 
         var action = message?.Text?.Split(' ')[0] switch
         {
@@ -197,11 +227,52 @@ public class BotHookController(
             case "append_date":
                 await botService.SendDaysPriceForAppendDaysAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "active_service":
+                await botService.ActiveMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "disabled_service":
+                await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "renewal_service":
-                await _botClient.SendTextMessageAsync(
-                    chatId: callbackQuery.Message.Chat.Id,
+                await _botClient!.SendTextMessageAsync(
+                    chatId: callbackQuery!.Message!.Chat.Id,
                     text: callbackQuery.Data,
                     cancellationToken: cancellationToken);
+                break;
+            case "agent_request":
+                long chatId = callbackQuery!.Message!.Chat.Id;
+                bool have = await telegramService.HaveRequestForAgentAsync(callbackQuery!.Message!.Chat.Id);
+                if (have)
+                {
+                    await _botClient!.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: "شما قبلا درخواستی برای نمایندگی ثبت کردید",
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    KeyValuePair<long, TelegramMarzbanVpnSession>? userSesstion = BotSessions
+                        .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+                    TelegramMarzbanVpnSession? uservalue = userSesstion?.Value;
+
+                    if (userSesstion?.Value is null)
+                        uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState
+                            .AwaitingSendDescriptionForAddAgentRequest);
+
+                    uservalue!.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest;
+
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(chatId,
+                            uservalue!, (key, old) => old = uservalue);
+
+                    await _botClient!.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: "درخواست نمایندگی خود را ارسال کنید !",
+                        cancellationToken: cancellationToken);
+                }
+
                 break;
             default:
                 break;

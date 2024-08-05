@@ -38,10 +38,7 @@ public class Agent : BaseEntity
     [Display(Name = "درصد نماینده")] public long AgentPercent { get; set; }
 
     [Display(Name = "درصد کاربران")] public long UserPercent { get; set; }
-
-    [Display(Name = "وضعیت درخواست نمایندگی")]
-    public string? AgentRequestStatus { get; set; } = "wating";
-
+    
     public HierarchyId? AgentPath { get; set; }
     public long? TelegramBotId { get; set; }
 
@@ -54,7 +51,6 @@ public class Agent : BaseEntity
     [ForeignKey(nameof(TelegramBotId))] public TelegramBot? TelegramBot { get; set; }
 
     public AgentOptions? AgentOptions { get; set; }
-
     public TransactionDetail? TransactionDetail { get; set; }
     
     #endregion

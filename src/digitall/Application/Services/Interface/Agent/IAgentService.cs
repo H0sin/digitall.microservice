@@ -41,10 +41,10 @@ public interface IAgentService : IAsyncDisposable
     /// <summary>
     /// update request agent
     /// </summary>
-    /// <param name="agent"></param>
+    /// <param name="agentRequestam>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task UpdateAgentRequest(UpdateAgentRequestDto agent, long userId);
+    Task UpdateAgentRequest(UpdateAgentRequestDto agentRequest, long userId);
 
     /// <summary>
     /// get list agent nested object
@@ -80,10 +80,19 @@ public interface IAgentService : IAsyncDisposable
     /// <param name="id"></param>
     /// <returns></returns>
     Task<AgentOptionDto?> GetAgentOptionByAgentIdAsync(long id);
+    
+    /// <summary>
+    /// get list agentrequest admin see request agent
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId);
 
+    Task<bool> HaveRequestAgentAsync(long userId);
+    
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
-    Task<AgentDto?> GetAgentByAdminId(long adminId);
+    Task<AgentDto?> GetAgentByAdminId(long? adminId);
 }

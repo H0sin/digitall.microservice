@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Common;
+using Domain.Entities.Agent;
 using Domain.Entities.Authorization;
 
 namespace Domain.Entities.Account;
@@ -80,6 +81,8 @@ public class User : BaseEntity
     public ICollection<UserRole>? UserRoles { get; set; }
 
     [ForeignKey(nameof(AgentId))] public Agent.Agent Agent { get; set; }
+
+    public AgentRequest AgentRequest { get; set; }
 
     public ICollection<Notification.Notification>? Notifications { get; set; }
 

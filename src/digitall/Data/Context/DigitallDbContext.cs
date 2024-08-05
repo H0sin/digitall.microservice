@@ -58,7 +58,7 @@ public class DigitallDbContext : DbContext
     public DbSet<TelegramBot> TelegramBots { get; set; }
     public DbSet<Notification> Notification { get; set; }
     public DbSet<AgentOptions> AgentOptions { get; set; }
-
+    public DbSet<AgentRequest> AgentRequest { get; set; }
     #endregion
 
     #region properties

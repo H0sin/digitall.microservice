@@ -5,6 +5,7 @@ using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Agent;
 using Domain.DTOs.Agent;
+using Domain.Entities.Agent;
 using Domain.Enums;
 using Domain.Enums.Agent;
 using Domain.Enums.Notification;
@@ -226,6 +227,12 @@ public class AgentController(IAgentService agentService) : BaseController
         await agentService.UpdateAgentRequest(request, User.GetId());
         return Ok();
     }
-
+    
+    [HttpGet]
+    public async Task<ApiResult<List<AgentRequestDto>>> GetAgentRequests()
+    {
+        return Ok(await agentService.GetListAgentRequestAsync(User.GetId()));
+    }
+    
     #endregion
 }

@@ -103,6 +103,7 @@ public static class DependencyContainer
         services.AddScoped<ITelegramBotRepository, TelegramBotRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAgentOptionRepository, AgentOptionRepository>();
+        services.AddScoped<IAgentRequestRepository, AgentRequestRepository>();
 
         #endregion
 

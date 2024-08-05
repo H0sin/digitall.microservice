@@ -15,6 +15,7 @@ using Domain.Entities.Account;
 using Domain.Entities.Marzban;
 using Domain.Entities.Order;
 using Domain.Enums;
+using Domain.Enums.Marzban;
 using Domain.Enums.Order;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -298,7 +299,10 @@ public class MarzbanServies(
                 : (vpn.CountingPrice(mv));
 
             long totalPrice = price * vpn.Count;
-            if (user?.Balance < totalPrice) throw new BadRequestException("موجودی شما کافی نیست");
+
+            AgentDto? isAgent = await agentService.GetAgentByUserIdAsync(userId);
+
+            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
 
             List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
             foreach (var u in updatedUsers)
@@ -668,6 +672,10 @@ public class MarzbanServies(
 
         if (marzbanUser.UserId != userId) marzbanUser = null;
 
+        response.MarzbanServerId = marzbanUser.MarzbanServerId;
+        response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
+        response.Id = marzbanUser.Id;
+
         return marzbanUser switch
         {
             null => null,
@@ -700,6 +708,28 @@ public class MarzbanServies(
         await marzbanVpnRepository.UpdateEntity(marzbanVpn);
         await marzbanServerRepository.SaveChanges(userId);
         return vpnDto;
+    }
+
+    public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUserDto user, long userId)
+    {
+        MarzbanUser? mu = await marzbanUserRepository.GetEntityById(user.Id);
+
+        mu.Expire = user.Expire;
+        mu.Links = user.Links;
+        mu.Username = user.Username;
+        mu.Subscription_Url = user.Subscription_Url;
+        mu.Status = user.Status;
+        mu.Online_At = user.Online_At;
+        mu.Used_Traffic = user.Used_Traffic;
+        mu.OnHoldExpireDuration = user.OnHoldExpireDuration;
+        mu.Sub_Last_User_Agent = user.Sub_Last_User_Agent;
+        mu.Data_Limit = user.Data_Limit;
+        mu.Sub_Updated_At = user.Sub_Updated_At;
+
+        await marzbanUserRepository.UpdateEntity(mu);
+        await marzbanUserRepository.SaveChanges(userId);
+
+        return user;
     }
 
     public async Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
@@ -771,6 +801,8 @@ public class MarzbanServies(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
 
+            // await UpdateMarzbanUserAsync(marzbanUser, userId);
+
             return response;
         }
         catch (Exception e)
@@ -780,9 +812,21 @@ public class MarzbanServies(
         }
     }
 
-    public Task<bool> ChangeMarzbanUserStatus(bool status, long userId)
+    public async Task<bool> ChangeMarzbanUserStatus(MarzbanUserStatus status, long marzbanUserId, long userId)
     {
-        throw new NotImplementedException();
+        MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
+        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId ?? 0);
+
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+        marzbanUser.Status = status.ToString();
+
+        MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+            MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
+            HttpMethod.Put, marzbanUser);
+
+        await UpdateMarzbanUserAsync(marzbanUser, userId);
+        return true;
     }
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
