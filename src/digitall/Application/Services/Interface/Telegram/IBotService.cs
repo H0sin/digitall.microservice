@@ -293,5 +293,14 @@ public interface IBotService
     /// <returns></returns>
     Task RequestForAgentAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// delete service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 }

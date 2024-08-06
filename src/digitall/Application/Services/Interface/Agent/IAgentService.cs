@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Interface.Agent;
 
-public interface IAgentService : IAsyncDisposable
+public interface IAgentService
 {
     /// <summary>
     /// get agent information by code

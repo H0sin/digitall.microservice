@@ -24,6 +24,7 @@ public static class MarzbanPaths
     public static string UserCreate = "/api/user";
     public static string UserGet = "/api/user";
     public static string UserUpdate = "/api/user";
+    public static string UserDelete = "/api/user";
     
 
     // inbound

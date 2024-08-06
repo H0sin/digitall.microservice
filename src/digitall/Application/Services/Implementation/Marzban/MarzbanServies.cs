@@ -7,6 +7,7 @@ using Application.Http.Request;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
 using Application.Utilities;
+using Data.Repositories.Marzban;
 // using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
@@ -29,11 +30,11 @@ using Newtonsoft.Json;
 namespace Application.Services.Implementation.Marzban;
 
 public class MarzbanServies(
+    IUserRepository userRepository,
     IMarzbanServerRepository marzbanServerRepository,
     IMarzbanVpnRepository marzbanVpnRepository,
     IMarzbanUserRepository marzbanUserRepository,
     IMarzbanVpnTemplatesRepository marzbanVpnTemplatesRepository,
-    IUserRepository userRepository,
     IOrderRepository orderRepository,
     IAgentService agentService) : IMarzbanService
 {
@@ -301,7 +302,7 @@ public class MarzbanServies(
             long totalPrice = price * vpn.Count;
 
             AgentDto? isAgent = await agentService.GetAgentByAdminId(userId);
- 
+
             if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
 
             List<User> updatedUsers = await percent.CalculateAgentIncome(userId, price, vpn.Count);
@@ -812,7 +813,7 @@ public class MarzbanServies(
         }
     }
 
-    public async Task<bool> ChangeMarzbanUserStatus(MarzbanUserStatus status, long marzbanUserId, long userId)
+    public async Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId)
     {
         MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId ?? 0);
@@ -827,6 +828,52 @@ public class MarzbanServies(
 
         await UpdateMarzbanUserAsync(marzbanUser, userId);
         return true;
+    }
+
+    public async Task DeleteMarzbanUserAsync(long marzbanUserId, long userId)
+    {
+        MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
+        GetMarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
+        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+        string token = await marzbanApiRequest.LoginAsync();
+
+        if (string.IsNullOrEmpty(token))
+            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+        MarzbanUserDto serverUser =
+            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                HttpMethod.Get);
+
+        long byteSize = 1073741824;
+        long remaining_data = (marzbanUser.Data_Limit ?? 0) - (serverUser.Used_Traffic ?? 0);
+        double mg = (remaining_data / byteSize);
+        long gb = (long)Math.Ceiling(mg);
+
+        if (marzbanUser.Expire == null)
+            throw new BadRequestException();
+
+        DateTime expire = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire ?? 0).DateTime;
+
+        TimeSpan difference = expire - DateTime.Now;
+
+        long days = (long)Math.Ceiling(difference.TotalDays);
+
+        long price = (marzbanVpn.DayPrice * days) + (marzbanVpn.GbPrice * gb);
+
+        MarzbanUserDto userDelete =
+            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
+                HttpMethod.Delete);
+
+        User? user = await userRepository.GetEntityById(marzbanUser.UserId);
+        user.Balance += price;
+        await userRepository.UpdateEntity(user);
+        await userRepository.SaveChanges(userId);
+        
+        await marzbanUserRepository.DeleteEntity(marzbanUserId);
+        await marzbanUserRepository.SaveChanges(userId);
     }
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)

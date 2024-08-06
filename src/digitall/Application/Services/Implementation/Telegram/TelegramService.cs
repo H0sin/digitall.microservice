@@ -248,7 +248,7 @@ public class TelegramService(
     public async Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long chatId)
     {
         User user = await GetUserByChatIdAsync(chatId);
-        await marzbanService.ChangeMarzbanUserStatus(status, marzbanUserId, user.Id);
+        await marzbanService.ChangeMarzbanUserStatusAsync(status, marzbanUserId, user.Id);
     }
 
     public async Task<bool> HaveRequestForAgentAsync(long chatId)
@@ -269,11 +269,10 @@ public class TelegramService(
         await agentService.AddAgentRequestAsync(request, user!.Id);
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task DeleteMarzbanUserAsync(long marzbanUserId, long chatId)
     {
-        await agentService.DisposeAsync();
-        await userRepository.DisposeAsync();
-        await telegramBotRepository.DisposeAsync();
-        GC.SuppressFinalize(agentService);
+        User? user = await GetUserByChatIdAsync(chatId);
+        await marzbanService.DeleteMarzbanUserAsync(marzbanUserId, user.Id);
     }
+    
 }
