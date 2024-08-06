@@ -234,7 +234,7 @@ public class BotHookController(
                 await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "delete_service":
-                botService.DeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
+                await botService.DeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(

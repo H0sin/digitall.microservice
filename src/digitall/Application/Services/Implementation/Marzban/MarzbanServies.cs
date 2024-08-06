@@ -676,7 +676,8 @@ public class MarzbanServies(
         response.MarzbanServerId = marzbanUser.MarzbanServerId;
         response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
         response.Id = marzbanUser.Id;
-
+        response.UserId = marzbanUser.UserId;
+        
         return marzbanUser switch
         {
             null => null,
@@ -802,7 +803,7 @@ public class MarzbanServies(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
 
-            // await UpdateMarzbanUserAsync(marzbanUser, userId);
+            await UpdateMarzbanUserAsync(marzbanUser, userId);
 
             return response;
         }
@@ -816,7 +817,7 @@ public class MarzbanServies(
     public async Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId)
     {
         MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
-        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId ?? 0);
+        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
@@ -832,48 +833,59 @@ public class MarzbanServies(
 
     public async Task DeleteMarzbanUserAsync(long marzbanUserId, long userId)
     {
-        MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
-        GetMarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
-        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
-
-        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
-
-        string token = await marzbanApiRequest.LoginAsync();
-
-        if (string.IsNullOrEmpty(token))
-            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
-
-        MarzbanUserDto serverUser =
-            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
-                HttpMethod.Get);
-
-        long byteSize = 1073741824;
-        long remaining_data = (marzbanUser.Data_Limit ?? 0) - (serverUser.Used_Traffic ?? 0);
-        double mg = (remaining_data / byteSize);
-        long gb = (long)Math.Ceiling(mg);
-
-        if (marzbanUser.Expire == null)
-            throw new BadRequestException();
-
-        DateTime expire = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire ?? 0).DateTime;
-
-        TimeSpan difference = expire - DateTime.Now;
-
-        long days = (long)Math.Ceiling(difference.TotalDays);
-
-        long price = (marzbanVpn.DayPrice * days) + (marzbanVpn.GbPrice * gb);
-
-        MarzbanUserDto userDelete =
-            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
-                HttpMethod.Delete);
-
-        User? user = await userRepository.GetEntityById(marzbanUser.UserId);
-        user.Balance += price;
-        await userRepository.UpdateEntity(user);
-        await userRepository.SaveChanges(userId);
+        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId,userId);
+            GetMarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
+            MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
         
-        await marzbanUserRepository.DeleteEntity(marzbanUserId);
-        await marzbanUserRepository.SaveChanges(userId);
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+            string token = await marzbanApiRequest.LoginAsync();
+
+            if (string.IsNullOrEmpty(token))
+                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+            MarzbanUserDto serverUser =
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                    HttpMethod.Get);
+
+            long byteSize = 1073741824;
+            long remaining_data = (marzbanUser.Data_Limit ?? 0) - (serverUser.Used_Traffic ?? 0);
+            double mg = (remaining_data / byteSize);
+            long gb = (long)Math.Ceiling(mg);
+
+            if (marzbanUser.Expire == null)
+                throw new BadRequestException();
+
+            DateTime expire = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire ?? 0).DateTime;
+
+            TimeSpan difference = expire - DateTime.Now;
+
+            long days = (long)Math.Ceiling(difference.TotalDays);
+
+            long price = (marzbanVpn.DayPrice * days) + (marzbanVpn.GbPrice * gb);
+        
+            User? user = await userRepository.GetEntityById(marzbanUser.UserId);
+            user.Balance += price;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(userId);
+        
+            await marzbanUserRepository.DeleteEntity(marzbanUserId);
+            await marzbanUserRepository.SaveChanges(userId);
+        
+            MarzbanUserDto userDelete =
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
+                    HttpMethod.Delete);
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
