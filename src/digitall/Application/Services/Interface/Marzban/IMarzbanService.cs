@@ -275,5 +275,13 @@ public interface IMarzbanService
     /// <param name="marzbanUserId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<bool> ChangeMarzbanUserStatus(MarzbanUserStatus status, long marzbanUserId, long userId);
+    Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId);
+    
+    /// <summary>
+    /// delete marzban user and back cash
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(long marzbanUserId,long userId);
 }

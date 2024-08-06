@@ -291,11 +291,6 @@ public class AgentService(
         return AddAgentResult.Success;
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await agentRepository.DisposeAsync();
-        await userRepository.DisposeAsync();
-    }
 
     private async Task<AgentTreeDto> ConvertToTree(Domain.Entities.Agent.Agent agent,
         List<Domain.Entities.Agent.Agent> allAgents,

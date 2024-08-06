@@ -26,7 +26,7 @@ public class BotService(
          {
              await StartBotAsync(bots[i], cancellationToken);
          }
-        await telegramService.DisposeAsync();
+         
     }
 
     private async Task StartBotAsync(TelegramBotDto bot, CancellationToken cancellationToken)

@@ -10,7 +10,7 @@ using Domain.Enums.Marzban;
 
 namespace Application.Services.Interface.Telegram;
 
-public interface ITelegramService : IAsyncDisposable
+public interface ITelegramService
 {
     /// <summary>
     /// add telegram bot summery
@@ -73,7 +73,7 @@ public interface ITelegramService : IAsyncDisposable
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId,long chatId);
+    Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId);
 
     /// <summary>
     /// get marzban template by vpn id
@@ -150,7 +150,7 @@ public interface ITelegramService : IAsyncDisposable
     Task<string> ResetUserPasswordAsync(long chatId, int charter = 6);
 
     Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId);
-
+    
     Task AddTransactionAsync(AddTransactionDto transaction, long chatId);
 
     /// <summary>
@@ -159,7 +159,7 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="start"></param>
     /// <returns>welcome message</returns>
     Task<AgentOptionDto?> StartTelegramBotAsync(StartTelegramBotDto start);
-    
+
     /// <summary>
     /// change marzban user status
     /// </summary>
@@ -167,8 +167,8 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="marzbanUserId"></param>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status,long marzbanUserId,long chatId);
-    
+    Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long chatId);
+
     /// <summary>
     /// have chat id request for agent 
     /// </summary>
@@ -183,4 +183,12 @@ public interface ITelegramService : IAsyncDisposable
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task AddRequestAgentAsync(string description, long chatId);
+
+    /// <summary>
+    /// delete marzban user
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(long marzbanUserId, long chatId);
 }
