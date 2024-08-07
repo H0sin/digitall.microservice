@@ -677,7 +677,7 @@ public class MarzbanServies(
         response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
         response.Id = marzbanUser.Id;
         response.UserId = marzbanUser.UserId;
-        
+
         return marzbanUser switch
         {
             null => null,
@@ -836,10 +836,10 @@ public class MarzbanServies(
         using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
-            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId,userId);
+            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
             GetMarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
-        
+
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
             string token = await marzbanApiRequest.LoginAsync();
@@ -866,19 +866,53 @@ public class MarzbanServies(
             long days = (long)Math.Ceiling(difference.TotalDays);
 
             long price = (marzbanVpn.DayPrice * days) + (marzbanVpn.GbPrice * gb);
-        
+
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
-        
+
             await marzbanUserRepository.DeleteEntity(marzbanUserId);
             await marzbanUserRepository.SaveChanges(userId);
-        
+
             MarzbanUserDto userDelete =
-                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                    MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
                     HttpMethod.Delete);
             await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long userId)
+    {
+        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
+            MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+            string token = await marzbanApiRequest.LoginAsync();
+
+            if (string.IsNullOrEmpty(token))
+                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+            MarzbanUserDto serverUser =
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                    MarzbanPaths.UserUpdate + "/" + marzbanUser.Username + "/revoke_sub",
+                    HttpMethod.Post);
+
+            marzbanUser.Subscription_Url = serverUser.Subscription_Url;
+            await marzbanUserRepository.UpdateEntity(marzbanUser);
+            await marzbanUserRepository.SaveChanges(userId);
+            return marzbanUser.Subscription_Url ?? "";
         }
         catch (Exception e)
         {

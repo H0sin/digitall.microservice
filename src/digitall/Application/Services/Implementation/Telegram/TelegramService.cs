@@ -274,5 +274,10 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         await marzbanService.DeleteMarzbanUserAsync(marzbanUserId, user.Id);
     }
-    
+
+    public async Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await marzbanService.RevokeMarzbanUserAsync(marzbanUserId, user.Id);
+    }
 }

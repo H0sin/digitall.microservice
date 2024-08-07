@@ -284,4 +284,12 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task DeleteMarzbanUserAsync(long marzbanUserId,long userId);
+
+    /// <summary>
+    /// revoke marzban user
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="userId"></param>
+    /// <returns>subscribe</returns>
+    Task<string> RevokeMarzbanUserAsync(long marzbanUserId,long userId);
 }
