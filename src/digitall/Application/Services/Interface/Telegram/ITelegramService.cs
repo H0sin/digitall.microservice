@@ -191,4 +191,12 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task DeleteMarzbanUserAsync(long marzbanUserId, long chatId);
+
+    /// <summary>
+    /// revoke marzban user async
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long chatId);
 }

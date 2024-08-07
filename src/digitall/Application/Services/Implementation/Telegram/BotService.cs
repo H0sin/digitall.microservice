@@ -612,6 +612,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             new[]
             {
+                InlineKeyboardButton.WithCallbackData("تغییر لینک ⚙️", $"revoke_sub"),
+            },
+            new[]
+            {
                 InlineKeyboardButton.WithCallbackData("دریافت ترافیک 🌍", $"get_traffic?id={id}"),
                 InlineKeyboardButton.WithCallbackData("لینک اشتراک 🔗", $"subscription_link?id={id}")
             },
@@ -1527,6 +1531,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 chatId: chatId,
                 text: "سرویس شما با موفقیت حذف شد",
                 cancellationToken: cancellationToken);
+
+            await SendListServicesAsync(botClient!, callbackQuery, cancellationToken);
         }
         catch (Exception e)
         {
@@ -1534,7 +1540,43 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 chatId: chatId,
                 text: e.Message,
                 cancellationToken: cancellationToken);
-            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
+
+            await SendListServicesAsync(botClient!, callbackQuery, cancellationToken);
+        }
+    }
+
+    public async Task RevokeSubscribeAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+        try
+        {
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+            TelegramMarzbanVpnSession? uservalue = user?.Value;
+
+            if (uservalue is null)
+            {
+                throw new NotFoundException("با عرض پوزش دوباره تلاش کنید");
+            }
+
+            string sub = await telegramService.RevokeMarzbanUserAsync(uservalue.UserSubscribeId ?? 0, chatId);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: $"\u2705 کانفیگ شما با موفقیت بروزرسانی گردید.\nاشتراک شما : {sub}",
+                cancellationToken: cancellationToken);
+
+            await SendListServicesAsync(botClient!, callbackQuery, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+
+            await SendListServicesAsync(botClient!, callbackQuery, cancellationToken);
         }
     }
 }
