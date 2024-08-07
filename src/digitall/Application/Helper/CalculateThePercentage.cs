@@ -257,6 +257,6 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
 
     public void Dispose()
     {
-        agentService = null;
+        // agentService = null;
     }
 }

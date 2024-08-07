@@ -228,6 +228,10 @@ public class AgentController(IAgentService agentService) : BaseController
         return Ok();
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public async Task<ApiResult<List<AgentRequestDto>>> GetAgentRequests()
     {

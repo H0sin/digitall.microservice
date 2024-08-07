@@ -41,8 +41,9 @@ public class MarzbanUserDto
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
     
-    public long? MarzbanVpnId { get; set; }
-    public long? MarzbanServerId { get; set; }
+    public long MarzbanVpnId { get; set; }
+    public long MarzbanServerId { get; set; }
+    public long UserId { get; set; }
 
     public MarzbanUserDto()
     {
@@ -68,5 +69,6 @@ public class MarzbanUserDto
         Subscription_Url = marzbanUser.Subscription_Url;
         MarzbanVpnId = marzbanUser.MarzbanVpnId;
         MarzbanServerId = marzbanUser.MarzbanServerId;
+        UserId = marzbanUser.UserId;
     }
 }
