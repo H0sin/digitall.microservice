@@ -84,29 +84,38 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             LastName = message.From.LastName
         });
 
-        InlineKeyboardMarkup inlineKeyboard = new(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
-                    InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
-                    InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
-                        "web_information")
-                }
-            });
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
+            InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
+        });
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
+            InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                "web_information")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                "invitation_link")
+        });
+        
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
@@ -126,34 +135,43 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 (key, old)
                     => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
 
-        InlineKeyboardMarkup inlineKeyboard = new(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
-                    InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
-                    InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
-                        "web_information")
-                }
-            });
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
+            InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
+        });
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
+            InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                "web_information")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                "invitation_link")
+        });
 
         if (callbackQuery.Message.MessageId != 0)
         {
             await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
         }
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
         await botClient.SendTextMessageAsync(
             chatId: chatId,

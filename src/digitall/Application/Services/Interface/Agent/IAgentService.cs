@@ -87,7 +87,20 @@ public interface IAgentService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId);
+    
+    /// <summary>
+    /// get agent link
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<string> GetAgentTelegramLink(long userId);
 
+    /// <summary>
+    /// cheked for user is agent or not agent
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> IsAgentAsync(long userId);
     Task<bool> HaveRequestAgentAsync(long userId);
     
     Task<List<AgentDto>> GetAgentsListAsync();
