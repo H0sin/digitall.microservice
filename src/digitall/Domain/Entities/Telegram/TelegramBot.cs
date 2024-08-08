@@ -25,13 +25,17 @@ public class TelegramBot : BaseEntity
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Route { get; set; } = Guid.NewGuid().ToString("N");
 
-    [Display(Name = "HostAddress ")]
+    [Display(Name = "آدرس")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? HostAddress { get; set; }
 
-    [Display(Name = "SecretToken ")]
+    [Display(Name = "SecretToken")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? SecretToken { get; set; }
+
+    [Display(Name = "لینک")]
+    [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
+    public string? Link { get; set; }
 
     public long AgentId { get; set; }
 

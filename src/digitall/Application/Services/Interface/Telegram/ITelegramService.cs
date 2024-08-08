@@ -199,4 +199,18 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long chatId);
+
+    /// <summary>
+    /// get agent by chat id
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<string?> GetAgentByChatIdAsync(long chatId);
+
+    /// <summary>
+    /// Is Agent By Chat Id
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<bool> IsAgentAsyncByChatIdAsync(long chatId);
 }

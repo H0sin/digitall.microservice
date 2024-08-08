@@ -280,4 +280,16 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         return await marzbanService.RevokeMarzbanUserAsync(marzbanUserId, user.Id);
     }
+
+    public async Task<string?> GetAgentByChatIdAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await agentService.GetAgentTelegramLink(user!.Id);
+    }
+
+    public async Task<bool> IsAgentAsyncByChatIdAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await agentService.IsAgentAsync(user!.Id);
+    }
 }

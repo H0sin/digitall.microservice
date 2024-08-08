@@ -183,6 +183,27 @@ public class AgentService(
             .Select(x => new AgentRequestDto(x)).ToListAsync();
     }
 
+    public async Task<string> GetAgentTelegramLink(long userId)
+    {
+        User? user = await userRepository.GetEntityById(userId);
+        Domain.Entities.Agent.Agent? agent =
+            await agentRepository.GetQuery().Include(x => x.TelegramBot)
+                .SingleOrDefaultAsync(x => x.Id == user.AgentId);
+
+        return agent!.TelegramBot!.Link! + "?start=" + agent.AgentCode;
+    }
+
+    public async Task<bool> IsAgentAsync(long userId)
+    {
+        AgentDto? agent = await GetAgentByAdminId(userId);
+
+        return agent switch
+        {
+            null => false,
+            _ => true
+        };
+    }
+
     public async Task<bool> HaveRequestAgentAsync(long userId)
     {
         AgentRequest? agentRequest = await agentRequestRepository
