@@ -205,7 +205,7 @@ public interface ITelegramService
     /// </summary>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task<string?> GetAgentByChatIdAsync(long chatId);
+    Task<AgentDto?> GetAgentByChatIdAsync(long chatId);
 
     /// <summary>
     /// Is Agent By Chat Id

@@ -246,7 +246,9 @@ public class BotHookController(
                     cancellationToken: cancellationToken);
                 break;
             case "invitation_link":
-                string? link = await telegramService.GetAgentByChatIdAsync(callbackQuery!.Message!.Chat.Id);
+                User? userInfo = await _botClient!.GetMeAsync();
+                AgentDto? agent = await telegramService.GetAgentByChatIdAsync(callbackQuery!.Message!.Chat.Id);
+                string? link = $"https://t.me/{userInfo.Username}?strat={agent?.AgentCode ?? 0}";
                 await _botClient!.SendTextMessageAsync(
                     callbackQuery!.Message!.Chat.Id,
                     $"با استفاده از لینک زیر شما میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link}",
