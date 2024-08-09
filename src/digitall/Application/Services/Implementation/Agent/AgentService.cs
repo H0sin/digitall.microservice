@@ -189,8 +189,7 @@ public class AgentService(
         Domain.Entities.Agent.Agent? agent =
             await agentRepository.GetQuery().Include(x => x.TelegramBot)
                 .SingleOrDefaultAsync(x => x.Id == user.AgentId);
-
-        return agent!.TelegramBot!.Link! + "?start=" + agent.AgentCode;
+        return agent?.TelegramBot?.Link ?? "" + "?start=" + agent?.AgentCode;
     }
 
     public async Task<bool> IsAgentAsync(long userId)
