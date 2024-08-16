@@ -65,37 +65,39 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
     public async Task<List<MarzbanVpn?>> CalcuteVpnPrice(List<MarzbanVpn?> marzbanVpn, long userId,
         int numberOfAgents = 2)
     {
-        AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
-
-        AgentDto? agent =
-            await agentService.GetAgentByUserIdAsync(userId);
-
-        if (agent == null)
-            throw new NotFoundException("نمایندگی شم غیر فعال شده است");
-
-        double totalMultiplier = 1.0;
-
-        for (int i = 0; i < numberOfAgents; i++)
+        if (marzbanVpn.Count > 0)
         {
-            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+            AgentDto? admin = await agentService
+                .GetAgentByAdminId(userId);
 
-            if (agentByPath != null)
+            AgentDto? agent =
+                await agentService.GetAgentByUserIdAsync(userId);
+
+            if (agent == null)
+                throw new NotFoundException("نمایندگی شم غیر فعال شده است");
+
+            double totalMultiplier = 1.0;
+
+            for (int i = 0; i < numberOfAgents; i++)
             {
-                double percent = (admin != null
-                    ? (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent)
-                    : (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent));
-                totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
+                HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
+                Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+
+                if (agentByPath != null)
+                {
+                    double percent = (admin != null
+                        ? (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent)
+                        : (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent));
+                    totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
+                }
+            }
+
+            foreach (var mv in marzbanVpn)
+            {
+                mv.DayPrice = Convert.ToInt64(mv.DayPrice * totalMultiplier);
+                mv.GbPrice = Convert.ToInt64(mv.GbPrice * totalMultiplier);
             }
         }
-
-        foreach (var mv in marzbanVpn)
-        {
-            mv.DayPrice = Convert.ToInt64(mv.DayPrice * totalMultiplier);
-            mv.GbPrice = Convert.ToInt64(mv.GbPrice * totalMultiplier);
-        }
-
         return marzbanVpn;
     }
 
@@ -150,7 +152,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         for (int i = 0; i < numberOfAgents; i++)
         {
             HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+            Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
 
             if (agentByPath != null)
             {
@@ -161,10 +163,10 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
             }
         }
 
-        GetMarzbanVpnDto? marzbanVpn = await marzbanService.GetMarzbanVpnByIdAsync(vpnId);
+        GetMarzbanVpnDto? marzbanVpn = await marzbanService!.GetMarzbanVpnByIdAsync(vpnId);
         
-        marzbanVpn.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
-        marzbanVpn.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
+        marzbanVpn!.DayPrice = Convert.ToInt64(marzbanVpn.DayPrice * totalMultiplier);
+        marzbanVpn!.GbPrice = Convert.ToInt64(marzbanVpn.GbPrice * totalMultiplier);
 
         return marzbanVpn;
     }
