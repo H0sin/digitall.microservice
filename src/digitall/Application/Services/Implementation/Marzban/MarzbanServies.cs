@@ -629,7 +629,7 @@ public class MarzbanServies(
 
         if (user == null) throw new NotFoundException("کاربری با این شناسه یافت نشد");
 
-        List<MarzbanVpnTemplateDto> templates = await marzbanVpnTemplatesRepository
+        List<MarzbanVpnTemplateDto>? templates = await marzbanVpnTemplatesRepository
             .GetQuery()
             .Where(x => x.MarzbanVpnId == vpnId)
             .Select(x => new MarzbanVpnTemplateDto()
