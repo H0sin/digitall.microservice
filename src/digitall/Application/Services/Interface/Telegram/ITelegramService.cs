@@ -80,7 +80,8 @@ public interface ITelegramService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>> GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId);
+    Task<List<MarzbanVpnTemplateDto>> 
+        GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId);
 
     /// <summary>
     /// buy marzban vpn
