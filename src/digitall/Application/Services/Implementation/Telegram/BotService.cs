@@ -374,7 +374,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 chatId: chatId,
                 text: e.Message,
                 cancellationToken: cancellationToken);
-            await SendMainMenuAsync(botClient,callbackQuery,cancellationToken);
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken);
         }
     }
 
@@ -766,73 +766,82 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        int vpnId = 0;
-        bool appendGb = false;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-        long subscribeId = 0;
-
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Boolean.TryParse(queryParameters["appendGb"], out appendGb);
-            Int32.TryParse(queryParameters["vpnId"], out vpnId);
-            Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
-        }
+            int vpnId = 0;
+            bool appendGb = false;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            long subscribeId = 0;
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId, chatId);
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Boolean.TryParse(queryParameters["appendGb"], out appendGb);
+                Int32.TryParse(queryParameters["vpnId"], out vpnId);
+                Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
+            }
 
-        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
-            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+            GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId, chatId);
 
-        TelegramMarzbanVpnSession? uservalue = user?.Value;
-        if (uservalue is null)
-            uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None);
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
 
-        uservalue.VpnId = vpnId;
-        if (!appendGb)
-        {
-            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingGb;
+            TelegramMarzbanVpnSession? uservalue = user?.Value;
+            if (uservalue is null)
+                uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None);
 
-            BotSessions
-                .users_Sessions?
-                .AddOrUpdate(chatId,
-                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId),
-                    (key, old)
-                        => old = old);
-        }
-        else
-        {
-            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService;
+            uservalue.VpnId = vpnId;
+            if (!appendGb)
+            {
+                uservalue.State = TelegramMarzbanVpnSessionState.AwaitingGb;
 
-            BotSessions
-                .users_Sessions?
-                .AddOrUpdate(chatId,
-                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService,
-                        vpnId: vpnId),
-                    (key, old)
-                        => old = old);
-        }
+                BotSessions
+                    .users_Sessions?
+                    .AddOrUpdate(chatId,
+                        new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingGb, vpnId: vpnId),
+                        (key, old)
+                            => old = old);
+            }
+            else
+            {
+                uservalue.State = TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService;
 
-        string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
+                BotSessions
+                    .users_Sessions?
+                    .AddOrUpdate(chatId,
+                        new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService,
+                            vpnId: vpnId),
+                        (key, old)
+                            => old = old);
+            }
+
+            string deatils = $@"📌 حجم درخواستی خود را ارسال کنید.
 🔔قیمت هر گیگ حجم {vpn?.GbPrice ?? 0} تومان می باشد.
 🔔 حداقل حجم {vpn?.GbMin ?? 0} گیگابایت و حداکثر {vpn?.GbMax ?? 0} گیگابایت می باشد.";
 
-        var inlineKeyboard = new InlineKeyboardMarkup(new[]
-        {
-            new[]
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
             {
-                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
-            }
-        });
-
-        await botClient!.SendTextMessageAsync(
-            chatId: chatId,
-            text: deatils,
-            replyMarkup: inlineKeyboard,
-            cancellationToken: cancellationToken);
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+            
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: deatils,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
     }
 
     public async Task SendDaysPriceAsync(ITelegramBotClient? botClient, Message message,
