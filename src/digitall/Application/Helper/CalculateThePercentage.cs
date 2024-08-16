@@ -19,37 +19,43 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         long userId,
         int numberOfAgents = 2)
     {
-        AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
-
-        AgentDto? agent =
-            await agentService.GetAgentByUserIdAsync(userId);
-
-        if (agent == null)
-            throw new NotFoundException("نمایندگی شم غیر فعال شده است");
-
-        double totalMultiplier = 1.0;
-
-        for (int i = 0; i < numberOfAgents; i++)
+        try
         {
-            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+            AgentDto? admin = await agentService
+                .GetAgentByAdminId(userId);
 
-            if (agentByPath != null)
+            AgentDto? agent =
+                await agentService.GetAgentByUserIdAsync(userId);
+
+            if (agent == null)
+                throw new NotFoundException("نمایندگی شم غیر فعال شده است");
+
+            double totalMultiplier = 1.0;
+
+            for (int i = 0; i < numberOfAgents; i++)
             {
-                double percent = (admin != null
-                    ? (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent)
-                    : (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent));
-                totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
+                HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
+                Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+
+                if (agentByPath != null)
+                {
+                    double percent = (admin != null
+                        ? (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent)
+                        : (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent));
+                    totalMultiplier *= percent != 1 ? 1 + (percent / 100.0) : 1;
+                }
             }
-        }
 
-        foreach (var mv in marzbanVpn)
+            foreach (var mv in marzbanVpn)
+            {
+                mv.Price = Convert.ToInt64(mv.Price * totalMultiplier);
+            }
+            return marzbanVpn;
+        }
+        catch (Exception e)
         {
-            mv.Price = Convert.ToInt64(mv.Price * totalMultiplier);
+            throw new AppException(e.Message);
         }
-
-        return marzbanVpn;
     }
 
 

@@ -240,7 +240,8 @@ public class AgentService(
     public async Task<AgentDto?> GetAgentByAdminId(long? adminId)
     {
         Domain.Entities.Agent.Agent? agent =
-            await agentRepository.GetQuery().FirstOrDefaultAsync(x => x.AgentAdminId == adminId);
+            await agentRepository.GetQuery()
+                .SingleOrDefaultAsync(x => x.AgentAdminId == adminId);
 
         if (agent is null) return null;
 
