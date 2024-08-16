@@ -114,7 +114,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
                 "invitation_link")
         });
-        
+
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
         return await botClient.SendTextMessageAsync(
@@ -309,61 +309,72 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
-
-        long id = 0;
-        long subscribeId = 0;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["id"], out id);
-            Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
-        }
+            IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
-        List<MarzbanVpnTemplateDto> templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
-
-        foreach (MarzbanVpnTemplateDto template in templates)
-        {
-            List<InlineKeyboardButton> button = new()
+            long id = 0;
+            long subscribeId = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
             {
-                InlineKeyboardButton.WithCallbackData(
-                    (template!.Days! + " روزه ") +
-                    (template.Gb > 200 ? " نامحدود " : template.Gb + " گیگ ")
-                    + (template.Price + " تومان "),
-                    "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+                Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
+            }
+
+            List<MarzbanVpnTemplateDto>
+                templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
+
+            foreach (MarzbanVpnTemplateDto template in templates)
+            {
+                List<InlineKeyboardButton> button = new()
+                {
+                    InlineKeyboardButton.WithCallbackData(
+                        (template!.Days! + " روزه ") +
+                        (template.Gb > 200 ? " نامحدود " : template.Gb + " گیگ ")
+                        + (template.Price + " تومان "),
+                        "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
+                };
+                keys.Add(button);
+            }
+
+            List<InlineKeyboardButton> custom = new()
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
+                    "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
             };
-            keys.Add(button);
+
+            List<InlineKeyboardButton> home = new()
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            };
+
+            keys.Add(custom);
+            keys.Add(home);
+
+            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+            await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: " نوع سرویس خود را انتخاب کنید. 📌",
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+
+            if (callbackQuery.Message.MessageId != 0)
+            {
+                await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            }
         }
-
-        List<InlineKeyboardButton> custom = new()
+        catch (Exception e)
         {
-            InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
-                "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
-        };
-
-        List<InlineKeyboardButton> home = new()
-        {
-            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
-        };
-
-        keys.Add(custom);
-        keys.Add(home);
-
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
-
-        await botClient.SendTextMessageAsync(
-            chatId: chatId,
-            text: " نوع سرویس خود را انتخاب کنید. 📌",
-            replyMarkup: inlineKeyboard,
-            cancellationToken: cancellationToken);
-
-        if (callbackQuery.Message.MessageId != 0)
-        {
-            await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+            await SendMainMenuAsync(botClient,callbackQuery,cancellationToken);
         }
     }
 
