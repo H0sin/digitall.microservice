@@ -170,4 +170,27 @@ public class TransactionService(
             .SingleOrDefaultAsync(x => x.AgentId == agentId);
         return new TransactionDetailDto(transactionDetail);
     }
+
+    public async Task<bool> UpdateTransactionDetailsAsync(TransactionDetailDto transactionDetail, long userId)
+    {
+        TransactionDetail? detail = await transactionDetailRepository
+            .GetQuery()
+            .Include(x => x.Agent)
+            .SingleOrDefaultAsync(x => x.Id == transactionDetail.Id);
+        
+        if (detail?.Agent?.AgentAdminId != userId)
+            throw new NotFoundException("چنین نمایندگی وجود ندارد");
+
+        detail!.CardNumber ??= transactionDetail.CardNumber;
+        detail!.CardHolderName ??= transactionDetail.CardHolderName;
+        detail!.Description ??= transactionDetail.Description;
+        detail.MaximumAmount =
+            transactionDetail.MaximumAmount > 0 ? transactionDetail.MaximumAmount : detail.MaximumAmount;
+        detail.MinimalAmount =
+            transactionDetail.MinimalAmount > 0 ? transactionDetail.MinimalAmount : detail.MinimalAmount;
+        await transactionDetailRepository.UpdateEntity(detail);
+        await transactionDetailRepository.SaveChanges(userId);
+
+        return true;
+    }
 }

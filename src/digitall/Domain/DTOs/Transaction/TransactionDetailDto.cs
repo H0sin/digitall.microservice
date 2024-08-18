@@ -7,10 +7,15 @@ public class TransactionDetailDto
     public long Id { get; set; }
     public int MaximumAmount { get; set; }
     public int MinimalAmount { get; set; }
-    public string CardNumber { get; set; }
-    public string CardHolderName { get; set; }
+    public string? CardNumber { get; set; }
+    public string? CardHolderName { get; set; }
     public string? Description { get; set; }
     public long AgentId { get; set; }
+
+    public TransactionDetailDto()
+    {
+        
+    }
 
     public TransactionDetailDto(TransactionDetail? detail)
     {

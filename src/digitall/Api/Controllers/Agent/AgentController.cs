@@ -47,7 +47,7 @@ public class AgentController(IAgentService agentService) : BaseController
     [HttpGet]
     public async Task<ApiResult<AgentDto>> GetAdminAgentInformation()
     {
-        AgentDto? agent = await agentService.GetAgentByAdminId(User.GetId());
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(User.GetId());
         return Ok(agent);
     }
 
