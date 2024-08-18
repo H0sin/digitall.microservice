@@ -92,6 +92,7 @@ public class BotHookController(
                             cancellationToken: cancellationToken);
                         break;
                     }
+
                     user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
                     user.Value.Value.CardHolderName = message.Text;
                     BotSessions
@@ -219,16 +220,29 @@ public class BotHookController(
             }
         }
 
-        Message action = message?.Text switch
+        bool? started = message?.Text.StartsWith("/start");
+
+        Message action = new Message();
+        if (started != null && started == true)
         {
-            "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
-            "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient, message,
-                cancellationToken),
-            "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
-                cancellationToken),
-            "تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
-                message, cancellationToken),
-        };
+            action = message?.Text.Split(" ")[0] switch
+            {
+                "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
+            };
+        }
+        else
+        {
+            action = message?.Text switch
+            {
+                "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
+                    message,
+                    cancellationToken),
+                "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
+                    cancellationToken),
+                "تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
+                    message, cancellationToken),
+            };
+        }
 
         Message sentMessage = action;
     }

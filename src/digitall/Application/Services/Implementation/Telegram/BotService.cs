@@ -1813,6 +1813,21 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }   
     }
 
+    public async Task<Message> SendAgentTransactionPaymentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+        try
+        {
+            // await telegramService.
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
     {
         await botClient!.EditMessageReplyMarkupAsync(

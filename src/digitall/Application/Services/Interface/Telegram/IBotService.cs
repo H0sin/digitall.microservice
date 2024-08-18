@@ -372,4 +372,14 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> EditeAgentCardHolderNameInformationAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// send agent transaction payment async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendAgentTransactionPaymentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
 }
