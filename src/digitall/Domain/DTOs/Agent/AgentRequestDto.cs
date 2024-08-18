@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Agent;
+using Microsoft.Extensions.Logging;
 
 namespace Domain.DTOs.Agent;
 
@@ -19,7 +20,7 @@ public class AgentRequestDto
     public string? CardHolderName { get; set; } = "";
     public string? PaymentDescription { get; set; }
     public string? AgentRequestStatus { get; set; } = "wating";
-
+    public long Id { get; set; }
     public AgentRequestDto(AgentRequest agentRequest)
     {
         CreateDate = agentRequest.CreateDate;
@@ -36,5 +37,6 @@ public class AgentRequestDto
         CardHolderName = agentRequest.CardHolderName;
         PaymentDescription = agentRequest.PaymentDescription;
         AgentRequestStatus = agentRequest.AgentRequestStatus;
+        Id = agentRequest.Id;
     }
 }

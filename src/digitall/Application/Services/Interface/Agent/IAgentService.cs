@@ -93,7 +93,7 @@ public interface IAgentService
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<string> GetAgentTelegramLink(long userId);
+    Task<string?> GetAgentTelegramLink(long userId);
 
     /// <summary>
     /// cheked for user is agent or not agent

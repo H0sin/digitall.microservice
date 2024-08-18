@@ -60,11 +60,14 @@ public class AgentService(
     public async Task AddAgentRequestAsync(AddRequestAgentDto request, long userId)
     {
         if (await GetAgentByAdminId(userId) is not null)
-            throw new ExistsException("شما قبلا درخواستی ثبت کردید");
+            throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
 
-        await agentRequestRepository.AddEntity(request._GenerateAgentRequest(userId));
+        if (parent is null)
+            parent!.Id = AgentItems.Agents.First().Id;
+
+        await agentRequestRepository.AddEntity(request._GenerateAgentRequest(userId, parent!.Id));
         await agentRequestRepository.SaveChanges(userId);
 
         User? user = await userRepository.GetEntityById(userId);
@@ -76,7 +79,7 @@ public class AgentService(
     {
         AgentRequest? request = await agentRequestRepository.GetEntityById(agentRequest.Id);
 
-        AgentDto? parent = await GetAgentByAdminId(request.UserId);
+        AgentDto? parent = await GetAgentByIdAsync(request!.AgentId);
 
         if (request is null) throw new NotFoundException("درخواستی یافت نشد");
 
@@ -107,12 +110,12 @@ public class AgentService(
                 agent.AgentPath = HierarchyId.Parse(parent.AgentPath + agent.Id.ToString() + "/");
 
                 await notificationService.AddNotificationAsync(
-                    NotificationTemplate.ChangeRequestAgent(agent.AgentAdminId, "درخواست نمایندگی شما تایید شد"),
+                    NotificationTemplate.ChangeRequestAgent(agent.AgentAdminId, "تایید"),
                     userId);
                 break;
             case "reject":
                 await notificationService.AddNotificationAsync(
-                    NotificationTemplate.ChangeRequestAgent(request.UserId, "درخواست نمایندگی شما رد شد"),
+                    NotificationTemplate.ChangeRequestAgent(request.UserId, "رد"),
                     userId);
                 break;
         }
@@ -177,19 +180,36 @@ public class AgentService(
 
     public async Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId)
     {
+        AgentDto? agent = await GetAgentByAdminId(userId);
+        if (agent is null) throw new AppException("شما نماینده نیستید");
         return await agentRequestRepository.GetQuery()
-            .Where(x => x.UserId == userId)
+            .Where(x => x.AgentId == agent.Id)
             .Include(x => x.User)
             .Select(x => new AgentRequestDto(x)).ToListAsync();
     }
 
-    public async Task<string> GetAgentTelegramLink(long userId)
+    public async Task<string?> GetAgentTelegramLink(long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
+        AgentDto? admin = await GetAgentByAdminId(userId);
+
+        if (admin is not null)
+        {
+            Domain.Entities.Agent.Agent? agentAdmin =
+                await agentRepository
+                    .GetQuery()
+                    .Include(x => x.TelegramBot)
+                    .SingleOrDefaultAsync(x => x.Id == admin!.Id);
+            return agentAdmin?.AgentCode.ToString();
+        }
+
         Domain.Entities.Agent.Agent? agent =
-            await agentRepository.GetQuery().Include(x => x.TelegramBot)
-                .SingleOrDefaultAsync(x => x.Id == user.AgentId);
-        return agent?.TelegramBot?.Link ?? "" + "?start=" + agent?.AgentCode;
+            await agentRepository
+                .GetQuery()
+                .Include(x => x.TelegramBot)
+                .SingleOrDefaultAsync(x => x.Id == user!.AgentId);
+
+        return agent?.AgentCode.ToString();
     }
 
     public async Task<bool> IsAgentAsync(long userId)

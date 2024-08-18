@@ -174,33 +174,34 @@ builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
-    // خواندن تنظیمات از appsettings.json
     var jobSettings = builder.Configuration.GetSection("Quartz:Jobs").Get<List<JobSettings>>();
 
-    foreach (var settings in jobSettings)
-    {
-        var jobType = Type.GetType(settings.JobType);
-        if (jobType == null)
+    if (jobSettings != null)
+        foreach (var settings in jobSettings)
         {
-            throw new InvalidOperationException($"Job type '{settings.JobType}' could not be found.");
+            var jobType = Type.GetType(settings.JobType);
+            if (jobType == null)
+            {
+                throw new InvalidOperationException($"Job type '{settings.JobType}' could not be found.");
+            }
+
+            var jobKey = new JobKey(settings.JobName, settings.JobGroup);
+
+            switch (settings.JobName)
+            {
+                case "DeleteExpiredNotificationsJob":
+                    q.AddJob<DeleteExpiredNotificationsJob>(opts => opts.WithIdentity(jobKey));
+                    break;
+                case "SendTelegramNotificationJob":
+                    q.AddJob<SendTelegramNotificationJob>(opts => opts.WithIdentity(jobKey));
+                    break;
+            }
+
+            q.AddTrigger(opts => opts
+                .ForJob(jobKey)
+                .WithIdentity(settings.TriggerName, settings.TriggerGroup)
+                .WithCronSchedule(settings.CronSchedule));
         }
-
-        var jobKey = new JobKey(settings.JobName, settings.JobGroup);
-        
-        q.AddJob<DeleteExpiredNotificationsJob>(opts => opts.WithIdentity(jobKey));
-
-        var trigger = TriggerBuilder.Create()
-            .WithIdentity(settings.TriggerName, settings.TriggerGroup)
-            .StartNow()
-            .WithCronSchedule(settings.CronSchedule)
-            .Build();
-
-        q.AddTrigger(opts => opts
-            .ForJob(jobKey)
-            .WithIdentity(settings.TriggerName, settings.TriggerGroup)
-            .WithCronSchedule(settings.CronSchedule));
-        
-    }
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

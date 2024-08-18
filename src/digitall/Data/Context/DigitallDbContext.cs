@@ -59,6 +59,7 @@ public class DigitallDbContext : DbContext
     public DbSet<Notification> Notification { get; set; }
     public DbSet<AgentOptions> AgentOptions { get; set; }
     public DbSet<AgentRequest> AgentRequest { get; set; }
+    
     #endregion
 
     #region properties

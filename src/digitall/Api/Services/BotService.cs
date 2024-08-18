@@ -5,6 +5,7 @@ using Api.Factory;
 using Application.Services.Implementation.Telegram;
 using Application.Services.Interface.Telegram;
 using Domain.DTOs.Telegram;
+using Domain.Exceptions;
 
 namespace Api.Services;
 
@@ -31,18 +32,25 @@ public class BotService(
 
     private async Task StartBotAsync(TelegramBotDto bot, CancellationToken cancellationToken)
     {
-        Thread.Sleep(500);  // Optional: برای اینکه به هر بات زمان بدهیم
+        try
+        {
+            Thread.Sleep(500);  // Optional: برای اینکه به هر بات زمان بدهیم
 
-        var botClient = botClientFactory.Create(bot.Token); // Create a new instance with the bot's token
+            var botClient = botClientFactory.Create(bot.Token); // Create a new instance with the bot's token
 
-        var webhookAddress = $"{bot.HostAddress}{bot.Route}";
-        logger.LogInformation("Setting webhook for bot {BotName}: {WebhookAddress}", bot.Name, webhookAddress);
+            var webhookAddress = $"{bot.HostAddress}{bot.Route}";
+            logger.LogInformation("Setting webhook for bot {BotName}: {WebhookAddress}", bot.Name, webhookAddress);
 
-        await botClient.SetWebhookAsync(
-            url: webhookAddress,
-            allowedUpdates: Array.Empty<UpdateType>(),
-            secretToken: bot.SecretToken,
-            cancellationToken: cancellationToken);
+            await botClient.SetWebhookAsync(
+                url: webhookAddress,
+                allowedUpdates: Array.Empty<UpdateType>(),
+                secretToken: bot.SecretToken,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            // throw new AppException($"ربات  {bot.Name}استارت نشد");
+        }
     }
 }
 

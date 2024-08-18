@@ -33,6 +33,9 @@ public class AddTelegramBotDto
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? SecretToken { get; set; }
 
+    [Display(Name = "لینک ربات")]
+    public string? Link { get; set; }
+    
     public TelegramBot _GenerateTelegramBot()
     {
         return new()
@@ -43,7 +46,8 @@ public class AddTelegramBotDto
             Route = Route,
             Token = Token,
             HostAddress= HostAddress,
-            SecretToken= SecretToken
+            SecretToken= SecretToken,
+            Link = Link
         };
     }
 }

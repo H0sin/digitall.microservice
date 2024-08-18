@@ -22,26 +22,27 @@ public class AddRequestAgentDto
     [Display(Name = "درصد کاربر")] public long UserPercent { get; set; } = 0;
 
     [Display(Name = "توضیحات")] public string? Description { get; set; }
-
-    public AddTransactionDetialDto? transactionDetial { get; set; } = new();
     
-    public AgentRequest _GenerateAgentRequest(long userId)
+    public AddTransactionDetialDto? transactionDetial { get; set; } = new();
+
+    public AgentRequest _GenerateAgentRequest(long userId,long agentId)
     {
-        AgentRequest agentRequest = 
-         new()
-        {
-            BrandName = BrandName,
-            PersianBrandName = PersianBrandName,
-            BrandAddress = BrandAddress,
-            AgentPercent = AgentPercent,
-            UserPercent = UserPercent,
-            Description = Description,
-            MinimalAmount = transactionDetial!.MinimalAmount,
-            CardHolderName = transactionDetial.CardHolderName,
-            CardNumber = transactionDetial.CardNumber,
-            MaximumAmount = transactionDetial.MaximumAmount,
-            UserId = userId
-        };
+        AgentRequest agentRequest =
+            new()
+            {
+                BrandName = BrandName,
+                PersianBrandName = PersianBrandName,
+                BrandAddress = BrandAddress,
+                AgentPercent = AgentPercent,
+                UserPercent = UserPercent,
+                Description = Description,
+                MinimalAmount = transactionDetial!.MinimalAmount,
+                CardHolderName = transactionDetial.CardHolderName,
+                CardNumber = transactionDetial.CardNumber,
+                MaximumAmount = transactionDetial.MaximumAmount,
+                UserId = userId,
+                AgentId = agentId
+            };
 
         return agentRequest;
     }

@@ -239,21 +239,14 @@ public class BotHookController(
             case "revoke_sub":
                 await botService.RevokeSubscribeAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "invitation_link":
+                await botService.SendTelegramInviteLinkAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(
                     chatId: callbackQuery!.Message!.Chat.Id,
                     text: callbackQuery.Data,
                     cancellationToken: cancellationToken);
-                break;
-            case "invitation_link":
-                User? userInfo = await _botClient!.GetMeAsync();
-                AgentDto? agent = await telegramService.GetAgentByChatIdAsync(callbackQuery!.Message!.Chat.Id);
-                string? link = $"https://t.me/{userInfo.Username}?strat={agent?.AgentCode ?? 0}";
-                await _botClient!.SendTextMessageAsync(
-                    callbackQuery!.Message!.Chat.Id,
-                    $"با استفاده از لینک زیر شما میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link}",
-                    cancellationToken:cancellationToken
-                );
                 break;
             case "agent_request":
                 long chatId = callbackQuery!.Message!.Chat.Id;
@@ -288,6 +281,7 @@ public class BotHookController(
                         text: "درخواست نمایندگی خود را ارسال کنید !",
                         cancellationToken: cancellationToken);
                 }
+
                 break;
             default:
                 break;

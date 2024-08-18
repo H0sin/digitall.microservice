@@ -40,4 +40,22 @@ public static class NotificationTemplate
             ForAllMember = false
         };
     }
+
+    public static AddNotificationDto StartedBotNotification(long userId, string? name, long chatId)
+    {
+        return new AddNotificationDto()
+        {
+            Expire = DateTime.Now.AddHours(24),
+            Message = $"""
+                       کاربری با ایدی 
+                       @{name}
+                       و شناسه
+                       {chatId}
+                       ربات را استارت کرد
+                       """,
+            NotificationType = NotificationType.Warning,
+            UserId = userId,
+            ForAllMember = false
+        };
+    }
 }

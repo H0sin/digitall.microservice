@@ -18,6 +18,19 @@ public interface INotificationService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<List<NotificationDto>> GetNotificationsAsync(long userId);
+
+    /// <summary>
+    /// send notification for telegram
+    /// </summary>
+    /// <returns></returns>
+    Task<List<NotificationDto>> GetNotificationsAsync();
+
+    /// <summary>
+    /// after send notification update filed is send
+    /// </summary>
+    /// <param name="notificationId"></param>
+    /// <returns></returns>
+    Task UpdateSendNotification(long notificationId);
     
     /// <summary>
     /// service for job delete expire notifications

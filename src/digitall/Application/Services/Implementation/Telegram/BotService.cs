@@ -13,6 +13,7 @@ using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Entities.Telegram;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
@@ -69,59 +70,70 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
-        long agentId = 0;
-
-        if (message.Text != null && message.Text.StartsWith("/start"))
+         long agentId = 0;
+        try
         {
-            Int64.TryParse((message.Text.Substring(6)), out agentId);
+            if (message.Text != null && message.Text.StartsWith("/start"))
+            {
+                Int64.TryParse((message.Text.Substring(6)), out agentId);
+            }
+        
+            AgentOptionDto? agentOptions = await telegramService.StartTelegramBotAsync(new StartTelegramBotDto()
+            {
+                AgentCode = agentId,
+                ChatId = message.Chat.Id,
+                FirstName = message.From.FirstName,
+                LastName = message.From.LastName,
+                BotId = botClient.BotId,
+                TelegramUsername = message.From.Username
+            });
+
+            IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+            keys.Add(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
+                InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
+            });
+
+            keys.Add(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+            });
+
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
+                InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+            });
+
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                    "web_information")
+            });
+
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                    "invitation_link")
+            });
+
+            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+            return await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: agentOptions!.WelcomeMessage ?? "خوش آمدید",
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
         }
-
-        AgentOptionDto? agentOptions = await telegramService.StartTelegramBotAsync(new StartTelegramBotDto()
+        catch (Exception e)
         {
-            AgentCode = agentId,
-            ChatId = message.Chat.Id,
-            FirstName = message.From.FirstName,
-            LastName = message.From.LastName
-        });
-
-        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
-
-        keys.Add(new List<InlineKeyboardButton>()
-        {
-            InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
-            InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
-        });
-
-        keys.Add(new List<InlineKeyboardButton>()
-        {
-            InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
-        });
-
-        keys.Add(new()
-        {
-            InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
-            InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
-        });
-
-        keys.Add(new()
-        {
-            InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
-                "web_information")
-        });
-
-        keys.Add(new()
-        {
-            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                "invitation_link")
-        });
-
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
-
-        return await botClient.SendTextMessageAsync(
-            chatId: message.Chat.Id,
-            text: agentOptions!.WelcomeMessage ?? "خوش آمدید",
-            replyMarkup: inlineKeyboard,
-            cancellationToken: cancellationToken);
+            return await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
     }
 
     public async Task SendMainMenuAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -303,7 +315,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 cancellationToken: cancellationToken);
         }
     }
-
 
     public async Task SendListVpnsTemplateAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
@@ -828,7 +839,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                     InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
                 }
             });
-            
+
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
                 text: deatils,
@@ -1616,5 +1627,19 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
             await SendListServicesAsync(botClient!, callbackQuery, cancellationToken);
         }
+    }
+
+    public async Task SendTelegramInviteLinkAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        var userInfo = await botClient!.GetMeAsync(cancellationToken: cancellationToken);
+        string? agentCode = await telegramService.GetAgentBotLinkAsync(callbackQuery!.Message!.Chat.Id);
+        string? link = $"https://t.me/{userInfo.Username}?start={agentCode}"; 
+        await botClient!.SendTextMessageAsync(
+            callbackQuery!.Message!.Chat.Id,
+            $"با استفاده از لینک زیر شما میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link}",
+            cancellationToken:cancellationToken
+        );
+        await Task.CompletedTask;
     }
 }

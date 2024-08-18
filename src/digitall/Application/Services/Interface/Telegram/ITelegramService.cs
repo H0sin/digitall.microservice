@@ -214,4 +214,18 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<bool> IsAgentAsyncByChatIdAsync(long chatId);
+
+    /// <summary>
+    /// send agent bot link
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<string?> GetAgentBotLinkAsync(long chatId);
+
+    /// <summary>
+    /// get telegramBot by bot Id
+    /// </summary>
+    /// <param name="botId"></param>
+    /// <returns></returns>
+    Task<TelegramBotDto> GetTelegramBotByBotIdAsync(long botId);
 }

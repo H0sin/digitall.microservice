@@ -13,7 +13,8 @@ public class TelegramBotDto
     public string? Route { get; set; }
     public string? HostAddress { get; set; }
     public string? SecretToken { get; set; }
-
+    public long? BotId { get; set; }
+    
     public TelegramBotDto(long id, string? token, string? name, string? persionName, string? description, string? route, string? hostAddress, string? secretToken)
     {
         Id = id;
@@ -31,14 +32,15 @@ public class TelegramBotDto
 
     }
 
-    public TelegramBotDto(TelegramBot bot)
+    public TelegramBotDto(TelegramBot? bot)
     {
-        Token = bot.Token;
-        Name = bot.Name;
-        PersionName = bot.PersionName;
-        Description = bot.Description;
-        Route = bot.Route;
-        HostAddress = bot.HostAddress;
-        SecretToken = bot.SecretToken;
+        Token = bot?.Token;
+        Name = bot?.Name;
+        PersionName = bot?.PersionName;
+        Description = bot?.Description;
+        Route = bot?.Route;
+        HostAddress = bot?.HostAddress;
+        SecretToken = bot?.SecretToken;
+        BotId = bot?.BotId;
     }
 }
