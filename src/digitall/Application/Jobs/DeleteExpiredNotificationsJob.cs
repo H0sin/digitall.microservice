@@ -17,11 +17,9 @@ public class DeleteExpiredNotificationsJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        using (var scope = _serviceScopeFactory.CreateScope())
-        {
-            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-            var now = DateTime.UtcNow;
-            await notificationService.DeleteExpireNotificationAsync();
-        }
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        var now = DateTime.UtcNow;
+        await notificationService.DeleteExpireNotificationAsync();
     }
 }

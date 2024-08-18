@@ -36,6 +36,16 @@ public interface IBotService
         CancellationToken cancellationToken, string? title = null);
 
     /// <summary>
+    /// send main menu for users
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendMainMenuAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken, string? title = null);
+
+    /// <summary>
     /// send list exist vpn
     /// </summary>
     /// <param name="botClient"></param>
@@ -253,7 +263,7 @@ public interface IBotService
     /// <returns></returns>
     Task AcceptAppendDaysAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send days price
     /// </summary>
@@ -283,7 +293,7 @@ public interface IBotService
     /// <returns></returns>
     Task DisabledMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send request for agent
     /// </summary>
@@ -303,7 +313,7 @@ public interface IBotService
     /// <returns></returns>
     Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// when change link subscrive
     /// </summary>
@@ -322,5 +332,44 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendTelegramInviteLinkAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// if user is agent send agent option menu 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="chatId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendAgentMenuForAdmin(ITelegramBotClient botClient, long chatId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list button for agent for chane items
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"> </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendAgentInformationMenuAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// edite agent card information
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// send card holder name
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> EditeAgentCardHolderNameInformationAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

@@ -78,6 +78,74 @@ public class BotHookController(
         {
             switch (user.Value.Value.State)
             {
+                case TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName:
+                    string? HolderName = message.Text;
+
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
+                    if (HolderName.Trim().Length <= 4 | string.IsNullOrEmpty(HolderName))
+                    {
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                    نام صاحب کارت را به صورت صحیح ارسال کنید!
+                                  """,
+                            cancellationToken: cancellationToken);
+                        break;
+                    }
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                    user.Value.Value.CardHolderName = message.Text;
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+                    bool response =
+                        await telegramService.EditeAgentTransactionDetailAsync(message.Chat.Id, user.Value.Value);
+                    if (response)
+                    {
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                  اطلاعات پرداخت شما با موقیت ثبت شد
+                                  """,
+                            cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                  مشکلی در ثبت اطلاعات رخ داد
+                                  """,
+                            cancellationToken: cancellationToken);
+                    }
+
+                    break;
+                case TelegramMarzbanVpnSessionState.AwaitingSendCardNumber:
+                    long cardNumber = 0;
+                    Int64.TryParse(message?.Text, out cardNumber);
+
+                    if (cardNumber == 0 | message.Text.Length != 16)
+                    {
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                  فرمت ارسالی کارت اشتباه است!
+                                  : فرمت درست
+                                   6037696975758585
+                                  """,
+                            cancellationToken: cancellationToken);
+                        break;
+                    }
+
+                    user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
+                    user.Value.Value.CardNumber = message.Text;
+                    await botService.EditeAgentCardHolderNameInformationAsync(_botClient, message, cancellationToken);
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(message.Chat.Id,
+                            user.Value.Value, (key, old) => old = user.Value.Value);
+                    break;
+
                 case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
                     await botService.RequestForAgentAsync(_botClient, message, cancellationToken);
                     user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
@@ -86,6 +154,7 @@ public class BotHookController(
                         .AddOrUpdate(message.Chat.Id,
                             user.Value.Value, (key, old) => old = user.Value.Value);
                     break;
+
                 case TelegramMarzbanVpnSessionState.AwaitingSendAppendDaysForService:
                     int day = 0;
                     Int32.TryParse(message?.Text, out day);
@@ -97,6 +166,7 @@ public class BotHookController(
                         .AddOrUpdate(message.Chat.Id,
                             user.Value.Value, (key, old) => old = user.Value.Value);
                     break;
+
                 case TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService:
                     int gig = 0;
                     Int32.TryParse(message?.Text, out gig);
@@ -108,6 +178,7 @@ public class BotHookController(
                         .AddOrUpdate(message.Chat.Id,
                             user.Value.Value, (key, old) => old = user.Value.Value);
                     break;
+
                 case TelegramMarzbanVpnSessionState.AwaitingGb:
                     int gb = 0;
                     Int32.TryParse(message?.Text, out gb);
@@ -148,16 +219,15 @@ public class BotHookController(
             }
         }
 
-        // if (message.Text?.Split(' ')[0] == "/start" && message.Text?.Length < 8)
-        // {
-        //     AgentDto? agent = await telegramService.GetAgentByTelegramToken(_token);
-        //
-        //     message.Text = "/start=" + (agent?.AgentCode ?? AgentItems.Agents[0].AgentCode);
-        // }
-
-        var action = message?.Text?.Split(' ')[0] switch
+        Message action = message?.Text switch
         {
             "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
+            "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient, message,
+                cancellationToken),
+            "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
+                cancellationToken),
+            "تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
+                message, cancellationToken),
         };
 
         Message sentMessage = action;

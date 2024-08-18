@@ -67,17 +67,17 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
     }
 
-    public async Task<Message> StartLinkAsync(ITelegramBotClient botClient, Message message,
+    public async Task<Message> StartLinkAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken)
     {
-         long agentId = 0;
+        long agentId = 0;
         try
         {
             if (message.Text != null && message.Text.StartsWith("/start"))
             {
                 Int64.TryParse((message.Text.Substring(6)), out agentId);
             }
-        
+
             AgentOptionDto? agentOptions = await telegramService.StartTelegramBotAsync(new StartTelegramBotDto()
             {
                 AgentCode = agentId,
@@ -141,6 +141,13 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
 
+        bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
+
+        if (isAgent)
+            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
+        else
+            await DeleteMenu(botClient, callbackQuery.Message, cancellationToken);
+
         BotSessions
             .users_Sessions?
             .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
@@ -186,6 +193,70 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
         await botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: title ?? "به منو اصلی بازگشتید 🏠",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task<Message> SendMainMenuAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken,
+        string? title = null)
+    {
+        long chatId = message.Chat.Id;
+
+        bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
+
+        if (isAgent)
+            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
+        else
+            await DeleteMenu(botClient, message, cancellationToken);
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                (key, old)
+                    => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None));
+
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free"),
+            InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "subscribe")
+        });
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request"),
+            InlineKeyboardButton.WithCallbackData("کیف پول + شارژ 🏦", "wallet")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("کلمه عبور و نام کاربری سایت 🔒",
+                "web_information")
+        });
+
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                "invitation_link")
+        });
+
+        if (message.MessageId != 0)
+        {
+            await botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken);
+        }
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
+
+        return await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: title ?? "به منو اصلی بازگشتید 🏠",
             replyMarkup: inlineKeyboard,
@@ -1634,12 +1705,121 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         var userInfo = await botClient!.GetMeAsync(cancellationToken: cancellationToken);
         string? agentCode = await telegramService.GetAgentBotLinkAsync(callbackQuery!.Message!.Chat.Id);
-        string? link = $"https://t.me/{userInfo.Username}?start={agentCode}"; 
+        string? link = $"https://t.me/{userInfo.Username}?start={agentCode}";
         await botClient!.SendTextMessageAsync(
             callbackQuery!.Message!.Chat.Id,
             $"با استفاده از لینک زیر شما میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link}",
-            cancellationToken:cancellationToken
+            cancellationToken: cancellationToken
         );
         await Task.CompletedTask;
+    }
+
+    public async Task SendAgentMenuForAdmin(ITelegramBotClient botClient, long chatId,
+        CancellationToken cancellationToken)
+    {
+        var keyboard = new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "مدیریت پنل نمایندگی \u270f\ufe0f", "آمار نمایندگی 📊" },
+            new KeyboardButton[] { "مدیریت کاربر" },
+            new KeyboardButton[] { "جستجو کاربر 🔍", "ارسال پیام ✉️" },
+        })
+        {
+            ResizeKeyboard = true // تنظیم اندازه کیبورد
+        };
+
+        await botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: "لطفاً یک گزینه را انتخاب کنید:",
+            replyMarkup: keyboard,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task<Message> SendAgentInformationMenuAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        var keyboard = new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "تغییر شماره کارت \ud83d\udcb3"},
+            new KeyboardButton[] { "درصد کاربر", "درصد نماینده" },
+            new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
+        })
+        {
+            ResizeKeyboard = true
+        };
+
+        return await botClient!.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: "مدیریت پنل نمایندگی:",
+            cancellationToken: cancellationToken,
+            replyMarkup: keyboard
+        );
+    }
+
+    public async Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
+    {
+        long chatId = message.Chat.Id;
+        try
+        {
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardNumber),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardNumber));
+            
+            return await botClient!.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: """
+                      لطفا شماره کارت 16 رقمی خود را ارسال کنید!
+                      فرمت درست 6037696975758585 
+                      """,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }   
+    }
+
+    public async Task<Message> EditeAgentCardHolderNameInformationAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message.Chat.Id;
+        try
+        {
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName));
+            
+            return await botClient!.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: """
+                      لطفا نام صاحب
+                       شماره کارت را 
+                       به صورت دقیق
+                        وارد کنید!
+                      """,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }   
+    }
+
+    private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
+    {
+        await botClient!.EditMessageReplyMarkupAsync(
+            chatId: message.Chat.Id,
+            messageId: message.MessageId,
+            replyMarkup: null,
+            cancellationToken: cancellationToken
+        );
     }
 }

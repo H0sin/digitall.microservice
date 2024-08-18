@@ -9,10 +9,11 @@ public class TelegramMarzbanVpnSession
     public TelegramMarzbanVpnSessionState State { get; set; }
     public long? VpnId { get; set; }
     public int Price { get; set; }
-    
+    public string? CardNumber { get; set; }
+    public string? CardHolderName { get; set; }
     public long? UserSubscribeId { get; set; }
-
-    public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,long? vpnId = null,long? UserSubscribeId = null)
+    public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,
+        long? vpnId = null, long? UserSubscribeId = null,string? cardNumber = null,string? cardHolderName=null)
     {
         Gb = gb;
         Date = date;
@@ -33,7 +34,9 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendTransactionImage,
     AwaitingSendAppendGbForService,
     AwaitingSendAppendDaysForService,
-    AwaitingSendDescriptionForAddAgentRequest
+    AwaitingSendDescriptionForAddAgentRequest,
+    AwaitingSendCardNumber,
+    AwaitingSendCardHolderName,
 }
 
 public static class BotSessions
