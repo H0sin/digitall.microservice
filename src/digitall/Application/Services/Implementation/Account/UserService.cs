@@ -97,7 +97,7 @@ public class UserService(
 
     public async Task<List<UserDto>> GetUserByAgentAsync(long userId)
     {
-        AgentDto? agent = await agentService.GetAgentByAdminId(userId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(userId);
 
         List<User> users = await userRepository.GetQuery()
             .Where(x => x.AgentId == agent.Id)
@@ -459,7 +459,7 @@ public class UserService(
         if (await userRepository.GetQuery().AnyAsync(x => x.Email == user.Email))
             return AddUserResult.IsExists;
 
-        AgentDto? agent = await agentService.GetAgentByAdminId(userId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(userId);
 
         string password = CreatePassword.CreateUserPassword(7);
 

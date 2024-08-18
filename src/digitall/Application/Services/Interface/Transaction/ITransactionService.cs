@@ -15,4 +15,11 @@ public interface ITransactionService
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
     Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId);
     Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);
+    
+    /// <summary>
+    /// update agent transaction deatil
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    Task<bool> UpdateTransactionDetailsAsync(TransactionDetailDto transactionDetail,long userId);
 }

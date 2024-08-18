@@ -1,4 +1,5 @@
-﻿using Domain.DTOs.Account;
+﻿using Application.Sessions;
+using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
@@ -228,4 +229,12 @@ public interface ITelegramService
     /// <param name="botId"></param>
     /// <returns></returns>
     Task<TelegramBotDto> GetTelegramBotByBotIdAsync(long botId);
+
+    /// <summary>
+    /// update user transaction detial card
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="session"></param>
+    /// <returns></returns>
+    Task<bool> EditeAgentTransactionDetailAsync(long chatId,TelegramMarzbanVpnSession session);
 }

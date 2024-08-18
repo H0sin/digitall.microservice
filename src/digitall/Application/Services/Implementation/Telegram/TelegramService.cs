@@ -16,6 +16,7 @@ using Application.Extensions;
 using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
 using Application.Services.Interface.Transaction;
+using Application.Sessions;
 using Application.Static.Template;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
@@ -248,7 +249,7 @@ public class TelegramService(
             await userRepository.AddEntity(newUser);
             await userRepository.SaveChanges(newUser.Id);
         }
-        
+
         if ((newUser?.BotId ?? user!.BotId) != start.BotId)
             throw new ApplicationException("شما در ربات دیگری عضو شدید");
 
@@ -319,5 +320,25 @@ public class TelegramService(
         return new TelegramBotDto(await telegramBotRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.BotId == botId));
+    }
+
+    public async Task<bool> EditeAgentTransactionDetailAsync(long chatId, TelegramMarzbanVpnSession session)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        AgentDto? agent = await agentService
+            .GetAgentByAdminIdAsync(user?.Id);
+
+        if (agent is null)
+            return false;
+
+        TransactionDetailDto transactionDetail = new()
+        {
+            CardNumber = session.CardNumber,
+            CardHolderName = session.CardHolderName,
+            Id = agent.TransactionDeatilId
+        };
+
+        return await transactionService.UpdateTransactionDetailsAsync(transactionDetail, user!.Id);
     }
 }

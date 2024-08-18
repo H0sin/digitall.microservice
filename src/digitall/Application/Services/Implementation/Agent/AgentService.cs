@@ -59,7 +59,7 @@ public class AgentService(
 
     public async Task AddAgentRequestAsync(AddRequestAgentDto request, long userId)
     {
-        if (await GetAgentByAdminId(userId) is not null)
+        if (await GetAgentByAdminIdAsync(userId) is not null)
             throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
@@ -123,7 +123,7 @@ public class AgentService(
 
     public async Task<AgentTreeDto?> GetAgentsChildByFilterAsync(long userId)
     {
-        AgentDto? agent = await GetAgentByAdminId(userId);
+        AgentDto? agent = await GetAgentByAdminIdAsync(userId);
         var mainAgent = await agentRepository.GetEntityById(agent.Id);
 
         if (mainAgent == null || mainAgent.AgentPath == null)
@@ -180,7 +180,7 @@ public class AgentService(
 
     public async Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId)
     {
-        AgentDto? agent = await GetAgentByAdminId(userId);
+        AgentDto? agent = await GetAgentByAdminIdAsync(userId);
         if (agent is null) throw new AppException("شما نماینده نیستید");
         return await agentRequestRepository.GetQuery()
             .Where(x => x.AgentId == agent.Id)
@@ -191,7 +191,7 @@ public class AgentService(
     public async Task<string?> GetAgentTelegramLink(long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
-        AgentDto? admin = await GetAgentByAdminId(userId);
+        AgentDto? admin = await GetAgentByAdminIdAsync(userId);
 
         if (admin is not null)
         {
@@ -214,7 +214,7 @@ public class AgentService(
 
     public async Task<bool> IsAgentAsync(long userId)
     {
-        AgentDto? agent = await GetAgentByAdminId(userId);
+        AgentDto? agent = await GetAgentByAdminIdAsync(userId);
 
         return agent switch
         {
@@ -257,10 +257,12 @@ public class AgentService(
         return paths.Select(long.Parse).ToList();
     }
 
-    public async Task<AgentDto?> GetAgentByAdminId(long? adminId)
+    public async Task<AgentDto?> GetAgentByAdminIdAsync(long? adminId)
     {
         Domain.Entities.Agent.Agent? agent =
-            await agentRepository.GetQuery()
+            await agentRepository
+                .GetQuery()
+                .Include(x => x.TransactionDetail)
                 .SingleOrDefaultAsync(x => x.AgentAdminId == adminId);
 
         if (agent is null) return null;
@@ -278,7 +280,7 @@ public class AgentService(
 
         if (filter.AdminId is not null and not 0)
         {
-            AgentDto? agent = await GetAgentByAdminId(filter.AdminId ?? 0);
+            AgentDto? agent = await GetAgentByAdminIdAsync(filter.AdminId ?? 0);
         }
 
         return filter;

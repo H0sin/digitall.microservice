@@ -301,7 +301,7 @@ public class MarzbanServies(
 
             long totalPrice = price * vpn.Count;
 
-            AgentDto? isAgent = await agentService.GetAgentByAdminId(userId);
+            AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
             if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
 

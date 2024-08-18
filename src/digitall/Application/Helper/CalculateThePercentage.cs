@@ -24,7 +24,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
             if (marzbanVpn.Count > 0)
             {
                 AgentDto? admin = await agentService
-                    .GetAgentByAdminId(userId);
+                    .GetAgentByAdminIdAsync(userId);
 
                 AgentDto? agent =
                     await agentService.GetAgentByUserIdAsync(userId);
@@ -68,7 +68,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         if (marzbanVpn.Count > 0)
         {
             AgentDto? admin = await agentService
-                .GetAgentByAdminId(userId);
+                .GetAgentByAdminIdAsync(userId);
 
             AgentDto? agent =
                 await agentService.GetAgentByUserIdAsync(userId);
@@ -105,7 +105,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         int numberOfAgents = 2)
     {
         AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
+            .GetAgentByAdminIdAsync(userId);
 
         AgentDto? agent =
             await agentService.GetAgentByUserIdAsync(userId);
@@ -139,7 +139,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         int numberOfAgents = 2)
     {
         AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
+            .GetAgentByAdminIdAsync(userId);
 
         AgentDto? agent =
             await agentService.GetAgentByUserIdAsync(userId);
@@ -177,7 +177,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
         int count = 1,
         int numberOfAgents = 2)
     {
-        AgentDto? admin = await agentService.GetAgentByAdminId(userId);
+        AgentDto? admin = await agentService.GetAgentByAdminIdAsync(userId);
         AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
 
         if (agent == null)
@@ -210,7 +210,7 @@ public class Percent(IAgentService agentService,IMarzbanService? marzbanService 
     public async Task<long> CalculatorVpnPrice(long price, long userId, int numberOfAgents = 2)
     {
         AgentDto? admin = await agentService
-            .GetAgentByAdminId(userId);
+            .GetAgentByAdminIdAsync(userId);
 
         AgentDto? agent =
             await agentService.GetAgentByUserIdAsync(userId);
