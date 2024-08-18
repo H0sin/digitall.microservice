@@ -21,30 +21,29 @@ public class SendTelegramNotificationJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        using (var scope = _serviceScopeFactory.CreateScope())
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        
+        var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
+        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        
+        List<NotificationDto> notifications = await notificationService.GetNotificationsAsync();
+
+        foreach (var notification in notifications)
         {
-            var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
-            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-            List<NotificationDto> notifications = await notificationService.GetNotificationsAsync();
-
-            foreach (var notification in notifications)
+            if (notification.ChatId is not null && notification.BotId is not null)
             {
-                if (notification.ChatId is not null && notification.BotId is not null)
-                {
-                    TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
-                    var botClient = new TelegramBotClient(bot.Token!);
+                TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
+                var botClient = new TelegramBotClient(bot.Token!);
 
-                    await botClient.SendTextMessageAsync(
-                        chatId: notification.ChatId,
-                        text: notification.Message,
-                        parseMode: ParseMode.Markdown
-                    );
+                await botClient.SendTextMessageAsync(
+                    chatId: notification.ChatId,
+                    text: notification.Message ?? "",
+                    parseMode: ParseMode.Markdown
+                );
 
-                    await notificationService.UpdateSendNotification(notification.Id);
+                await notificationService.UpdateSendNotification(notification.Id);
 
-                    Thread.Sleep(500);
-                }
+                Thread.Sleep(500);
             }
         }
     }
