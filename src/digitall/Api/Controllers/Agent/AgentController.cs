@@ -132,6 +132,17 @@ public class AgentController(IAgentService agentService) : BaseController
     public async Task<ApiResult<InformationPaymentDto>> GetAgentInformationPayment() =>
         Ok(await agentService.GetAgentInformationPaymentAsync(User.GetId()));
 
+    /// <summary>
+    /// get agent request
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<AgentRequestDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult<List<AgentRequestDto>>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<List<AgentRequestDto>>> GetAgentRequests() =>
+        Ok(await agentService.GetListAgentRequestAsync(User.GetId()));
+
     #endregion
 
     #region filter
@@ -227,16 +238,6 @@ public class AgentController(IAgentService agentService) : BaseController
         await agentService.UpdateAgentRequest(request, User.GetId());
         return Ok();
     }
-    
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet]
-    public async Task<ApiResult<List<AgentRequestDto>>> GetAgentRequests()
-    {
-        return Ok(await agentService.GetListAgentRequestAsync(User.GetId()));
-    }
-    
+
     #endregion
 }

@@ -46,4 +46,7 @@ public class AgentRequest : BaseEntity
     
     [Display(Name = "وضعیت درخواست نمایندگی")]
     public string? AgentRequestStatus { get; set; } = "wating";
+    
+    [Display(Name = "شناسه نماینده قبلی")]
+    public long AgentId { get; set; }
 }

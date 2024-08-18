@@ -74,6 +74,11 @@ public class User : BaseEntity
     [Display(Name = "نهایت تعداد اکانت تست")]
     public long FinalCountTestMarzbanAccount { get; set; }
 
+    [Display(Name = "شناسه ربات عضو شده")] public long? BotId { get; set; }
+
+    [Display(Name = "شناسه تلگرام")]
+    public string? TelegramUsername { get; set; }
+
     #endregion
 
     #region relations

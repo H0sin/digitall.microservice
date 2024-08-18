@@ -14,7 +14,9 @@ public class Notification : BaseEntity
     [Display(Name = "پیغام")]
     [MaxLength(200, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Message { get; set; }
-
+    
+    public bool Send { get; set; }
+    
     public long? UserId { get; set; }
     public User? User { get; set; }
 }

@@ -37,6 +37,8 @@ public class TelegramBot : BaseEntity
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Link { get; set; }
 
+    public long BotId { get; set; }
+
     public long AgentId { get; set; }
 
     public Agent.Agent? Agent { get; set; }

@@ -34,6 +34,32 @@ public class NotificationService(INotificationRepository notificationRepository)
         return notifications;
     }
 
+    public async Task<List<NotificationDto>> GetNotificationsAsync()
+    {
+        List<NotificationDto> notifications = await notificationRepository
+            .GetQuery()
+            .Where(x => x.Send == false)
+            .Include(x => x.User)
+            .Select(x => new NotificationDto(x))
+            .ToListAsync();
+
+        return notifications;
+    }
+
+    public async Task UpdateSendNotification(long notificationId)
+    {
+        Domain.Entities.Notification.Notification? notification =
+            await notificationRepository.GetEntityById(notificationId);
+
+        if (notification is not null)
+        {
+            notification.Send = true;
+            await notificationRepository.UpdateEntity(notification);
+        }
+
+        await notificationRepository.SaveChanges(1);
+    }
+
     public async Task DeleteExpireNotificationAsync()
     {
         DateTime now = DateTime.UtcNow;

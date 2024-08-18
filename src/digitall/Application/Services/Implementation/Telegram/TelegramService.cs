@@ -12,8 +12,11 @@ using Domain.IRepositories.Account;
 using Domain.IRepositories.Telegram;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Application.Extensions;
 using Application.Services.Interface.Marzban;
+using Application.Services.Interface.Notification;
 using Application.Services.Interface.Transaction;
+using Application.Static.Template;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
@@ -28,7 +31,8 @@ public class TelegramService(
     IUserRepository userRepository,
     IAgentService agentService,
     IMarzbanService marzbanService,
-    ITransactionService transactionService) : ITelegramService
+    ITransactionService transactionService,
+    INotificationService notificationService) : ITelegramService
 {
     public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
     {
@@ -187,20 +191,20 @@ public class TelegramService(
     public async Task<string> ResetUserPasswordAsync(long chatId, int charter = 6)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        if (DateTime.UtcNow - user.ModifiedDate >= TimeSpan.FromMinutes(3))
-        {
-            string password = new Random().Next(100000, 999999).ToString();
-            user.Password = PasswordHelper.EncodePasswordMd5(password);
-            await userRepository.UpdateEntity(user);
-            await userRepository.SaveChanges(user.Id);
-            return password;
-        }
-        else
-        {
-            throw new AppException("لطفا چند دقیقه دیگر تلاش کنید");
-        }
+        // if (DateTime.UtcNow - user.ModifiedDate >= TimeSpan.FromMinutes(3))
+        // {
+        string password = new Random().Next(100000, 999999).ToString();
+        user.Password = PasswordHelper.EncodePasswordMd5(password);
+        await userRepository.UpdateEntity(user);
+        await userRepository.SaveChanges(user.Id);
+        return password;
+        // }
+        // else
+        // {
+        //     throw new AppException("لطفا چند دقیقه دیگر تلاش کنید");
+        // }
 
-        return "";
+        // return "";
     }
 
     public async Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId)
@@ -219,6 +223,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(start.ChatId);
 
         AgentDto? agent = await agentService.GetAgentByUserIdAsync(user?.Id ?? 0);
+        User? newUser = null;
 
         if (user is null)
         {
@@ -227,7 +232,7 @@ public class TelegramService(
             if (agent == null)
                 agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
 
-            User newUser = new User()
+            newUser = new User()
             {
                 Balance = 0,
                 AgentId = agent!.Id,
@@ -235,12 +240,22 @@ public class TelegramService(
                 LastName = start.LastName,
                 Password = PasswordHelper.EncodePasswordMd5(start.ChatId.ToString()),
                 EmailActiveCode = Guid.NewGuid().ToString("N"),
-                ChatId = start.ChatId
+                ChatId = start.ChatId,
+                BotId = start.BotId,
+                TelegramUsername = start.TelegramUsername
             };
 
             await userRepository.AddEntity(newUser);
             await userRepository.SaveChanges(newUser.Id);
         }
+        
+        if ((newUser?.BotId ?? user!.BotId) != start.BotId)
+            throw new ApplicationException("شما در ربات دیگری عضو شدید");
+
+        await notificationService.AddNotificationAsync(
+            NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
+                start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()), start.ChatId),
+            user?.Id ?? newUser.Id);
 
         return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
     }
@@ -291,5 +306,18 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         return await agentService.IsAgentAsync(user!.Id);
+    }
+
+    public async Task<string?> GetAgentBotLinkAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await agentService.GetAgentTelegramLink(user!.Id);
+    }
+
+    public async Task<TelegramBotDto> GetTelegramBotByBotIdAsync(long botId)
+    {
+        return new TelegramBotDto(await telegramBotRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(x => x.BotId == botId));
     }
 }

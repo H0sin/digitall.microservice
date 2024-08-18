@@ -9,7 +9,9 @@ public class NotificationDto
     public DateTime Expire { get; set; }
     public NotificationType NotificationType { get; set; }
     public string? Message { get; set; }
-
+    public long? BotId { get; set; }
+    public long? ChatId { get; set; }
+    public long Id { get; set; }
     public NotificationDto()
     {
     }
@@ -19,5 +21,8 @@ public class NotificationDto
         Expire = notification.Expire;
         this.NotificationType = notification.NotificationType;
         Message = notification.Message;
+        BotId = notification.User?.BotId;
+        ChatId = notification.User?.ChatId;
+        Id = notification.Id;
     }
 }
