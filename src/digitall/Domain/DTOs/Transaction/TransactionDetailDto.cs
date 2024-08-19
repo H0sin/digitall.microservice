@@ -11,10 +11,11 @@ public class TransactionDetailDto
     public string? CardHolderName { get; set; }
     public string? Description { get; set; }
     public long AgentId { get; set; }
+    public long UserPercent { get; set; } = 0;
+    public long AgentPercent { get; set; } = 0;
 
     public TransactionDetailDto()
     {
-        
     }
 
     public TransactionDetailDto(TransactionDetail? detail)
@@ -26,6 +27,8 @@ public class TransactionDetailDto
         AgentId = detail.AgentId;
         Description = detail?.Description;
         Id = detail?.Id ?? 0;
+        UserPercent = detail!.Agent!.UserPercent;
+        AgentPercent = detail!.Agent!.AgentPercent;
     }
 
     public string GetTransactionMessage()

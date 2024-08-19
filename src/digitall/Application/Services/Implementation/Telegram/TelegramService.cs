@@ -145,10 +145,13 @@ public class TelegramService(
 
         MarzbanVpnTemplateDto? template =
             await marzbanService.GetMarzbanVpnTemplateByIdAsync(buy.MarzbanVpnTemplateId ?? 0);
-
+        
+        AgentsIncomesDetailByPriceDto agentsIncomesDetailByPrice =
+            await percent.CalculatorVpnPrice(template.Price, user.Id);
+        
         factor.Days = template.Days;
         factor.Gb = template.Gb;
-        factor.Price = (await percent.CalculatorVpnPrice(template.Price, user.Id)) * buy.Count;
+        factor.Price = (agentsIncomesDetailByPrice!.Price) * buy.Count;
         factor.Count = buy.Count;
 
         return factor;
@@ -340,5 +343,18 @@ public class TelegramService(
         };
 
         return await transactionService.UpdateTransactionDetailsAsync(transactionDetail, user!.Id);
+    }
+
+    public async Task<TransactionDetailDto?> GetAgentTransactionDetailDtoAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
+        TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(agent!.Id);
+        return transactionDetail;
+    }
+
+    public Task<AgentDto> SendAgentInformationAsync(long chatId)
+    {
+        throw new NotImplementedException();
     }
 }

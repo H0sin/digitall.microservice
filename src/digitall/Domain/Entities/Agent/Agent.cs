@@ -52,6 +52,7 @@ public class Agent : BaseEntity
 
     public AgentOptions? AgentOptions { get; set; }
     public TransactionDetail? TransactionDetail { get; set; }
+    public ICollection<AgentsIncomesDetail>? AgentsTransactionsDetails { get; set; }
 
     #endregion
 }

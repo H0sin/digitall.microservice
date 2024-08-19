@@ -27,9 +27,7 @@ public class OrderDetail : BaseEntity
 
     public Order Order { get; set; }
     public Product.Product? Product { get; set; }
-
-    public ICollection<Client>? Clients { get; set; }
-
     public ICollection<MarzbanUser> MarzbanUsers { get; set; }
+    
     #endregion
 }

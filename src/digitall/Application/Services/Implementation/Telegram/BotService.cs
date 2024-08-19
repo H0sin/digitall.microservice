@@ -1740,7 +1740,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         var keyboard = new ReplyKeyboardMarkup(new[]
         {
-            new KeyboardButton[] { "تغییر شماره کارت \ud83d\udcb3"},
+            new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3" },
+            new KeyboardButton[] { "مشاهده اطلاعات پرداخت \ud83d\udcb0" },
             new KeyboardButton[] { "درصد کاربر", "درصد نماینده" },
             new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
         })
@@ -1756,22 +1757,24 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         );
     }
 
-    public async Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
+    public async Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
     {
         long chatId = message.Chat.Id;
         try
         {
             BotSessions
                 .users_Sessions?
-                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardNumber),
+                .AddOrUpdate(chatId,
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardNumber),
                     (key, old)
                         => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardNumber));
-            
+
             return await botClient!.SendTextMessageAsync(
                 chatId: message.Chat.Id,
                 text: """
                       لطفا شماره کارت 16 رقمی خود را ارسال کنید!
-                      فرمت درست 6037696975758585 
+                      فرمت درست 6037696975758585
                       """,
                 cancellationToken: cancellationToken
             );
@@ -1780,7 +1783,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             Console.WriteLine(e);
             throw;
-        }   
+        }
     }
 
     public async Task<Message> EditeAgentCardHolderNameInformationAsync(ITelegramBotClient? botClient, Message message,
@@ -1791,15 +1794,17 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             BotSessions
                 .users_Sessions?
-                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName),
+                .AddOrUpdate(chatId,
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName),
                     (key, old)
-                        => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName));
-            
+                        => old = new TelegramMarzbanVpnSession(
+                            TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName));
+
             return await botClient!.SendTextMessageAsync(
                 chatId: message.Chat.Id,
                 text: """
                       لطفا نام صاحب
-                       شماره کارت را 
+                       شماره کارت را
                        به صورت دقیق
                         وارد کنید!
                       """,
@@ -1810,21 +1815,29 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             Console.WriteLine(e);
             throw;
-        }   
+        }
     }
 
-    public async Task<Message> SendAgentTransactionPaymentAsync(ITelegramBotClient? botClient, Message message,
+    public async Task<Message> SendAgentTransactionPaymentDetailAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        long chatId = message.Chat.Id;
         try
         {
-            // await telegramService.
+            TransactionDetailDto? transaction = await telegramService.GetAgentTransactionDetailDtoAsync(chatId);
+            if (transaction is null)
+                throw new ApplicationException("اطلاعات پرداخت ثبت نشده");
+
+            string text = $"شماره کارت: {transaction.CardNumber ?? "ثبت نشده"} \n" +
+                          $"نام صاحب کارت: {transaction.CardHolderName ?? "ثبت نشده"}\n" +
+                          $"درصد سود پیش‌فرض از کاربر عادی: %{transaction.AgentPercent}\n" +
+                          $"درصد سود پیش‌فرض از نماینده: %{transaction.UserPercent}";
+            return await botClient!.SendTextMessageAsync(chatId,
+                text, cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return await botClient!.SendTextMessageAsync(chatId, e.Message, cancellationToken: cancellationToken);
         }
     }
 

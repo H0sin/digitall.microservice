@@ -237,4 +237,18 @@ public interface ITelegramService
     /// <param name="session"></param>
     /// <returns></returns>
     Task<bool> EditeAgentTransactionDetailAsync(long chatId,TelegramMarzbanVpnSession session);
+
+    /// <summary>
+    /// get agent transaction deatil dto
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<TransactionDetailDto?> GetAgentTransactionDetailDtoAsync(long chatId);
+    
+    /// <summary>
+    /// send agent information 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<AgentDto> SendAgentInformationAsync(long chatId);
 }

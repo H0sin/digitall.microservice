@@ -1,4 +1,6 @@
-﻿using Domain.Entities.Marzban;
+﻿using Domain.DTOs.Transaction;
+using Domain.Entities.Marzban;
+using Domain.Entities.Transaction;
 
 namespace Domain.DTOs.Marzban;
 
@@ -24,6 +26,12 @@ public class GetMarzbanVpnDto
 
     public long Test_TotalGb { get; set; } = 1;
 
+    public AgentsIncomesDetailByPriceDto? AgentsIncomesDetailByPrice { get; set; } = null;
+
+    public GetMarzbanVpnDto()
+    {
+        
+    }
     public GetMarzbanVpnDto(MarzbanVpn vpn)
     {
         GbMax = vpn.GbMax;

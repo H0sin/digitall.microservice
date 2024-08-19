@@ -104,6 +104,7 @@ public static class DependencyContainer
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAgentOptionRepository, AgentOptionRepository>();
         services.AddScoped<IAgentRequestRepository, AgentRequestRepository>();
+        services.AddScoped<IAgentsIncomesDetailRepository, AgentsIncomesDetailRepository>();
 
         #endregion
 

@@ -380,6 +380,6 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Message> SendAgentTransactionPaymentAsync(ITelegramBotClient? botClient, Message message,
+    Task<Message> SendAgentTransactionPaymentDetailAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

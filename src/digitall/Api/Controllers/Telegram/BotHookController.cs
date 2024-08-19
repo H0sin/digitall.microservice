@@ -239,7 +239,10 @@ public class BotHookController(
                     cancellationToken),
                 "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
                     cancellationToken),
-                "تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
+                "ثبت | تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
+                    message, cancellationToken),
+                "مشاهده اطلاعات پرداخت \ud83d\udcb0" => await botService.SendAgentTransactionPaymentDetailAsync(
+                    _botClient,
                     message, cancellationToken),
             };
         }

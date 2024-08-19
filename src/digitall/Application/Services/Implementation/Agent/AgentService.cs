@@ -7,10 +7,13 @@ using Data.Repositories.Agent;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
+using Domain.Entities.Telegram;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Agent;
+using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -21,8 +24,16 @@ public class AgentService(
     IAgentRequestRepository agentRequestRepository,
     IUserRepository userRepository,
     IAgentOptionRepository agentOptionRepository,
+    IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    
+    public async Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsTransactionsDetails, long userId)
+    {
+        await agentsIncomesDetailRepository.AddEntities(agentsTransactionsDetails);
+        await agentsIncomesDetailRepository.SaveChanges(userId);
+    }
+
     public async Task<AgentDto?> GetAgentByCode(long agentCode)
     {
         Domain.Entities.Agent.Agent agent =
@@ -220,6 +231,35 @@ public class AgentService(
         {
             null => false,
             _ => true
+        };
+    }
+
+    public async Task<AgentInformationDto> GetAgentInformationAsync(long userId)
+    {
+        Domain.Entities.Agent.Agent? agent = await agentRepository
+            .GetQuery()
+            .Include(x => x.Users)
+            .Include(x => x.TelegramBot)
+            .Include(x => x.TransactionDetail)
+            .ThenInclude(x => x.Transactions)
+            .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
+        User? admin = await userRepository.GetEntityById(agent!.AgentAdminId);
+        
+        return new()
+        {
+            AdminName =admin.UserFullName(),
+            AgentPercent = agent.AgentPercent,
+            UserPercent = agent.UserPercent,
+            TelegramBotId = agent.TelegramBotId,
+            AgentAdminId = agent.AgentAdminId,
+            AgentCode = agent.AgentCode,
+            BrandAddress = agent.BrandAddress,
+            BrandName = agent.BrandName,
+            PersianBrandName = agent.PersianBrandName,
+            BotName = agent.TelegramBot?.PersionName ?? null,
+            BotToken = agent.TelegramBot?.Token ?? null,
+            CountUser = agent.Users?.Count() ?? 0,
+            
         };
     }
 
