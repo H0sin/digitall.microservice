@@ -37,27 +37,29 @@ public class SendTelegramNotificationJob : IJob
                 var botClient = new TelegramBotClient(bot.Token!);
 
                 IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
-
-                for (int i = 0; notification.Buttons!.Count > i; i++)
+                if (notification.Buttons is not null)
                 {
-                    ButtonJsonDto? button_1 = notification.Buttons[i]!;
-                    ButtonJsonDto? button_2 = notification.Buttons[i + 1]!;
-                    
-                    if (button_1 is not null)
+                    for (int i = 0; notification.Buttons!.Count > i; i++)
                     {
-                        List<InlineKeyboardButton> key = new()
-                        {
-                            InlineKeyboardButton.WithCallbackData(button_1.Text, button_1.CallbackQuery),
-                        };
-                        
-                        if(button_2 is not null)
-                            key.Add(InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
-                        keys.Add(key);
-                    }
+                        ButtonJsonDto? button_1 = notification.Buttons[i]!;
+                        ButtonJsonDto? button_2 = notification.Buttons[i + 1]!;
                     
-                    i++;
+                        if (button_1 is not null)
+                        {
+                            List<InlineKeyboardButton> key = new()
+                            {
+                                InlineKeyboardButton.WithCallbackData(button_1.Text, button_1.CallbackQuery),
+                            };
+                        
+                            if(button_2 is not null)
+                                key.Add(InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
+                            keys.Add(key);
+                        }
+                    
+                        i++;
+                    }
                 }
-
+                
                 await botClient.SendTextMessageAsync(
                     chatId: notification.ChatId,
                     text: notification.Message ?? "",
