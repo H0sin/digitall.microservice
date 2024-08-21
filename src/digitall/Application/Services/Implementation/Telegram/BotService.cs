@@ -1746,7 +1746,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
             var keyboard = new ReplyKeyboardMarkup(new[]
             {
-                new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3" },
+                new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3", "ثبت | تغییر نام نمایندگی \ud83d\udc65" },
                 new KeyboardButton[] { "مشاهده اطلاعات پرداخت \ud83d\udcb0" },
                 new KeyboardButton[] { "تغییر درصد کاربر", "تغییر درصد نماینده" },
                 new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
@@ -1946,6 +1946,48 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 $"""
                  درصد صود فروش از کاربر ها : {agentInformation.UserPercent}
                   درصد صود خود را ارسال کنید
+                 """,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<Message> UpdateAgentPersionBrandNameAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = message.Chat.Id;
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId,
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(
+                            TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName));
+
+            AgentInformationDto agentInformation = await telegramService.GetAgentInformationAsync(chatId);
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            return await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""
+                        نام فعلی فارسی نمایندگی : {agentInformation.PersianBrandName ?? "ثبت نشده است"}
+                         نام فعلی انگیلیسی نمایندگی :{agentInformation.BrandName ?? "ثبت نشده است"}
+                         لطفا نام فارسی نمایندگی را ارسال کنید!
                  """,
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);

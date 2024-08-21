@@ -80,6 +80,56 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName:
+                        string? englishBrandName = message!.Text;
+                        if (englishBrandName.Length <= 2 || string.IsNullOrEmpty(englishBrandName))
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                        نام نمایندگی را به صورت صحیح ارسال کنید!
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        if (!EnglishText.IsEnglishText(englishBrandName))
+                            throw new ApplicationException("لطفا حروف انگیلیسی ارسال کنید");
+
+                        user.Value.Value.EnglishBrandName = message.Text;
+                        bool updateBrandNamesResponse = await telegramService.UpdateAgentBrandNames(message.Chat.Id,
+                            user.Value.Value.PersionBrandName, user.Value.Value.EnglishBrandName);
+
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        if (!updateBrandNamesResponse)
+                            throw new ApplicationException("مشکلی در تغییر نام نمایندگی رخ داده.");
+
+                        await _botClient!.SendTextMessageAsync(chatId: message.Chat.Id,
+                            text: "عملیات با موفقیت انجام شد", cancellationToken: cancellationToken);
+
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName:
+                        string? persionBrandName = message!.Text;
+                        if (persionBrandName.Length <= 2 || string.IsNullOrEmpty(persionBrandName))
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                        نام نمایندگی را به صورت صحیح ارسال کنید!
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        user.Value.Value.PersionBrandName = message.Text;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName;
+
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message.Chat.Id,
+                            text: "لطفا نام نمایندگی خود را به صورت انگیلیسی ارسال کنید",
+                            cancellationToken: cancellationToken
+                        );
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendUserPercent:
                         int userPercent = 0;
                         Int32.TryParse(message?.Text, out userPercent);
@@ -316,6 +366,10 @@ public class BotHookController(
             {
                 action = message?.Text switch
                 {
+                    "ثبت | تغییر نام نمایندگی \ud83d\udc65" => await botService.UpdateAgentPersionBrandNameAsync(
+                        _botClient,
+                        message,
+                        cancellationToken),
                     "تغییر درصد نماینده" => await botService.UpdateAgentPercentAsync(_botClient,
                         message,
                         cancellationToken),
@@ -335,7 +389,8 @@ public class BotHookController(
                         message, cancellationToken),
                     "مشاهده اطلاعات پرداخت \ud83d\udcb0" => await botService.SendAgentTransactionPaymentDetailAsync(
                         _botClient,
-                        message, cancellationToken)
+                        message, cancellationToken),
+                    _ => new Message()
                 };
             }
 
