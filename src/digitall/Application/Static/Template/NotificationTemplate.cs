@@ -27,7 +27,7 @@ public static class NotificationTemplate
 
         آیدی عددی : {userId}
         نام کاربری : {userName}
-         شناسه تلگرام:{telegramUsername}
+         شناسه تلگرام:{telegramUsername ?? ""}
         توضیحات : {description}";
 
         return new AddNotificationDto()
