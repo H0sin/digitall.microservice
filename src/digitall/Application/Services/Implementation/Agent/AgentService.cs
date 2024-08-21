@@ -97,7 +97,7 @@ public class AgentService(
 
         await notificationService.AddNotificationAsync(
             NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName(),
-                request.Description ?? "",user.TelegramUsername,
+                request.Description ?? "",user!.TelegramUsername ?? "",
                 buttonJsons), userId);
     }
 
