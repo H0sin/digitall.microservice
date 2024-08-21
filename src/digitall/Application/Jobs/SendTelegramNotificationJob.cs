@@ -43,23 +43,23 @@ public class SendTelegramNotificationJob : IJob
                     {
                         ButtonJsonDto? button_1 = notification.Buttons[i]!;
                         ButtonJsonDto? button_2 = notification.Buttons[i + 1]!;
-                    
+
                         if (button_1 is not null)
                         {
                             List<InlineKeyboardButton> key = new()
                             {
                                 InlineKeyboardButton.WithCallbackData(button_1.Text, button_1.CallbackQuery),
                             };
-                        
-                            if(button_2 is not null)
+
+                            if (button_2 is not null)
                                 key.Add(InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
                             keys.Add(key);
                         }
-                    
+
                         i++;
                     }
                 }
-                
+
                 await botClient.SendTextMessageAsync(
                     chatId: notification.ChatId,
                     text: notification.Message ?? "",
