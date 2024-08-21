@@ -184,9 +184,9 @@ public class TransactionService(
         if (detail?.Agent?.AgentAdminId != userId)
             throw new NotFoundException("چنین نمایندگی وجود ندارد");
 
-        detail!.CardNumber ??= transactionDetail.CardNumber;
-        detail!.CardHolderName ??= transactionDetail.CardHolderName;
-        detail!.Description ??= transactionDetail.Description;
+        detail!.CardNumber = transactionDetail.CardNumber;
+        detail!.CardHolderName = transactionDetail.CardHolderName;
+        detail!.Description = transactionDetail.Description;
         detail.MaximumAmount =
             transactionDetail.MaximumAmount > 0 ? transactionDetail.MaximumAmount : detail.MaximumAmount;
         detail.MinimalAmount =

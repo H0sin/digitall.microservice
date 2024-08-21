@@ -364,7 +364,7 @@ public class TelegramService(
         return transactionDetail;
     }
 
-    public async Task<AgentInformationDto>  GetAgentInformationAsync(long chatId)
+    public async Task<AgentInformationDto> GetAgentInformationAsync(long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
         return await agentService.GetAgentInformationAsync(user.Id);
@@ -373,12 +373,13 @@ public class TelegramService(
     public async Task<bool> UpdateAgentPercentAsync(long chatId, long percent)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        
-        AgentDto agent = new()
-        {
-            AgentPercent = percent,
-            AgentAdminId = user.Id
-        };
+
+        AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+        if (agent is null)
+            throw new ApplicationException("شما نماینده نیستید");
+
+        agent.AgentPercent = percent;
 
         return await agentService.UpdateAgentAsync(agent, user.Id);
     }
@@ -386,12 +387,26 @@ public class TelegramService(
     public async Task<bool> UpdateUserPercentAsync(long chatId, long percent)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        
-        AgentDto agent = new()
-        {
-            UserPercent = percent,
-            AgentAdminId = user.Id
-        };
+
+        AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+        if (agent is null)
+            throw new ApplicationException("شما نماینده نیستید");
+
+        agent.UserPercent = percent;
+        return await agentService.UpdateAgentAsync(agent, user.Id);
+    }
+
+    public async Task<bool> UpdateAgentBrandNames(long chatId, string? persionBrandName, string? englishBrandName)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+        if (agent is null)
+            throw new ApplicationException("شما نماینده نیستید");
+
+        agent.PersianBrandName = persionBrandName;
+        agent.BrandName = englishBrandName;
 
         return await agentService.UpdateAgentAsync(agent, user.Id);
     }
