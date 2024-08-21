@@ -361,7 +361,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             await telegramService
                 .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
 
-        GetMarzbanVpnDto? vpn = await telegramService
+        MarzbanVpnDto? vpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(id, chatId);
 
         byte[] QrImage = await GenerateQrCode
@@ -512,14 +512,13 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         TelegramMarzbanVpnSession? uservalue = userSesstion?.Value;
 
-        if (uservalue is null)
+        // if (uservalue is null)
 
-
-            await botClient!.SendTextMessageAsync(
-                chatId: chatId,
-                text: uservalue?.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken);
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: uservalue?.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
 
         if (callbackQuery.Message.MessageId != 0)
         {
@@ -865,7 +864,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
             }
 
-            GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId, chatId);
+            MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(vpnId, chatId);
 
             KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
                 .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
@@ -935,7 +934,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
         var uservalue = user.Value.Value;
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
+        MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
@@ -990,7 +989,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         var uservalue = user.Value.Value;
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
+        MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
         User? mainUser = await telegramService.GetUserByChatIdAsync(chatId);
 
 
@@ -1312,7 +1311,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         TelegramMarzbanVpnSession uservalue = user?.Value;
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
+        MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         SubscribeFactorBotDto sub = new SubscribeFactorBotDto()
         {
@@ -1354,7 +1353,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         TelegramMarzbanVpnSession uservalue = user?.Value;
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
+        MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         SubscribeFactorBotDto sub = new SubscribeFactorBotDto()
         {
@@ -1396,7 +1395,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         TelegramMarzbanVpnSession uservalue = user?.Value;
 
-        GetMarzbanVpnDto marzbanVpn = await telegramService
+        MarzbanVpnDto marzbanVpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         BuyMarzbanVpnDto buy = new();
@@ -1441,7 +1440,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         TelegramMarzbanVpnSession uservalue = user?.Value;
 
-        GetMarzbanVpnDto marzbanVpn = await telegramService
+        MarzbanVpnDto marzbanVpn = await telegramService
             .GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         BuyMarzbanVpnDto buy = new();
@@ -1513,7 +1512,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 (key, old)
                     => old = uservalue);
 
-        GetMarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
+        MarzbanVpnDto? vpn = await telegramService.GetMarzbanVpnInformationByIdAsync(uservalue.VpnId ?? 0, chatId);
 
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
@@ -1719,8 +1718,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     {
         var keyboard = new ReplyKeyboardMarkup(new[]
         {
-            new KeyboardButton[] { "مدیریت پنل نمایندگی \u270f\ufe0f", "آمار نمایندگی 📊" },
-            new KeyboardButton[] { "مدیریت کاربر" },
+            new KeyboardButton[] { "مدیریت پنل نمایندگی \u270f\ufe0f", "آمار نمایندگی \ud83d\udcca" },
+            new KeyboardButton[] { " مدیریت کاربر" },
             new KeyboardButton[] { "جستجو کاربر 🔍", "ارسال پیام ✉️" },
         })
         {
@@ -1738,23 +1737,39 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
     public async Task<Message> SendAgentInformationMenuAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken)
     {
-        var keyboard = new ReplyKeyboardMarkup(new[]
+        try
         {
-            new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3" },
-            new KeyboardButton[] { "مشاهده اطلاعات پرداخت \ud83d\udcb0" },
-            new KeyboardButton[] { "درصد کاربر", "درصد نماینده" },
-            new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
-        })
-        {
-            ResizeKeyboard = true
-        };
+            bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(message.Chat.Id);
 
-        return await botClient!.SendTextMessageAsync(
-            chatId: message.Chat.Id,
-            text: "مدیریت پنل نمایندگی:",
-            cancellationToken: cancellationToken,
-            replyMarkup: keyboard
-        );
+            if (!isAgent)
+                throw new AppException("شما نماینده نیستید");
+
+            var keyboard = new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3" },
+                new KeyboardButton[] { "مشاهده اطلاعات پرداخت \ud83d\udcb0" },
+                new KeyboardButton[] { "تغییر درصد کاربر", "تغییر درصد نماینده" },
+                new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
+            })
+            {
+                ResizeKeyboard = true
+            };
+
+            return await botClient!.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: "مدیریت پنل نمایندگی:",
+                cancellationToken: cancellationToken,
+                replyMarkup: keyboard
+            );
+        }
+        catch (Exception e)
+        {
+            return await botClient!.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: e.Message,
+                cancellationToken: cancellationToken
+            );
+        }
     }
 
     public async Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message,
@@ -1824,14 +1839,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long chatId = message.Chat.Id;
         try
         {
-            TransactionDetailDto? transaction = await telegramService.GetAgentTransactionDetailDtoAsync(chatId);
+            TransactionDetailDto? transaction = await telegramService.GetAgentTransactionDetailAsync(chatId);
             if (transaction is null)
                 throw new ApplicationException("اطلاعات پرداخت ثبت نشده");
 
             string text = $"شماره کارت: {transaction.CardNumber ?? "ثبت نشده"} \n" +
                           $"نام صاحب کارت: {transaction.CardHolderName ?? "ثبت نشده"}\n" +
-                          $"درصد سود پیش‌فرض از کاربر عادی: %{transaction.AgentPercent}\n" +
-                          $"درصد سود پیش‌فرض از نماینده: %{transaction.UserPercent}";
+                          $"درصد سود پیش‌ فرض از کاربر عادی: %{transaction.AgentPercent}\n" +
+                          $"درصد سود پیش‌ فرض از نماینده: %{transaction.UserPercent}";
             return await botClient!.SendTextMessageAsync(chatId,
                 text, cancellationToken: cancellationToken);
         }
@@ -1841,12 +1856,113 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
     }
 
+    public async Task<Message> SendAgentInformationAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = message.Chat.Id;
+            AgentInformationDto agentInformation = await telegramService.GetAgentInformationAsync(chatId);
+            return await botClient!.SendTextMessageAsync(
+                chatId,
+                agentInformation.Information_Text(),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<Message> UpdateAgentPercentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = message.Chat.Id;
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId,
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendAgentPercent),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(
+                            TelegramMarzbanVpnSessionState.AwaitingSendAgentPercent));
+
+            AgentInformationDto agentInformation = await telegramService.GetAgentInformationAsync(chatId);
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            return await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""
+                 درصد صود فروش از نماینده ها : {agentInformation.AgentPercent}
+                  درصد صود خود را ارسال کنید
+                 """,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<Message> UpdateUserPercentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = message.Chat.Id;
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId,
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendUserPercent),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(
+                            TelegramMarzbanVpnSessionState.AwaitingSendUserPercent));
+
+            AgentInformationDto agentInformation = await telegramService.GetAgentInformationAsync(chatId);
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            return await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""
+                 درصد صود فروش از کاربر ها : {agentInformation.UserPercent}
+                  درصد صود خود را ارسال کنید
+                 """,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
     {
         await botClient!.EditMessageReplyMarkupAsync(
             chatId: message.Chat.Id,
             messageId: message.MessageId,
-            replyMarkup: null,
+            replyMarkup: InlineKeyboardMarkup.Empty(),
             cancellationToken: cancellationToken
         );
     }

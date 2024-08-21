@@ -116,7 +116,14 @@ public interface IAgentService
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<AgentInformationDto> GetAgentInformationAsync(long userId);
+    Task<AgentInformationDto?> GetAgentInformationAsync(long userId);
+
+    /// <summary>
+    /// update agent async
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <returns></returns>
+    Task<bool> UpdateAgentAsync(AgentDto agent,long userId);
     
     Task<bool> HaveRequestAgentAsync(long userId);
     

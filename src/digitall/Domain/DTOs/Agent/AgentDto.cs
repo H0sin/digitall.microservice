@@ -19,6 +19,11 @@ public class AgentDto
         Id = agent!.Id;
     }
 
+    public AgentDto()
+    {
+        
+    }
+    
     public HierarchyId? AgentPath { get; set; }
     public long Id { get; set; }
     public string? BrandName { get; set; }

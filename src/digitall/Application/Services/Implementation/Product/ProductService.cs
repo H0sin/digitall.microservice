@@ -156,12 +156,12 @@ public class ProductService(
 
         var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
-        using Percent percent = new(agentService);
+        // using Percent percent = new(agentService);
 
-        foreach (ProductDto? entity in filter.Entities)
-        {
-            entity.Price = await percent.Calculate(agentIds, entity.Price);
-        }
+        // foreach (ProductDto? entity in filter.Entities)
+        // {
+        //     entity.Price = await percent.Calculate(agentIds, entity.Price);
+        // }
 
         return filter;
     }

@@ -95,7 +95,7 @@ public class TelegramService(
         return await marzbanService.GetMarzbanUserInformationAsync(marzbanUser.Username);
     }
 
-    public async Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId)
+    public async Task<MarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
         return await marzbanService.GetMarzbanVpnByIdAsync(vpnId, user.Id);
@@ -125,33 +125,44 @@ public class TelegramService(
 
         var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
-        using Percent percent = new(agentService, marzbanService);
-
         SubscribeFactorBotDto factor = new();
 
         factor.Title = buy.Title ?? "خرید سرویس کاهش پینگ";
         factor.Balance = user.Balance;
+        CountingVpnPrice countingVpnPrice = new();
 
         if ((buy.MarzbanVpnTemplateId ?? 0) == 0)
         {
-            GetMarzbanVpnDto? vpn = await percent.CalcuteVpnPrice(buy.MarzbanVpnId, user.Id);
             factor.Count = buy.Count == 0 ? 1 : buy.Count;
-            factor.Price = buy.CountingPrice(vpn);
+            MarzbanVpnDto? marzbanVpn = await marzbanService.GetMarzbanVpnByIdAsync(buy.MarzbanVpnId);
+
+            long daysPrice = (factor.Days *
+                              await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, marzbanVpn.DayPrice)) *
+                             factor.Count;
+
+            long gbsPrice = (factor.Gb *
+                             await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, marzbanVpn.GbPrice)) *
+                            factor.Count;
+
+            marzbanVpn.DayPrice = gbsPrice;
+            marzbanVpn.GbPrice = gbsPrice;
+
+            factor.Price = buy.CountingPrice(marzbanVpn);
             factor.Days = buy.TotalDay;
             factor.Gb = buy.TotalGb;
-            factor.Price = await percent.Calculate(agentIds, factor.Price);
+
             return factor;
         }
 
         MarzbanVpnTemplateDto? template =
             await marzbanService.GetMarzbanVpnTemplateByIdAsync(buy.MarzbanVpnTemplateId ?? 0);
-        
-        AgentsIncomesDetailByPriceDto agentsIncomesDetailByPrice =
-            await percent.CalculatorVpnPrice(template.Price, user.Id);
-        
+
+        long templatePrice =
+            await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, template.Price);
+
         factor.Days = template.Days;
         factor.Gb = template.Gb;
-        factor.Price = (agentsIncomesDetailByPrice!.Price) * buy.Count;
+        factor.Price = (templatePrice!) * buy.Count;
         factor.Count = buy.Count;
 
         return factor;
@@ -345,7 +356,7 @@ public class TelegramService(
         return await transactionService.UpdateTransactionDetailsAsync(transactionDetail, user!.Id);
     }
 
-    public async Task<TransactionDetailDto?> GetAgentTransactionDetailDtoAsync(long chatId)
+    public async Task<TransactionDetailDto?> GetAgentTransactionDetailAsync(long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
@@ -353,8 +364,35 @@ public class TelegramService(
         return transactionDetail;
     }
 
-    public Task<AgentDto> SendAgentInformationAsync(long chatId)
+    public async Task<AgentInformationDto>  GetAgentInformationAsync(long chatId)
     {
-        throw new NotImplementedException();
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await agentService.GetAgentInformationAsync(user.Id);
+    }
+
+    public async Task<bool> UpdateAgentPercentAsync(long chatId, long percent)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        
+        AgentDto agent = new()
+        {
+            AgentPercent = percent,
+            AgentAdminId = user.Id
+        };
+
+        return await agentService.UpdateAgentAsync(agent, user.Id);
+    }
+
+    public async Task<bool> UpdateUserPercentAsync(long chatId, long percent)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        
+        AgentDto agent = new()
+        {
+            UserPercent = percent,
+            AgentAdminId = user.Id
+        };
+
+        return await agentService.UpdateAgentAsync(agent, user.Id);
     }
 }
