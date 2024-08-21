@@ -7,6 +7,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 
 namespace Application.Services.Interface.Telegram;
@@ -276,4 +277,13 @@ public interface ITelegramService
     /// <param name="persionBrandName"></param>
     /// <returns></returns>
     Task<bool> UpdateAgentBrandNames(long chatId, string? persionBrandName, string? englishBrandName);
+
+    /// <summary>
+    /// change agent request async
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="i"></param>
+    /// <param name="accept"></param>
+    /// <returns></returns>     
+    Task ChangeAgentRequestAsync(long chatId,UpdateAgentRequestDto status);
 }

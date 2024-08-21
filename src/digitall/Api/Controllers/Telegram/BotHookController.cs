@@ -481,6 +481,12 @@ public class BotHookController(
             case "invitation_link":
                 await botService.SendTelegramInviteLinkAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "accept_agent_request":
+                await botService.AcceptAgentRequestAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "reject_agent_request":
+                await botService.RejectAgentRequestAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(
                     chatId: callbackQuery!.Message!.Chat.Id,

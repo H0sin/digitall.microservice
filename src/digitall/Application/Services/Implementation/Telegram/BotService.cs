@@ -14,6 +14,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
+using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
@@ -1996,6 +1997,97 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    public async Task AcceptAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long Id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["Id"], out Id);
+            }
+
+            await telegramService.ChangeAgentRequestAsync(chatId, new()
+            {
+                Id = Id,
+                AgentRequestStatus = "accept"
+            });
+
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""عملیات با موفقیت انجام شد""",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            
+            if (callbackQuery.Message.MessageId != 0)
+            {
+                await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""عملیات با مشکل مواجه شد""",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task RejectAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long Id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["Id"], out Id);
+            }
+
+            await telegramService.ChangeAgentRequestAsync(chatId, new()
+            {
+                Id = Id,
+                AgentRequestStatus = "reject"
+            });
+
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""عملیات با موفقیت انجام شد""",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            
+            if (callbackQuery.Message.MessageId != 0)
+            {
+                await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+            }
+
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                $"""عملیات با مشکل مواجه شد""",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
         }
     }
 

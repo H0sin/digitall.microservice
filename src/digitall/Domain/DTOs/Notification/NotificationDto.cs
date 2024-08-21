@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Enums.Notification;
 
@@ -12,6 +13,7 @@ public class NotificationDto
     public long? BotId { get; set; }
     public long? ChatId { get; set; }
     public long Id { get; set; }
+    public List<ButtonJsonDto?>? Buttons { get; set; }
     public NotificationDto()
     {
     }
@@ -24,5 +26,6 @@ public class NotificationDto
         BotId = notification.User?.BotId;
         ChatId = notification.User?.ChatId;
         Id = notification.Id;
+        Buttons = notification!.Buttons!;
     }
 }
