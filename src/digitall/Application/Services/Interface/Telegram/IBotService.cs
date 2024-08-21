@@ -422,4 +422,22 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> UpdateAgentPersionBrandNameAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// accept agent request async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AcceptAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// reject agent request async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task RejectAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }

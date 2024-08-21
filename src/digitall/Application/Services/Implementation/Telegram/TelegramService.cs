@@ -22,6 +22,7 @@ using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Exceptions;
 
@@ -409,5 +410,12 @@ public class TelegramService(
         agent.BrandName = englishBrandName;
 
         return await agentService.UpdateAgentAsync(agent, user.Id);
+    }
+
+    public async Task ChangeAgentRequestAsync(long chatId, UpdateAgentRequestDto status)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        await agentService.UpdateAgentRequest(status, user!.Id);
     }
 }
