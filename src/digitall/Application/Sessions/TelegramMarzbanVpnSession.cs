@@ -14,6 +14,8 @@ public class TelegramMarzbanVpnSession
     public long? UserSubscribeId { get; set; }
     public int AgentPercent { get; set; }
     public int UserPercent { get; set; }
+    public string PersionBrandName { get; set; }
+    public string EnglishBrandName { get; set; }
     
     public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,
         long? vpnId = null, long? UserSubscribeId = null,string? cardNumber = null,string? cardHolderName=null)
@@ -41,7 +43,9 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendCardNumber,
     AwaitingSendCardHolderName,
     AwaitingSendAgentPercent,
-    AwaitingSendUserPercent
+    AwaitingSendUserPercent,
+    AwaitingSendPersionBrandName,
+    AwaitingSendEnglishBrandName
 }
 
 public static class BotSessions

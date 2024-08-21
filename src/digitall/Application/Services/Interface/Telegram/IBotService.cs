@@ -412,4 +412,14 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> UpdateUserPercentAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// update Persion and english brandName
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> UpdateAgentPersionBrandNameAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
 }
