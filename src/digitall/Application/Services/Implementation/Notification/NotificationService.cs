@@ -10,16 +10,17 @@ public class NotificationService(INotificationRepository notificationRepository)
 {
     public async Task AddNotificationAsync(AddNotificationDto notification, long userId)
     {
-        Domain.Entities.Notification.Notification notif = new()
+        Domain.Entities.Notification.Notification notify = new()
         {
             Expire = notification.Expire,
             UserId = notification.UserId,
             ForAllMember = notification.ForAllMember,
             Message = notification.Message,
-            NotificationType = notification.NotificationType
+            NotificationType = notification.NotificationType,
+            Buttons = notification.Buttons
         };
 
-        await notificationRepository.AddEntity(notif);
+        await notificationRepository.AddEntity(notify);
         await notificationRepository.SaveChanges(userId);
     }
 

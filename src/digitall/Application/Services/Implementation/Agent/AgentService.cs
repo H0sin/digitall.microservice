@@ -5,6 +5,7 @@ using Application.Static.Template;
 using Data.DefaultData;
 using Data.Repositories.Agent;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Telegram;
@@ -73,16 +74,31 @@ public class AgentService(
             throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
-
+        
         if (parent is null)
             parent!.Id = AgentItems.Agents.First().Id;
-
-        await agentRequestRepository.AddEntity(request._GenerateAgentRequest(userId, parent!.Id));
+        
+        AgentRequest req = request._GenerateAgentRequest(userId, parent!.Id);
+        
+        await agentRequestRepository.AddEntity(req);
         await agentRequestRepository.SaveChanges(userId);
 
         User? user = await userRepository.GetEntityById(userId);
+
+        #region buttons
+
+        List<ButtonJsonDto> buttonJsons = new()
+        {
+            new("تایید درخواست ✅", $"accept_agent_request?id={req.Id}"),
+            new("رد درخواست ❌", $"reject_agent_request?id={req.Id}"),
+        };
+
+        #endregion
+
         await notificationService.AddNotificationAsync(
-            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName()), userId);
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName(),
+                request.Description ?? "",user.TelegramUsername,
+                buttonJsons), userId);
     }
 
     public async Task UpdateAgentRequest(UpdateAgentRequestDto agentRequest, long userId)
