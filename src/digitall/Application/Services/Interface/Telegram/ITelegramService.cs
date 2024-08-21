@@ -268,4 +268,12 @@ public interface ITelegramService
     /// <returns></returns>
     Task<bool> UpdateUserPercentAsync(long chatId,long percent);
     
+    /// <summary>
+    /// update user brand name
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="englishBrandName"></param>
+    /// <param name="persionBrandName"></param>
+    /// <returns></returns>
+    Task<bool> UpdateAgentBrandNames(long chatId, string? persionBrandName, string? englishBrandName);
 }

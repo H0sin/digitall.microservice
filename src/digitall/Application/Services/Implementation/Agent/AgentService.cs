@@ -294,18 +294,20 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? currentAgent = await agentRepository
             .GetQuery()
-            .AsNoTracking()
             .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
 
         // if (agent.AgentAdminId != userId)
         //     throw new NotFoundException("چنین نمایندگی وجود ندارد");
 
-        currentAgent!.AgentPercent = agent.AgentPercent != 0 ? agent.AgentPercent : currentAgent.AgentPercent;
-        currentAgent!.UserPercent = agent.UserPercent != 0 ? agent.UserPercent : currentAgent.UserPercent;
+        currentAgent!.AgentPercent = agent.AgentPercent;
+        currentAgent!.UserPercent = agent.UserPercent;
+
+        currentAgent.PersianBrandName = agent.PersianBrandName;
+        currentAgent.BrandName = agent.BrandName;
 
         await agentRepository.UpdateEntity(currentAgent);
         await agentRepository.SaveChanges(userId);
-        
+
         return true;
     }
 
