@@ -22,6 +22,7 @@ namespace Application.Services.Implementation.Order;
 
 public class OrderService(
     IOrderRepository orderRepository,
+    IOrderDetailRepository orderDetailRepository,
     IProductService productService,
     IAgentService agentService,
     IClientRepository clientRepository,
@@ -44,13 +45,13 @@ public class OrderService(
 
             var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
-            using Percent percent = new(agentService);
+            // using Percent percent = new(agentService);
 
             OrderDetail orderDetail = new()
             {
                 ProductId = product.Id,
                 Count = order.Count,
-                ProductPrice = await percent.Calculate(agentIds, product.Price),
+                // ProductPrice = await percent.Calculate(agentIds, product.Price),
             };
 
             orderDetails.Add(orderDetail);

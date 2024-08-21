@@ -7,10 +7,13 @@ using Data.Repositories.Agent;
 using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
+using Domain.Entities.Telegram;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Agent;
+using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -21,8 +24,15 @@ public class AgentService(
     IAgentRequestRepository agentRequestRepository,
     IUserRepository userRepository,
     IAgentOptionRepository agentOptionRepository,
+    IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    public async Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsTransactionsDetails, long userId)
+    {
+        await agentsIncomesDetailRepository.AddEntities(agentsTransactionsDetails);
+        await agentsIncomesDetailRepository.SaveChanges(userId);
+    }
+
     public async Task<AgentDto?> GetAgentByCode(long agentCode)
     {
         Domain.Entities.Agent.Agent agent =
@@ -221,6 +231,82 @@ public class AgentService(
             null => false,
             _ => true
         };
+    }
+
+    public async Task<AgentInformationDto?> GetAgentInformationAsync(long userId)
+    {
+        Domain.Entities.Agent.Agent? agent = await agentRepository
+            .GetQuery()
+            .Include(x => x.Users)
+            .Include(x => x.TelegramBot)
+            .Include(x => x.AgentsTransactionsDetails)!
+            .ThenInclude(x => x.OrderDetail)
+            .Include(x => x.TransactionDetail)
+            .ThenInclude(x => x!.Transactions)
+            .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
+
+        if (agent == null)
+        {
+            return null;
+        }
+
+        User? admin = await userRepository.GetEntityById(agent!.AgentAdminId);
+
+        int? countAgentLevel_1 = await agentRepository
+            .GetQuery()
+            .Where(a => a.AgentPath != null &&
+                        a.AgentPath.IsDescendantOf(agent
+                            .AgentPath) && // فرض بر این است که IsDescendantOf متد مربوط به HierarchyId است
+                        a.AgentPath.GetLevel() == agent.AgentPath!.GetLevel() + 1) // بررسی سطح پایین‌تر
+            .CountAsync();
+
+        int? countAgentLevel_2 = await agentRepository
+            .GetQuery()
+            .Where(a => a.AgentPath != null &&
+                        a.AgentPath.IsDescendantOf(agent
+                            .AgentPath) && // فرض بر این است که IsDescendantOf متد مربوط به HierarchyId است
+                        a.AgentPath.GetLevel() == agent.AgentPath!.GetLevel() + 2) // بررسی سطح پایین‌تر
+            .CountAsync();
+
+        return new()
+        {
+            AdminName = admin.UserFullName(),
+            AgentPercent = agent.AgentPercent,
+            UserPercent = agent.UserPercent,
+            TelegramBotId = agent.TelegramBotId,
+            AgentAdminId = agent.AgentAdminId,
+            AgentCode = agent.AgentCode,
+            BrandAddress = agent.BrandAddress,
+            BrandName = agent.BrandName,
+            PersianBrandName = agent.PersianBrandName,
+            BotName = agent.TelegramBot?.PersionName ?? null,
+            BotToken = agent.TelegramBot?.Token ?? null,
+            CountUser = agent.Users?.Count() ?? 0,
+            Profit = agent!.AgentsTransactionsDetails?.Sum(x => x.Profit) ?? 0,
+            Sale = agent!.AgentsTransactionsDetails?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
+            CountAgentLevel_1 = countAgentLevel_1,
+            CountAgentLevel_2 = countAgentLevel_2,
+            BotId = agent.TelegramBotId
+        };
+    }
+
+    public async Task<bool> UpdateAgentAsync(AgentDto agent, long userId)
+    {
+        Domain.Entities.Agent.Agent? currentAgent = await agentRepository
+            .GetQuery()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
+
+        // if (agent.AgentAdminId != userId)
+        //     throw new NotFoundException("چنین نمایندگی وجود ندارد");
+
+        currentAgent!.AgentPercent = agent.AgentPercent != 0 ? agent.AgentPercent : currentAgent.AgentPercent;
+        currentAgent!.UserPercent = agent.UserPercent != 0 ? agent.UserPercent : currentAgent.UserPercent;
+
+        await agentRepository.UpdateEntity(currentAgent);
+        await agentRepository.SaveChanges(userId);
+        
+        return true;
     }
 
     public async Task<bool> HaveRequestAgentAsync(long userId)

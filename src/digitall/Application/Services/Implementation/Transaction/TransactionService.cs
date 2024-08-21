@@ -25,6 +25,7 @@ public class TransactionService(
     IUserService userService)
     : ITransactionService
 {
+
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
     {
         UserDto? user = await userService.GetUserByIdAsync(userId);
@@ -166,7 +167,9 @@ public class TransactionService(
 
     public async Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agentId)
     {
-        TransactionDetail? transactionDetail = await transactionDetailRepository.GetQuery()
+        TransactionDetail? transactionDetail = await transactionDetailRepository
+            .GetQuery()
+            .Include(x => x.Agent)
             .SingleOrDefaultAsync(x => x.AgentId == agentId);
         return new TransactionDetailDto(transactionDetail);
     }
@@ -177,7 +180,7 @@ public class TransactionService(
             .GetQuery()
             .Include(x => x.Agent)
             .SingleOrDefaultAsync(x => x.Id == transactionDetail.Id);
-        
+
         if (detail?.Agent?.AgentAdminId != userId)
             throw new NotFoundException("چنین نمایندگی وجود ندارد");
 

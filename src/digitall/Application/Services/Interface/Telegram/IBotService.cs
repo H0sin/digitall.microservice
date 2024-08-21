@@ -362,7 +362,7 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> EditeAgentCardNumberInformationAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send card holder name
     /// </summary>
@@ -372,7 +372,7 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> EditeAgentCardHolderNameInformationAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send agent transaction payment async
     /// </summary>
@@ -380,6 +380,36 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Message> SendAgentTransactionPaymentAsync(ITelegramBotClient? botClient, Message message,
+    Task<Message> SendAgentTransactionPaymentDetailAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send agent information async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendAgentInformationAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// update child agent percent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> UpdateAgentPercentAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// update agent user percent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> UpdateUserPercentAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

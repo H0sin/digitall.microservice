@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
+using Domain.Entities.Transaction;
 using Domain.Enums.Transaction;
 
 namespace Application.Services.Interface.Transaction;
@@ -12,14 +13,15 @@ public interface ITransactionService
 
     Task UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction,
         long userId);
+
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
-    Task AddTransactionDetailAsync(AddTransactionDetialDto transaction,long userId);
+    Task AddTransactionDetailAsync(AddTransactionDetialDto transaction, long userId);
     Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);
-    
+
     /// <summary>
     /// update agent transaction deatil
     /// </summary>
     /// <param name="transaction"></param>
     /// <returns></returns>
-    Task<bool> UpdateTransactionDetailsAsync(TransactionDetailDto transactionDetail,long userId);
+    Task<bool> UpdateTransactionDetailsAsync(TransactionDetailDto transactionDetail, long userId);
 }

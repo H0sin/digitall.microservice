@@ -68,183 +68,283 @@ public class BotHookController(
     private async Task BotOnMessageReceived(Message message,
         CancellationToken cancellationToken)
     {
-        if (message.Photo is not { } photo & message.Text is not { } messageText)
-            return;
-
-        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
-            .SingleOrDefault(x => x.Key == message.Chat.Id);
-
-        if (user.Value.Value is not null)
+        try
         {
-            switch (user.Value.Value.State)
+            if (message.Photo is not { } photo & message.Text is not { } messageText)
+                return;
+
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
+                .SingleOrDefault(x => x.Key == message.Chat.Id);
+
+            if (user.Value.Value is not null)
             {
-                case TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName:
-                    string? HolderName = message.Text;
+                switch (user.Value.Value.State)
+                {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendUserPercent:
+                        int userPercent = 0;
+                        Int32.TryParse(message?.Text, out userPercent);
 
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
-                    if (HolderName.Trim().Length <= 4 | string.IsNullOrEmpty(HolderName))
-                    {
-                        await _botClient!.SendTextMessageAsync(
-                            chatId: message!.Chat.Id,
-                            text: """
-                                    نام صاحب کارت را به صورت صحیح ارسال کنید!
-                                  """,
-                            cancellationToken: cancellationToken);
+                        if (userPercent == 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        user.Value.Value.UserPercent = userPercent;
+                        bool update_user_percent =
+                            await telegramService.UpdateUserPercentAsync(message.Chat.Id, userPercent);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        if (update_user_percent)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      درصد کاربر های شما با موفقیت تغییر کرد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
+                        else
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                        مشکلی در ثبت اطلاعات رخ داد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
+
                         break;
-                    }
+                    case TelegramMarzbanVpnSessionState.AwaitingSendAgentPercent:
+                        int agentPercent = 0;
+                        Int32.TryParse(message?.Text, out agentPercent);
+                        if (agentPercent == 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
 
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
-                    user.Value.Value.CardHolderName = message.Text;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    bool response =
-                        await telegramService.EditeAgentTransactionDetailAsync(message.Chat.Id, user.Value.Value);
-                    if (response)
-                    {
-                        await _botClient!.SendTextMessageAsync(
-                            chatId: message!.Chat.Id,
-                            text: """
-                                  اطلاعات پرداخت شما با موقیت ثبت شد
-                                  """,
-                            cancellationToken: cancellationToken);
-                    }
-                    else
-                    {
-                        await _botClient!.SendTextMessageAsync(
-                            chatId: message!.Chat.Id,
-                            text: """
-                                  مشکلی در ثبت اطلاعات رخ داد
-                                  """,
-                            cancellationToken: cancellationToken);
-                    }
+                        user.Value.Value.AgentPercent = agentPercent;
+                        bool update_agent_percent =
+                            await telegramService.UpdateAgentPercentAsync(message.Chat.Id, agentPercent);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        if (update_agent_percent)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      درصد نماینده های شما با موفقیت تغییر کرد
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+                        else
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                        مشکلی در ثبت اطلاعات رخ داد
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
 
-                    break;
-                case TelegramMarzbanVpnSessionState.AwaitingSendCardNumber:
-                    long cardNumber = 0;
-                    Int64.TryParse(message?.Text, out cardNumber);
-
-                    if (cardNumber == 0 | message.Text.Length != 16)
-                    {
-                        await _botClient!.SendTextMessageAsync(
-                            chatId: message!.Chat.Id,
-                            text: """
-                                  فرمت ارسالی کارت اشتباه است!
-                                  : فرمت درست
-                                   6037696975758585
-                                  """,
-                            cancellationToken: cancellationToken);
                         break;
-                    }
+                    case TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName:
+                        string? HolderName = message.Text;
 
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
-                    user.Value.Value.CardNumber = message.Text;
-                    await botService.EditeAgentCardHolderNameInformationAsync(_botClient, message, cancellationToken);
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    break;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
+                        if (HolderName.Trim().Length <= 4 | string.IsNullOrEmpty(HolderName))
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                        نام صاحب کارت را به صورت صحیح ارسال کنید!
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
 
-                case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
-                    await botService.RequestForAgentAsync(_botClient, message, cancellationToken);
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    break;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        user.Value.Value.CardHolderName = message.Text;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        bool response =
+                            await telegramService.EditeAgentTransactionDetailAsync(message.Chat.Id, user.Value.Value);
+                        if (response)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      اطلاعات پرداخت شما با موقیت ثبت شد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
+                        else
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      مشکلی در ثبت اطلاعات رخ داد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
 
-                case TelegramMarzbanVpnSessionState.AwaitingSendAppendDaysForService:
-                    int day = 0;
-                    Int32.TryParse(message?.Text, out day);
-                    user.Value.Value.Date = day;
-                    await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken);
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    break;
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendCardNumber:
+                        long cardNumber = 0;
+                        Int64.TryParse(message?.Text, out cardNumber);
 
-                case TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService:
-                    int gig = 0;
-                    Int32.TryParse(message?.Text, out gig);
-                    user.Value.Value.Gb = gig;
-                    await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken);
-                    user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    break;
+                        if (cardNumber == 0 | message.Text.Length != 16)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      فرمت ارسالی کارت اشتباه است!
+                                      : فرمت درست
+                                       6037696975758585
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
 
-                case TelegramMarzbanVpnSessionState.AwaitingGb:
-                    int gb = 0;
-                    Int32.TryParse(message?.Text, out gb);
-                    user.Value.Value.Gb = gb;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
-                    await botService.SendDaysPriceAsync(_botClient, message, cancellationToken);
-                    break;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
+                        user.Value.Value.CardNumber = message.Text;
+                        await botService.EditeAgentCardHolderNameInformationAsync(_botClient, message,
+                            cancellationToken);
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        break;
 
-                case TelegramMarzbanVpnSessionState.AwaitingDate:
-                    int date = 0;
-                    Int32.TryParse(message?.Text, out date);
-                    user.Value.Value.Date = date;
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
+                    case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
+                        await botService.RequestForAgentAsync(_botClient, message, cancellationToken);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        break;
 
-                    await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken);
-                    break;
-                case TelegramMarzbanVpnSessionState.AwatingSendPrice:
-                    int price = 0;
-                    Int32.TryParse(message?.Text, out price);
-                    user.Value.Value.Price = price;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendAppendDaysForService:
+                        int day = 0;
+                        Int32.TryParse(message?.Text, out day);
+                        user.Value.Value.Date = day;
+                        await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        break;
 
-                    BotSessions
-                        .users_Sessions?
-                        .AddOrUpdate(message.Chat.Id,
-                            user.Value.Value, (key, old) => old = user.Value.Value);
+                    case TelegramMarzbanVpnSessionState.AwaitingSendAppendGbForService:
+                        int gig = 0;
+                        Int32.TryParse(message?.Text, out gig);
+                        user.Value.Value.Gb = gig;
+                        await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        break;
 
-                    await botService.SendCardNumberAndDetailAsync(_botClient, message, cancellationToken);
-                    break;
-                case TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage:
-                    await botService.AddTrnasactionAsync(_botClient, message, cancellationToken);
-                    break;
+                    case TelegramMarzbanVpnSessionState.AwaitingGb:
+                        int gb = 0;
+                        Int32.TryParse(message?.Text, out gb);
+                        user.Value.Value.Gb = gb;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+                        await botService.SendDaysPriceAsync(_botClient, message, cancellationToken);
+                        break;
+
+                    case TelegramMarzbanVpnSessionState.AwaitingDate:
+                        int date = 0;
+                        Int32.TryParse(message?.Text, out date);
+                        user.Value.Value.Date = date;
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+
+                        await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken);
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwatingSendPrice:
+                        int price = 0;
+                        Int32.TryParse(message?.Text, out price);
+                        user.Value.Value.Price = price;
+
+                        BotSessions
+                            .users_Sessions?
+                            .AddOrUpdate(message.Chat.Id,
+                                user.Value.Value, (key, old) => old = user.Value.Value);
+
+                        await botService.SendCardNumberAndDetailAsync(_botClient, message, cancellationToken);
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage:
+                        await botService.AddTrnasactionAsync(_botClient, message, cancellationToken);
+                        break;
+                }
             }
-        }
 
-        bool? started = message?.Text.StartsWith("/start");
+            bool? started = message?.Text.StartsWith("/start");
 
-        Message action = new Message();
-        if (started != null && started == true)
-        {
-            action = message?.Text.Split(" ")[0] switch
+            Message action = new Message();
+            if (started != null && started == true)
             {
-                "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
-            };
-        }
-        else
-        {
-            action = message?.Text switch
+                action = message?.Text.Split(" ")[0] switch
+                {
+                    "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
+                };
+            }
+            else
             {
-                "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
-                    message,
-                    cancellationToken),
-                "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
-                    cancellationToken),
-                "تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(_botClient,
-                    message, cancellationToken),
-            };
-        }
+                action = message?.Text switch
+                {
+                    "تغییر درصد نماینده" => await botService.UpdateAgentPercentAsync(_botClient,
+                        message,
+                        cancellationToken),
+                    "تغییر درصد کاربر" => await botService.UpdateUserPercentAsync(_botClient,
+                        message,
+                        cancellationToken),
+                    "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
+                        message,
+                        cancellationToken),
+                    "آمار نمایندگی \ud83d\udcca" => await botService.SendAgentInformationAsync(_botClient,
+                        message,
+                        cancellationToken),
+                    "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
+                        cancellationToken),
+                    "ثبت | تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(
+                        _botClient,
+                        message, cancellationToken),
+                    "مشاهده اطلاعات پرداخت \ud83d\udcb0" => await botService.SendAgentTransactionPaymentDetailAsync(
+                        _botClient,
+                        message, cancellationToken)
+                };
+            }
 
-        Message sentMessage = action;
+            Message sentMessage = action;
+        }
+        catch (Exception e)
+        {
+            await _botClient.SendTextMessageAsync(message.Chat.Id, e.Message, cancellationToken: cancellationToken);
+        }
     }
 
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery,

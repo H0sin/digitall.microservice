@@ -1,6 +1,7 @@
 ﻿using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,14 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService
 {
+    /// <summary>
+    /// after add transaction added agent transaction details 
+    /// </summary>
+    /// <param name="agentsTransactionsDetails"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsIncomesDetail, long userId);
+    
     /// <summary>
     /// get agent information by code
     /// </summary>
@@ -101,6 +110,21 @@ public interface IAgentService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<bool> IsAgentAsync(long userId);
+    
+    /// <summary>
+    /// send agent information by user id
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<AgentInformationDto?> GetAgentInformationAsync(long userId);
+
+    /// <summary>
+    /// update agent async
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <returns></returns>
+    Task<bool> UpdateAgentAsync(AgentDto agent,long userId);
+    
     Task<bool> HaveRequestAgentAsync(long userId);
     
     Task<List<AgentDto>> GetAgentsListAsync();

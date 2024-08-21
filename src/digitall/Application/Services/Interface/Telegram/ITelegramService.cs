@@ -74,7 +74,7 @@ public interface ITelegramService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId);
+    Task<MarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId);
 
     /// <summary>
     /// get marzban template by vpn id
@@ -237,4 +237,35 @@ public interface ITelegramService
     /// <param name="session"></param>
     /// <returns></returns>
     Task<bool> EditeAgentTransactionDetailAsync(long chatId,TelegramMarzbanVpnSession session);
+
+    /// <summary>
+    /// get agent transaction deatil dto
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<TransactionDetailDto?> GetAgentTransactionDetailAsync(long chatId);
+    
+    /// <summary>
+    /// send agent information 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<AgentInformationDto> GetAgentInformationAsync(long chatId);
+
+    /// <summary>
+    /// update agent percent
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="percent"></param>
+    /// <returns></returns>
+    Task<bool> UpdateAgentPercentAsync(long chatId,long percent);
+    
+    /// <summary>
+    /// update user percent
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="percent"></param>
+    /// <returns></returns>
+    Task<bool> UpdateUserPercentAsync(long chatId,long percent);
+    
 }

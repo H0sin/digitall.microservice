@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
 using Domain.Exceptions;
 
@@ -38,6 +39,25 @@ public class BuyMarzbanVpnDto
 
         long price = (TotalGb * vpn.GbPrice) + (TotalDay * vpn.DayPrice);
 
+        return price;
+    }
+    
+    public long CountingPrice(MarzbanVpnDto? vpn)
+    {
+        if (TotalDay > vpn.DayMax || TotalDay < vpn.DayMin)
+            throw new BadRequestException("نمیتواند اینقدر روز برای vpn باشد");
+
+        if (TotalGb > vpn.GbMax || TotalGb < vpn.GbMin)
+            throw new BadRequestException("نمیتواند اینقدر گیگ برای vpn باشد");
+
+        long price = (TotalGb * vpn.GbPrice) + (TotalDay * vpn.DayPrice);
+
+        return price;
+    }
+    
+    public long CountingPrice(AgentsIncomesDetailByPriceDto? income)
+    {
+        long price = (TotalGb * income!.GbPrice) + (TotalDay * income.DayPrice);
         return price;
     }
 }

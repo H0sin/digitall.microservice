@@ -198,14 +198,14 @@ public interface IMarzbanService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId, long userId);
+    Task<MarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId, long userId);
 
     /// <summary>
     /// get marzban vpn by id async
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<GetMarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
+    Task<MarzbanVpnDto?> GetMarzbanVpnByIdAsync(long vpnId);
 
     /// <summary>
     /// add marzban vpn template
