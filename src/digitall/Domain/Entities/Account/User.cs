@@ -77,8 +77,12 @@ public class User : BaseEntity
     [Display(Name = "شناسه ربات عضو شده")] public long? BotId { get; set; }
 
     [Display(Name = "شناسه تلگرام")]
+    [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? TelegramUsername { get; set; }
 
+    [Display(Name = "پرداخت کارت به کارت")]
+    public bool CardToCardPayment { get; set; } = false;
+    
     #endregion
 
     #region relations

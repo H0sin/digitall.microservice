@@ -635,7 +635,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
 
         FilterMarzbanUser filter = new FilterMarzbanUser();
-        Domain.Entities.Account.User? user = await telegramService.GetUserByChatIdAsync(chatId);
+        User? user = await telegramService.GetUserByChatIdAsync(chatId);
         filter.UserId = user.Id;
         filter.Page = page;
         FilterMarzbanUser users = await telegramService.FilterMarzbanUsersList(filter);
@@ -1020,7 +1020,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
         else
         {
-            uservalue.State = TelegramMarzbanVpnSessionState.AwatingFactor;
+            uservalue.State = TelegramMarzbanVpnSessionState.AwaitingFactor;
 
             BotSessions
                 .users_Sessions?
@@ -1110,42 +1110,59 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        TransactionDetailDto? transactionDetail = await telegramService.GetTransactionDetailAsync(chatId);
-
-        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
-            .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
-
-        TelegramMarzbanVpnSession uservalue = user.Value.Value;
-
-        uservalue.State = TelegramMarzbanVpnSessionState.AwatingSendPrice;
-
-        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        try
         {
-            new[]
+            TransactionDetailDto? transactionDetail = await telegramService.GetTransactionDetailAsync(chatId);
+
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPrice),
+                    (key, old)
+                        => old = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPrice));
+
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                .users_Sessions?.SingleOrDefault(x => x.Key == chatId);
+
+            TelegramMarzbanVpnSession uservalue = user.Value.Value;
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
             {
-                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+                }
+            });
+
+            if (transactionDetail is null)
+                throw new ApplicationException("پرداخت کارت به کارت برای شما غیر فعال است.");
+
+            string information = transactionDetail!.GetTransactionMessage();
+
+            if (string.IsNullOrEmpty(transactionDetail.CardNumber))
+            {
+                information = "پرداخت غیر فعال است";
+                uservalue.State = TelegramMarzbanVpnSessionState.None;
             }
-        });
-        string information = transactionDetail.GetTransactionMessage();
 
-        if (string.IsNullOrEmpty(transactionDetail.CardNumber))
-        {
-            information = "نماینده شما شماره کارتی برای پرداخت ثبت نکرده است";
-            uservalue.State = TelegramMarzbanVpnSessionState.None;
+            BotSessions
+                .users_Sessions?
+                .AddOrUpdate(chatId, uservalue,
+                    (key, old)
+                        => old = uservalue);
+
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: information,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
         }
-
-        BotSessions
-            .users_Sessions?
-            .AddOrUpdate(chatId, uservalue,
-                (key, old)
-                    => old = uservalue);
-
-        await botClient!.SendTextMessageAsync(
-            chatId: chatId,
-            text: information,
-            replyMarkup: inlineKeyboard,
-            cancellationToken: cancellationToken);
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
     }
 
     public async Task SendCardNumberAndDetailAsync(ITelegramBotClient? botClient, Message? message,
@@ -1615,7 +1632,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long chatId = message!.Chat.Id;
         try
         {
-            await telegramService.AddRequestAgentAsync(message.Text ?? "", chatId);
+            KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
+                .SingleOrDefault(x => x.Key == message.Chat.Id);
+
+            if (user.Value.Value is null)
+                throw new ApplicationException("لطفا دوباره درخواست ارسال کنید");
+
+            await telegramService.AddRequestAgentAsync(message.Text ?? "", user.Value.Value.Phone, chatId);
+
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
                 text: "درخواست شما با موفثیت ثبت شد منتظر برسی کارشناسان ما باشید",
@@ -2029,7 +2053,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 $"""عملیات با موفقیت انجام شد""",
                 replyMarkup: null,
                 cancellationToken: cancellationToken);
-            
+
             if (callbackQuery.Message.MessageId != 0)
             {
                 await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
@@ -2051,7 +2075,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         long chatId = callbackQuery!.Message!.Chat.Id;
         try
         {
-            long Id = 0;
+            long id = 0;
 
             string callbackData = callbackQuery.Data;
             int questionMarkIndex = callbackData.IndexOf('?');
@@ -2060,12 +2084,12 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             {
                 string? query = callbackData?.Substring(questionMarkIndex);
                 NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-                Int64.TryParse(queryParameters["Id"], out Id);
+                Int64.TryParse(queryParameters["Id"], out id);
             }
 
             await telegramService.ChangeAgentRequestAsync(chatId, new()
             {
-                Id = Id,
+                Id = id,
                 AgentRequestStatus = "reject"
             });
 
@@ -2074,21 +2098,91 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 $"""عملیات با موفقیت انجام شد""",
                 replyMarkup: null,
                 cancellationToken: cancellationToken);
-            
+
             if (callbackQuery.Message.MessageId != 0)
             {
                 await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
             }
-
         }
         catch (Exception e)
         {
             await botClient!.SendTextMessageAsync(
                 chatId,
-                $"""عملیات با مشکل مواجه شد""",
+                e.Message,
                 replyMarkup: null,
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public async Task ChangeStateCardToCard(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long id = 0;
+            bool action = false;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["Id"], out id);
+                bool.TryParse(queryParameters["action"], out action);
+            }
+
+            bool response = await telegramService.ActionForCardToCardAsync(chatId, id, action);
+
+            string? message = "";
+
+            if (response)
+                message = "شماره کارت فعال شد";
+            else
+                message = "شماره کارت غیر فعال شد";
+
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                text: message,
+                replyMarkup: null,
+                cancellationToken:
+                cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                e.Message,
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task ManagementUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["Id"], out id);
+        }
+
+        UserInformationDto information =
+            await telegramService.GetUserInformationAsync(chatId, id);
+
+        await botClient!.SendTextMessageAsync(
+            chatId,
+            information.GetInformation(),
+            replyMarkup: null,
+            cancellationToken: cancellationToken);
     }
 
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)

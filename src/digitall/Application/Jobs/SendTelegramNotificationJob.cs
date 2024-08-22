@@ -39,10 +39,11 @@ public class SendTelegramNotificationJob : IJob
                 IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
                 if (notification.Buttons is not null)
                 {
-                    for (int i = 0; notification.Buttons!.Count > i; i++)
+                    for (int i = 0; i < notification.Buttons.Count; i++)
                     {
                         ButtonJsonDto? button_1 = notification.Buttons[i]!;
-                        ButtonJsonDto? button_2 = notification.Buttons[i + 1]!;
+                        ButtonJsonDto? button_2 =
+                            (i + 1 < notification.Buttons.Count) ? notification.Buttons[i + 1]! : null;
 
                         if (button_1 is not null)
                         {
@@ -53,13 +54,13 @@ public class SendTelegramNotificationJob : IJob
 
                             if (button_2 is not null)
                                 key.Add(InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
+
                             keys.Add(key);
                         }
 
                         i++;
                     }
                 }
-
                 await botClient.SendTextMessageAsync(
                     chatId: notification.ChatId,
                     text: notification.Message ?? "",

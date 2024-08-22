@@ -25,7 +25,6 @@ public class TransactionService(
     IUserService userService)
     : ITransactionService
 {
-
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
     {
         UserDto? user = await userService.GetUserByIdAsync(userId);
@@ -67,6 +66,11 @@ public class TransactionService(
         return AddTransactionResult.Success;
     }
 
+
+    public async Task<List<Domain.Entities.Transaction.Transaction>> GetAllTransactionByUserIdAsync(long userId)
+    {
+        return await transactionRepository.GetQuery().Where(x => x.CreateBy == userId).ToListAsync();
+    }
 
     public async Task UpdateTransactionStatusAsync(
         UpdateTransactionStatusDto transaction, long userId)

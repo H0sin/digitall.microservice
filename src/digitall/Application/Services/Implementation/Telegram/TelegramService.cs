@@ -15,6 +15,7 @@ using System;
 using Application.Extensions;
 using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
+using Application.Services.Interface.Order;
 using Application.Services.Interface.Transaction;
 using Application.Sessions;
 using Application.Static.Template;
@@ -24,6 +25,7 @@ using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
+using Domain.Enums.Transaction;
 using Domain.Exceptions;
 
 namespace Application.Services.Implementation.Telegram;
@@ -34,6 +36,7 @@ public class TelegramService(
     IAgentService agentService,
     IMarzbanService marzbanService,
     ITransactionService transactionService,
+    IOrderService orderService,
     INotificationService notificationService) : ITelegramService
 {
     public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
@@ -198,8 +201,10 @@ public class TelegramService(
     }
 
     public async Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId)
+
     {
         User? user = await GetUserByChatIdAsync(chatId);
+        if (!user!.CardToCardPayment) return null;
         return await transactionService.GetTransactionDetailsAsync(user?.AgentId ?? 0);
     }
 
@@ -270,7 +275,9 @@ public class TelegramService(
 
         await notificationService.AddNotificationAsync(
             NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
-                start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()), start.ChatId),
+                start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()),
+                user.CardToCardPayment,
+                start.ChatId),
             user?.Id ?? newUser.Id);
 
         return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
@@ -288,13 +295,14 @@ public class TelegramService(
         return await agentService.HaveRequestAgentAsync(user!.Id);
     }
 
-    public async Task AddRequestAgentAsync(string description, long chatId)
+    public async Task AddRequestAgentAsync(string description, string phone, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
 
         AddRequestAgentDto request = new()
         {
-            Description = description
+            Description = description,
+            Phone = phone
         };
 
         await agentService.AddAgentRequestAsync(request, user!.Id);
@@ -417,5 +425,62 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         await agentService.UpdateAgentRequest(status, user!.Id);
+    }
+
+    public async Task<bool> ActionForCardToCardAsync(long chatId, long userchatId, bool action)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+        if (agent is null)
+            throw new AppException("خطا در عملیات");
+
+        List<UserDto>? users = await agentService.GetAgentUserAsync(agent.Id);
+
+        UserDto? main_user = users.SingleOrDefault(c => c.ChatId == userchatId);
+
+        if (main_user == null) throw new AppException("چنین کاربری وجود ندارد");
+
+        User? currentUser = await userRepository.GetEntityById(main_user.Id);
+
+        currentUser!.CardToCardPayment = action;
+        await userRepository.UpdateEntity(currentUser);
+        await userRepository.SaveChanges(user.Id);
+
+        return action;
+    }
+
+    public async Task<UserInformationDto> GetUserInformationAsync(long chatId, long userchatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+        if (agent is null)
+            throw new AppException("خطا در عملیات");
+
+        List<UserDto>? users = await agentService.GetAgentUserAsync(agent.Id);
+
+        UserDto? current_user = users!.SingleOrDefault(c => c.ChatId == userchatId);
+
+        if (current_user is null) throw new AppException("خطا در عملیات");
+
+        UserInformationDto information = new UserInformationDto();
+        List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(current_user.Id);
+
+        List<Domain.Entities.Transaction.Transaction> transactions =
+            await transactionService.GetAllTransactionByUserIdAsync(current_user.Id);
+        
+        information.TotalPurchaseAmount   = await orderService.GetAllUserOrderPriceAsync(current_user.Id);
+        information.CountMarzbanUser = marzbanUsers.Count;
+        information.FirstName = current_user.FirstName;
+        information.LastName = current_user.LastName;
+        information.TelegramUserName = current_user.TelegramUsername;
+        information.Mobile = current_user.Mobile;
+        information.TotalPaymentAmount = transactions.Where(x=>x.TransactionStatus == TransactionStatus.Accepted).Sum(x => x.Price);
+        information.UserStatus = current_user.UserStatus;
+        information.Email = current_user.Email;
+        information.RegistrationDate = PersianDateTimeHelper.GetPersianDate(current_user.CreateDate);
+        information.ChatId = current_user.ChatId;
+        
+        return information;
     }
 }

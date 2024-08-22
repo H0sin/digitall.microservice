@@ -30,6 +30,17 @@ public class OrderService(
 {
     #region add
 
+    public async Task<long> GetAllUserOrderPriceAsync(long userId)
+    { 
+        Domain.Entities.Order.Order? order = await orderRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId)
+            .Include(c => c.OrderDetails)
+            .FirstOrDefaultAsync();
+        
+        return order?.OrderDetails.Sum(x => x.ProductPrice) ?? 0;
+    }
+
     public async Task<AddProductToOrderResult> AddProductToOrderAsync(List<AddProductToOrderDto> orders, long userId)
     {
         IDbContextTransaction transaction = await orderRepository.context.Database.BeginTransactionAsync();

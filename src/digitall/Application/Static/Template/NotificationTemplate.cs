@@ -18,7 +18,7 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto NewRequestForAgent(long userId, string userName, string description,
+    public static AddNotificationDto NewRequestForAgent(long userId, string userName, string phone, string description,
         string? telegramUsername = null,
         List<ButtonJsonDto>? buttonJson = null)
     {
@@ -27,6 +27,7 @@ public static class NotificationTemplate
 
         آیدی عددی : {userId}
         نام کاربری : {userName}
+         شماره تماس :{phone}
          شناسه تلگرام:{telegramUsername ?? ""}
         توضیحات : {description}";
 
@@ -53,8 +54,17 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto StartedBotNotification(long userId, string? name, long chatId)
+    public static AddNotificationDto StartedBotNotification(long userId, string? name, bool cartToCard, long chatId)
     {
+        List<ButtonJsonDto> buttons = new();
+
+        if (!cartToCard)
+            buttons.Add(new("فعال سازی کارت به کارت", $"action_card?id={chatId}&action={!cartToCard}"));
+        else
+            buttons.Add(new("غیر فعال سازی کارت به کارت", $"action_card?id={chatId}&action={!cartToCard}"));
+
+        buttons.Add(new("مدیریت کاربر", $"user_management?id={chatId}"));
+
         return new AddNotificationDto()
         {
             Expire = DateTime.Now.AddHours(24),
@@ -67,7 +77,8 @@ public static class NotificationTemplate
                        """,
             NotificationType = NotificationType.Warning,
             UserId = userId,
-            ForAllMember = false
+            ForAllMember = false,
+            Buttons = buttons
         };
     }
 }

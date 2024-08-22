@@ -704,6 +704,15 @@ public class MarzbanServies(
         return filter;
     }
 
+    public async Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId)
+    {
+        return await marzbanUserRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId)
+            .Select(x => new MarzbanUserDto(x))
+            .ToListAsync();
+    }
+
     public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
     {
         MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
@@ -789,7 +798,7 @@ public class MarzbanServies(
             long totalPrice = 0;
             List<CalculatorUserIncome> incomes = new();
             CountingVpnPrice countingVpnPrice = new();
-            
+
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
@@ -803,7 +812,7 @@ public class MarzbanServies(
             MarzbanVpnTemplateDto? template = await
                 GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
 
-           
+
             if (vpn.MarzbanVpnTemplateId is not null)
             {
                 daysPrice = (vpn.TotalDay *
@@ -853,7 +862,7 @@ public class MarzbanServies(
             DateTime dt = DateTimeOffset.FromUnixTimeSeconds(marzbanUser?.Expire ?? 0).DateTime;
             DateTime futureDate = dt.AddDays(template?.Days ?? vpn.TotalDay);
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
-            
+
             List<Domain.Entities.Order.Order> orders = new()
             {
                 new Domain.Entities.Order.Order()

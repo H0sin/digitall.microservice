@@ -185,7 +185,7 @@ public interface ITelegramService
     /// <param name="description"></param>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task AddRequestAgentAsync(string description, long chatId);
+    Task AddRequestAgentAsync(string description,string phone, long chatId);
 
     /// <summary>
     /// delete marzban user
@@ -286,4 +286,20 @@ public interface ITelegramService
     /// <param name="accept"></param>
     /// <returns></returns>     
     Task ChangeAgentRequestAsync(long chatId,UpdateAgentRequestDto status);
+
+    /// <summary>
+    /// active or not active card to card
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    Task<bool> ActionForCardToCardAsync(long chatId,long userchatId, bool action);
+
+    /// <summary>
+    /// for send management user 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="userchatId"></param>
+    /// <returns></returns>
+    Task<UserInformationDto> GetUserInformationAsync(long chatId,long userchatId);
 }

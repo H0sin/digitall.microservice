@@ -3,7 +3,7 @@ using Domain.Entities.Account;
 
 namespace Domain.DTOs.Account;
 
-public class UserDto
+public class  UserDto
 {
     [Display(Name = "شناسه")] public long Id { get; set; }
 
@@ -16,22 +16,18 @@ public class UserDto
     [Display(Name = "تلفن همراه")]
     [MaxLength(12, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     [MinLength(11, ErrorMessage = "{0} نمی تواند کمتر از {1} کاراکتر باشد")]
-    public string Mobile { get; set; }
+    public string? Mobile { get; set; }
 
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string MobileActiveCode { get; set; }
 
     [Display(Name = "موبایل فعال / غیرفعال")]
     public bool IsMobileActive { get; set; }
 
     [Display(Name = "نام")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     [Display(Name = "نام خانوادگی")]
-    [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string LastName { get; set; }
 
@@ -51,7 +47,12 @@ public class UserDto
     [Display(Name = "موجودی")] public long Balance { get; set; }
 
     public long? ChatId { get; set; }
+
+    public string? TelegramUsername { get; set; }
+
+    public bool UserStatus { get; set; }
     
+    public DateTime CreateDate { get; set; }
 
     public UserDto()
     {
@@ -59,18 +60,22 @@ public class UserDto
 
     public UserDto(User user)
     {
-        this.Id = user.Id;
-        this.Email = user.Email;
-        this.Mobile = user.Mobile!;
-        this.MobileActiveCode = user.MobileActiveCode!;
-        this.IsMobileActive = user.IsMobileActive;
-        this.FirstName = user.FirstName!;
-        this.LastName = user.LastName!;
-        this.Avatar = user.Avatar;
-        this.Address = user.Address;
-        this.AgentId = user.AgentId;
-        this.ModifiedDate = user.ModifiedDate;
-        this.Balance = user.Balance;
-        this.ChatId = user.ChatId;
+        Id = user.Id;
+        Email = user.Email;
+        Mobile = user.Mobile!;
+        MobileActiveCode = user.MobileActiveCode!;
+        IsMobileActive = user.IsMobileActive;
+        FirstName = user.FirstName!;
+        LastName = user.LastName!;
+        Avatar = user.Avatar;
+        Address = user.Address;
+        AgentId = user.AgentId;
+        ModifiedDate = user.ModifiedDate;
+        Balance = user.Balance;
+        ChatId = user.ChatId;
+        TelegramUsername = user.TelegramUsername;
+        UserStatus = user.UserStatus;
+        CreateDate = user.CreateDate;
     }
+    
 }
