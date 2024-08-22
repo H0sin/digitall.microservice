@@ -1992,10 +1992,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             BotSessions
                 .users_Sessions?
                 .AddOrUpdate(chatId,
-                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName),
+                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPersianBrandName),
                     (key, old)
                         => old = new TelegramMarzbanVpnSession(
-                            TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName));
+                            TelegramMarzbanVpnSessionState.AwaitingSendPersianBrandName));
 
             AgentInformationDto agentInformation = await telegramService.GetAgentInformationAsync(chatId);
 
@@ -2175,14 +2175,64 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             Int64.TryParse(queryParameters["Id"], out id);
         }
 
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={id}"),
+                InlineKeyboardButton.WithCallbackData("کاهش موجودی \u2796", "back_to_main"),
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+            }
+        });
+
         UserInformationDto information =
             await telegramService.GetUserInformationAsync(chatId, id);
 
         await botClient!.SendTextMessageAsync(
             chatId,
             information.GetInformation(),
-            replyMarkup: null,
+            replyMarkup: inlineKeyboard,
             cancellationToken: cancellationToken);
+    }
+
+    public async Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["Id"], out id);
+        }
+
+        BotSessions
+            .users_Sessions?
+            .AddOrUpdate(chatId,
+                new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.AwaitingSendPriceForIncrease),
+                (key, old)
+                    => old = new TelegramMarzbanVpnSession(
+                        TelegramMarzbanVpnSessionState.AwaitingSendPriceForIncrease));
+
+        TelegramMarzbanVpnSession? user_value = BotSessions
+            .users_Sessions!
+            .SingleOrDefault(x => x.Key == id).Value;
+
+        user_value.UserSubscribeId = id;
+        
+        await botClient!
+            .SendTextMessageAsync(
+                chatId: chatId,
+                "لطفا مبلغ ارسالی برای شارج را ارسال کنید!",
+                cancellationToken: cancellationToken);
     }
 
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)

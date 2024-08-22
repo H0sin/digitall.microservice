@@ -302,4 +302,13 @@ public interface ITelegramService
     /// <param name="userchatId"></param>
     /// <returns></returns>
     Task<UserInformationDto> GetUserInformationAsync(long chatId,long userchatId);
+
+    /// <summary>
+    /// increase user balanse
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="valueUserChatId"></param>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
 }

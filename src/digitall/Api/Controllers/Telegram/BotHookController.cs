@@ -11,12 +11,15 @@ using Data.DefaultData;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
+using Domain.Enums.Transaction;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using User = Domain.Entities.Account.User;
 
 namespace Api.Controllers.Telegram;
 
@@ -80,6 +83,67 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForIncrease:
+                        string description = message!.Text;
+
+                        AddTransactionDto transaction = new()
+                        {
+                            Description = description,
+                            CardNumber = "",
+                            Price = user.Value.Value.IncreasePrice,
+                            Title = "افزایش دستی موحودی",
+                            AccountName = "",
+                            BankName = null,
+                            TransactionType = TransactionType.Increase,
+                            TransactionTime = DateTime.Now,
+                        };
+
+                        await telegramService.IncreaseUserAsync(message.Chat.Id, user.Value.Value.UserChatId,
+                            transaction);
+
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: $"""
+                                     مبلغ {user.Value.Value.IncreasePrice :N0}
+                                      از حساب شما کم شد و به حساب کاربر شما واریز شد.
+                                   """,
+                            cancellationToken: cancellationToken);
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendPriceForIncrease:
+                        long increace_price = 0;
+                        Int64.TryParse(message.Text, out increace_price);
+
+                        if (increace_price == 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        User? user_current =
+                            await telegramService.GetUserByChatIdAsync(chatId: message.Chat.Id);
+
+                        if (user_current.Balance > increace_price)
+                        {
+                            user.Value.Value.IncreasePrice = increace_price;
+                            user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForIncrease;
+
+                            await _botClient!.SendTextMessageAsync(message.Chat.Id,
+                                "توضیحات تراکنش را ارسال کنید !",
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        await _botClient!.SendTextMessageAsync(message.Chat.Id,
+                            "مقدار که برای افزایش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب شما است!",
+                            cancellationToken: cancellationToken);
+
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendPhone:
                         string? phone = message.Text;
 
@@ -125,7 +189,7 @@ public class BotHookController(
                             text: "عملیات با موفقیت انجام شد", cancellationToken: cancellationToken);
 
                         break;
-                    case TelegramMarzbanVpnSessionState.AwaitingSendPersionBrandName:
+                    case TelegramMarzbanVpnSessionState.AwaitingSendPersianBrandName:
                         string? persionBrandName = message!.Text;
                         if (persionBrandName.Length <= 2 || string.IsNullOrEmpty(persionBrandName))
                         {
@@ -509,13 +573,16 @@ public class BotHookController(
                 await botService.ChangeStateCardToCard(_botClient, callbackQuery, cancellationToken);
                 break;
             case "user_management":
-                await botService.ManagementUserAsync(_botClient,callbackQuery,cancellationToken);
+                await botService.ManagementUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(
                     chatId: callbackQuery!.Message!.Chat.Id,
                     text: callbackQuery.Data,
                     cancellationToken: cancellationToken);
+                break;
+            case "increase_by_agent":
+                await botService.IncreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "agent_request":
                 long chatId = callbackQuery!.Message!.Chat.Id;
@@ -550,6 +617,7 @@ public class BotHookController(
                         text: "لطفا شماره تلفن خود را برای ثبت نمایندگی ارسال کنید",
                         cancellationToken: cancellationToken);
                 }
+
                 break;
             default:
                 break;
