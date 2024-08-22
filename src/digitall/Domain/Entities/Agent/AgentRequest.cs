@@ -9,7 +9,7 @@ public class AgentRequest : BaseEntity
 {
     public long UserId { get; set; }
     public User User { get; set; }
-    
+
     [Display(Name = "نام برند")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? BrandName { get; set; }
@@ -25,7 +25,7 @@ public class AgentRequest : BaseEntity
     [Display(Name = "درصد کاربر")] public long? UserPercent { get; set; } = 0;
 
     [Display(Name = "توضیحات")] public string? Description { get; set; } = "";
-    
+
     [Display(Name = "بیشترین مقدار تراکنش")]
     public int MaximumAmount { get; set; } = 2000000;
 
@@ -43,10 +43,13 @@ public class AgentRequest : BaseEntity
     [Display(Name = "توضیحات پرداخت")]
     [MaxLength(700)]
     public string? PaymentDescription { get; set; }
-    
+
     [Display(Name = "وضعیت درخواست نمایندگی")]
     public string? AgentRequestStatus { get; set; } = "wating";
-    
-    [Display(Name = "شناسه نماینده قبلی")]
-    public long AgentId { get; set; }
+
+    [Display(Name = "شناسه نماینده قبلی")] public long AgentId { get; set; }
+
+    [Display(Name = "شماره تماس")]
+    [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
+    public string? Phone { get; set; }
 }

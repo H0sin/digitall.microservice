@@ -1,4 +1,5 @@
-﻿using Domain.DTOs.Agent;
+﻿using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Transaction;
@@ -11,6 +12,12 @@ namespace Application.Services.Interface.Agent;
 public interface IAgentService
 {
     /// <summary>
+    /// get users  by agent Id
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<List<UserDto>?> GetAgentUserAsync(long agentId);
+    
     /// after add transaction added agent transaction details 
     /// </summary>
     /// <param name="agentsTransactionsDetails"></param>

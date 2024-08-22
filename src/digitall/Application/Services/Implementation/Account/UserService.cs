@@ -24,6 +24,7 @@ using IPE.SmsIrClient.Models.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SixLabors.ImageSharp.ColorSpaces;
 
 namespace Application.Services.Implementation.Account;
 
@@ -110,6 +111,7 @@ public class UserService(
             FirstName = x.FirstName,
             LastName = x.LastName,
             Avatar = PathExtension.UserAvatarThumbServer + x.Avatar,
+            ChatId = x.ChatId
         }).ToList();
     }
 

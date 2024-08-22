@@ -23,6 +23,8 @@ public class AddRequestAgentDto
 
     [Display(Name = "توضیحات")] public string? Description { get; set; }
     
+    [Display(Name = "شماره تماس")] public string Phone { get; set; }
+    
     public AddTransactionDetialDto? transactionDetial { get; set; } = new();
 
     public AgentRequest _GenerateAgentRequest(long userId,long agentId)
@@ -41,7 +43,8 @@ public class AddRequestAgentDto
                 CardNumber = transactionDetial.CardNumber,
                 MaximumAmount = transactionDetial.MaximumAmount,
                 UserId = userId,
-                AgentId = agentId
+                AgentId = agentId,
+                Phone = Phone,
             };
 
         return agentRequest;

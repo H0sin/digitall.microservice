@@ -2,8 +2,10 @@
 using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Static.Template;
+using Application.Utilities;
 using Data.DefaultData;
 using Data.Repositories.Agent;
+using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
@@ -28,6 +30,17 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    public async Task<List<UserDto>?> GetAgentUserAsync(long agentId)
+    {
+        Domain.Entities.Agent.Agent? agent = await agentRepository
+            .GetQuery()
+            .Where(x => x.Id == agentId)
+            .Include(x => x.Users)
+            .FirstOrDefaultAsync();
+
+        return agent?.Users?.Select(x => new UserDto(x)).ToList();
+    }
+
     public async Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsTransactionsDetails, long userId)
     {
         await agentsIncomesDetailRepository.AddEntities(agentsTransactionsDetails);
@@ -74,12 +87,12 @@ public class AgentService(
             throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
-        
+
         if (parent is null)
             parent!.Id = AgentItems.Agents.First().Id;
-        
+
         AgentRequest req = request._GenerateAgentRequest(userId, parent!.Id);
-        
+
         await agentRequestRepository.AddEntity(req);
         await agentRequestRepository.SaveChanges(userId);
 
@@ -96,8 +109,8 @@ public class AgentService(
         #endregion
 
         await notificationService.AddNotificationAsync(
-            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName(),
-                request.Description ?? "",user!.TelegramUsername ?? "",
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName(), request.Phone,
+                request.Description ?? "", user!.TelegramUsername ?? "",
                 buttonJsons), userId);
     }
 

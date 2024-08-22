@@ -80,9 +80,26 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendPhone:
+                        string? phone = message.Text;
+
+                        if (phone!.Length != 11)
+                        {
+                            throw new ApplicationException("لطفا شماره تماس درست را ارسال کنید");
+                        }
+
+                        user.Value.Value.Phone = phone;
+                        user.Value.Value.State =
+                            TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest;
+
+                        await _botClient!.SendTextMessageAsync(chatId: message.Chat.Id,
+                            "لطفا توضیحات درخواست خود را ارسال کنید");
+
+                        break;
+
                     case TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName:
                         string? englishBrandName = message!.Text;
-                        if (englishBrandName.Length <= 2 || string.IsNullOrEmpty(englishBrandName))
+                        if (englishBrandName!.Length <= 2 || string.IsNullOrEmpty(englishBrandName))
                         {
                             await _botClient!.SendTextMessageAsync(
                                 chatId: message!.Chat.Id,
@@ -282,6 +299,7 @@ public class BotHookController(
                     case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
                         await botService.RequestForAgentAsync(_botClient, message, cancellationToken);
                         user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        user.Value.Value.RequestDescription = message!.Text;
                         BotSessions
                             .users_Sessions?
                             .AddOrUpdate(message.Chat.Id,
@@ -334,7 +352,7 @@ public class BotHookController(
 
                         await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken);
                         break;
-                    case TelegramMarzbanVpnSessionState.AwatingSendPrice:
+                    case TelegramMarzbanVpnSessionState.AwaitingSendPrice:
                         int price = 0;
                         Int32.TryParse(message?.Text, out price);
                         user.Value.Value.Price = price;
@@ -398,7 +416,7 @@ public class BotHookController(
         }
         catch (Exception e)
         {
-            await _botClient.SendTextMessageAsync(message.Chat.Id, e.Message, cancellationToken: cancellationToken);
+            await _botClient!.SendTextMessageAsync(message.Chat.Id, e.Message, cancellationToken: cancellationToken);
         }
     }
 
@@ -487,6 +505,12 @@ public class BotHookController(
             case "reject_agent_request":
                 await botService.RejectAgentRequestAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "action_card":
+                await botService.ChangeStateCardToCard(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "user_management":
+                await botService.ManagementUserAsync(_botClient,callbackQuery,cancellationToken);
+                break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(
                     chatId: callbackQuery!.Message!.Chat.Id,
@@ -514,7 +538,7 @@ public class BotHookController(
                         uservalue = new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState
                             .AwaitingSendDescriptionForAddAgentRequest);
 
-                    uservalue!.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest;
+                    uservalue!.State = TelegramMarzbanVpnSessionState.AwaitingSendPhone;
 
                     BotSessions
                         .users_Sessions?
@@ -523,10 +547,9 @@ public class BotHookController(
 
                     await _botClient!.SendTextMessageAsync(
                         chatId: chatId,
-                        text: "درخواست نمایندگی خود را ارسال کنید !",
+                        text: "لطفا شماره تلفن خود را برای ثبت نمایندگی ارسال کنید",
                         cancellationToken: cancellationToken);
                 }
-
                 break;
             default:
                 break;
