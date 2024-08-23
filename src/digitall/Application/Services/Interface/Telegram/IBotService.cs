@@ -220,7 +220,7 @@ public interface IBotService
     /// after added image complate transaction
     /// </summary>
     /// <returns></returns>
-    Task AddTrnasactionAsync(ITelegramBotClient? botClient, Message? message, CancellationToken cancellationToken);
+    Task AddTransactionAsync(ITelegramBotClient? botClient, Message? message, CancellationToken cancellationToken);
 
     /// <summary>
     /// send factor for append gb for service
@@ -467,4 +467,22 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// decrease user by agent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send user management by chat id
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SearchUserByChatAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
 }

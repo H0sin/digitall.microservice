@@ -461,7 +461,7 @@ public class TelegramService(
 
         UserDto? current_user = users!.SingleOrDefault(c => c.ChatId == userchatId);
 
-        if (current_user is null) throw new AppException("خطا در عملیات");
+        if (current_user is null) throw new AppException("کاربر وجود نداشت");
 
         UserInformationDto information = new UserInformationDto();
         List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(current_user.Id);
@@ -487,7 +487,17 @@ public class TelegramService(
 
     public async Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction)
     {
-        User user = await GetUserByChatIdAsync(chatId);
-        await transactionService.IncreaseUserAsync(transaction, valueUserChatId, user!.Id);
+        User? user = await GetUserByChatIdAsync(chatId);
+        User? userChild = await GetUserByChatIdAsync(valueUserChatId);
+
+        await transactionService.IncreaseUserAsync(transaction, userChild!.Id, user!.Id);
+    }
+
+    public async Task DecreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        User? userChild = await GetUserByChatIdAsync(valueUserChatId);
+
+        await transactionService.DecreaseUserAsync(transaction, userChild!.Id, user!.Id);
     }
 }

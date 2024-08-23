@@ -23,10 +23,19 @@ public interface ITransactionService
     /// </summary>
     /// <param name="transaction"></param>
     /// <param name="userId"></param>
-    /// <param name="adminId"></param>
+    /// <param name="agentId"></param>
     /// <returns></returns>
-    Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long adminId);
+    Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long agentId);
 
+    /// <summary>
+    /// decrease user balanse
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <param name="userId"></param>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task DecreaseUserAsync(AddTransactionDto transaction, long userId,long agentId);
+    
     Task UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction,
         long userId);
 

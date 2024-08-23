@@ -11,6 +11,7 @@ using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 using Application.Services.Interface.Agent;
+using Application.Services.Interface.Notification;
 using Domain.DTOs.Agent;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
@@ -22,7 +23,8 @@ public class TransactionService(
     ITransactionRepository transactionRepository,
     ITransactionDetailRepository transactionDetailRepository,
     IAgentService agentService,
-    IUserService userService)
+    IUserService userService,
+    INotificationService notificationService)
     : ITransactionService
 {
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
@@ -62,7 +64,7 @@ public class TransactionService(
 
         await transactionRepository.AddEntity(newTransaction);
         await transactionRepository.SaveChanges(userId);
-
+        // await notificationService.AddNotificationAsync();
         return AddTransactionResult.Success;
     }
 
@@ -72,7 +74,7 @@ public class TransactionService(
         return await transactionRepository.GetQuery().Where(x => x.CreateBy == userId).ToListAsync();
     }
 
-    public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long adminId)
+    public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long agentId)
     {
         Domain.Entities.Transaction.Transaction newTransaction = new()
         {
@@ -82,7 +84,7 @@ public class TransactionService(
             Title = transaction.Title,
             AccountName = transaction.AccountName,
             TransactionType = transaction.TransactionType,
-            TransactionStatus = TransactionStatus.Waiting,
+            TransactionStatus = TransactionStatus.Accepted,
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
@@ -92,7 +94,30 @@ public class TransactionService(
         await transactionRepository.SaveChanges(userId);
 
         await userService.UpdateUserBalanceAsync(newTransaction.Price, userId);
-        await userService.UpdateUserBalanceAsync((newTransaction.Price * -1), adminId);
+        await userService.UpdateUserBalanceAsync((newTransaction.Price * -1), agentId);
+    }
+
+    public async Task DecreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
+    {
+        Domain.Entities.Transaction.Transaction newTransaction = new()
+        {
+            Description = transaction.Description,
+            IsDelete = false,
+            Price = transaction.Price,
+            Title = transaction.Title,
+            AccountName = transaction.AccountName,
+            TransactionType = transaction.TransactionType,
+            TransactionStatus = TransactionStatus.Accepted,
+            BankName = transaction.BankName,
+            TransactionTime = transaction.TransactionTime,
+            CardNumber = transaction.CardNumber,
+        };
+        
+        await transactionRepository.AddEntity(newTransaction);
+        await transactionRepository.SaveChanges(userId);
+
+        await userService.UpdateUserBalanceAsync(newTransaction.Price  * -1, userId);
+        await userService.UpdateUserBalanceAsync((newTransaction.Price), agentId);
     }
 
     public async Task UpdateTransactionStatusAsync(
