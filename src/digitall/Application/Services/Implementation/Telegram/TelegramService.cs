@@ -468,19 +468,26 @@ public class TelegramService(
 
         List<Domain.Entities.Transaction.Transaction> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(current_user.Id);
-        
-        information.TotalPurchaseAmount   = await orderService.GetAllUserOrderPriceAsync(current_user.Id);
+
+        information.TotalPurchaseAmount = await orderService.GetAllUserOrderPriceAsync(current_user.Id);
         information.CountMarzbanUser = marzbanUsers.Count;
         information.FirstName = current_user.FirstName;
         information.LastName = current_user.LastName;
         information.TelegramUserName = current_user.TelegramUsername;
         information.Mobile = current_user.Mobile;
-        information.TotalPaymentAmount = transactions.Where(x=>x.TransactionStatus == TransactionStatus.Accepted).Sum(x => x.Price);
+        information.TotalPaymentAmount = transactions.Where(x => x.TransactionStatus == TransactionStatus.Accepted)
+            .Sum(x => x.Price);
         information.UserStatus = current_user.UserStatus;
         information.Email = current_user.Email;
         information.RegistrationDate = PersianDateTimeHelper.GetPersianDate(current_user.CreateDate);
         information.ChatId = current_user.ChatId;
-        
+
         return information;
+    }
+
+    public async Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction)
+    {
+        User user = await GetUserByChatIdAsync(chatId);
+        await transactionService.IncreaseUserAsync(transaction, valueUserChatId, user!.Id);
     }
 }

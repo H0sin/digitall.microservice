@@ -72,6 +72,29 @@ public class TransactionService(
         return await transactionRepository.GetQuery().Where(x => x.CreateBy == userId).ToListAsync();
     }
 
+    public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long adminId)
+    {
+        Domain.Entities.Transaction.Transaction newTransaction = new()
+        {
+            Description = transaction.Description,
+            IsDelete = false,
+            Price = transaction.Price,
+            Title = transaction.Title,
+            AccountName = transaction.AccountName,
+            TransactionType = transaction.TransactionType,
+            TransactionStatus = TransactionStatus.Waiting,
+            BankName = transaction.BankName,
+            TransactionTime = transaction.TransactionTime,
+            CardNumber = transaction.CardNumber,
+        };
+        
+        await transactionRepository.AddEntity(newTransaction);
+        await transactionRepository.SaveChanges(userId);
+
+        await userService.UpdateUserBalanceAsync(newTransaction.Price, userId);
+        await userService.UpdateUserBalanceAsync((newTransaction.Price * -1), adminId);
+    }
+
     public async Task UpdateTransactionStatusAsync(
         UpdateTransactionStatusDto transaction, long userId)
     {
@@ -80,8 +103,10 @@ public class TransactionService(
         {
             Domain.Entities.Transaction.Transaction? transe =
                 await transactionRepository.GetEntityById(transaction.TransactionId);
+            
             TransactionDetail? transactionDetail =
-                await transactionDetailRepository.GetEntityById(transe.TransactionDetailId);
+                await transactionDetailRepository.GetEntityById(transe.TransactionDetailId ?? 0);
+            
             AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
             UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
