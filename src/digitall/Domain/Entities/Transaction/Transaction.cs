@@ -9,7 +9,7 @@ public class Transaction : BaseEntity
 {
     public long? TransactionDetailId { get; set; }
     public TransactionDetail? TransactionDetail { get; set; }
-    
+
     #region properties
 
     [Display(Name = "عنوان تراکنش")]
@@ -27,7 +27,7 @@ public class Transaction : BaseEntity
     [Display(Name = "نام صاحب حساب")]
     [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? AccountName { get; set; }
-    
+
     [Display(Name = "زمان تراکنش")] public DateTime TransactionTime { get; set; } = DateTime.Now;
 
     [Display(Name = "شماره کارت")]
@@ -47,6 +47,8 @@ public class Transaction : BaseEntity
     [Display(Name = "وضعیت تراکنش")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public TransactionStatus TransactionStatus { get; set; } = TransactionStatus.Waiting;
+
+    public long TransactionCode { get; set; } = new Random().NextInt64(100000000, 999999999);
 
     #endregion
 }

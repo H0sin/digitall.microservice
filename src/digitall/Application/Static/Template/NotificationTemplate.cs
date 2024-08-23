@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
+using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 
 namespace Application.Static.Template;
@@ -79,6 +80,24 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
             Buttons = buttons
+        };
+    }
+
+    public static AddNotificationDto AddTransactionNotification(long chatId, Transaction transaction)
+    {
+        return new AddNotificationDto()
+        {
+            Message = $"""
+                       ⭕️ یک پرداخت جدید انجام شده است .
+                       افزایش موجودی
+                       👤 شناسه کاربر:  {chatId}
+                       🛒 کد پیگیری پرداخت: {transaction.TransactionCode}
+                       ⚜️ نام کاربری: @mortezafae
+                       💸 مبلغ پرداختی: 200,000 تومان
+                                       
+                       توضیحات:
+                       ✍️ در صورت درست بودن رسید پرداخت را تایید نمایی
+                       """
         };
     }
 }

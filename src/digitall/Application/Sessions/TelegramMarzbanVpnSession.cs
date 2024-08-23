@@ -19,6 +19,7 @@ public class TelegramMarzbanVpnSession
     public string Phone { get; set; }
     public string RequestDescription { get; set; }
     public long IncreasePrice { get; set; }
+    public long DecreasePrice { get; set; }
     public long UserChatId { get; set; }
     
     public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,
@@ -52,7 +53,10 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendEnglishBrandName,
     AwaitingSendPhone,
     AwaitingSendPriceForIncrease,
-    AwaitingSendDescriptionForIncrease
+    AwaitingSendDescriptionForIncrease,
+    AwaitingSendPriceForDecrease,
+    AwaitingSendDescriptionForDecrease,
+    AwaitingSearchUserByChatId
 }
 
 public static class BotSessions

@@ -311,4 +311,13 @@ public interface ITelegramService
     /// <param name="transaction"></param>
     /// <returns></returns>
     Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
+    
+    /// <summary>
+    /// decrease user balanse
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="valueUserChatId"></param>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    Task DecreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
 }
