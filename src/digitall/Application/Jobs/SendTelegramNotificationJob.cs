@@ -22,56 +22,68 @@ public class SendTelegramNotificationJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-
-        var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
-        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-        List<NotificationDto> notifications = await notificationService.GetNotificationsAsync();
-
-        foreach (var notification in notifications)
+        try
         {
-            if (notification.ChatId is not null && notification.BotId is not null)
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+
+            var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+            List<NotificationDto> notifications = await notificationService.GetNotificationsAsync();
+
+            foreach (var notification in notifications)
             {
-                TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
-                var botClient = new TelegramBotClient(bot.Token!);
-
-                IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
-                if (notification.Buttons is not null)
+                if (notification.ChatId is not null && notification.BotId is not null)
                 {
-                    for (int i = 0; i < notification.Buttons.Count; i++)
+                    TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
+
+                    var options = new TelegramBotClientOptions(bot.Token!);
+                    
+                    var botClient = new TelegramBotClient(options);
+
+                    IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+                    if (notification.Buttons is not null)
                     {
-                        ButtonJsonDto? button_1 = notification.Buttons[i]!;
-                        ButtonJsonDto? button_2 =
-                            (i + 1 < notification.Buttons.Count) ? notification.Buttons[i + 1]! : null;
-
-                        if (button_1 is not null)
+                        for (int i = 0; i < notification.Buttons.Count; i++)
                         {
-                            List<InlineKeyboardButton> key = new()
+                            ButtonJsonDto? button_1 = notification.Buttons[i]!;
+                            ButtonJsonDto? button_2 =
+                                (i + 1 < notification.Buttons.Count) ? notification.Buttons[i + 1]! : null;
+
+                            if (button_1 is not null)
                             {
-                                InlineKeyboardButton.WithCallbackData(button_1.Text, button_1.CallbackQuery),
-                            };
+                                List<InlineKeyboardButton> key = new()
+                                {
+                                    InlineKeyboardButton.WithCallbackData(button_1.Text, button_1.CallbackQuery),
+                                };
 
-                            if (button_2 is not null)
-                                key.Add(InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
+                                if (button_2 is not null)
+                                    key.Add(
+                                        InlineKeyboardButton.WithCallbackData(button_2.Text, button_2.CallbackQuery));
 
-                            keys.Add(key);
+                                keys.Add(key);
+                            }
+
+                            i++;
                         }
-
-                        i++;
                     }
+
+                    await botClient.SendTextMessageAsync(
+                        chatId: notification.ChatId,
+                        text: notification.Message ?? "",
+                        replyMarkup: new InlineKeyboardMarkup(keys)
+                    );
+
+                    await notificationService.UpdateSendNotification(notification.Id);
+
+                    Thread.Sleep(500);
                 }
-                await botClient.SendTextMessageAsync(
-                    chatId: notification.ChatId,
-                    text: notification.Message ?? "",
-                    replyMarkup: new InlineKeyboardMarkup(keys),
-                    parseMode: ParseMode.Markdown
-                );
-
-                await notificationService.UpdateSendNotification(notification.Id);
-
-                Thread.Sleep(500);
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

@@ -268,17 +268,17 @@ public class TelegramService(
 
             await userRepository.AddEntity(newUser);
             await userRepository.SaveChanges(newUser.Id);
+            
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
+                    start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()),
+                    user.CardToCardPayment,
+                    start.ChatId),
+                user?.Id ?? newUser.Id);
         }
 
         if ((newUser?.BotId ?? user!.BotId) != start.BotId)
             throw new ApplicationException("شما در ربات دیگری عضو شدید");
-
-        await notificationService.AddNotificationAsync(
-            NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
-                start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()),
-                user.CardToCardPayment,
-                start.ChatId),
-            user?.Id ?? newUser.Id);
 
         return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
     }
