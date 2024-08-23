@@ -38,6 +38,6 @@ public class TransactionDto
         CardNumber = transaction.CardNumber;
         BankName = transaction.BankName;
         AvatarTransaction = transaction?.AvatarTransaction;
-        TransactionDetailId = transaction.TransactionDetailId;
+        TransactionDetailId = transaction.TransactionDetailId ?? 0;
     }
 }

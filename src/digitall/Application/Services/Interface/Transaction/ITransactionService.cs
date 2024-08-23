@@ -10,13 +10,23 @@ public interface ITransactionService
     Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId);
     Task<TransactionDto> GetTransactionByIdAsync(long id);
     Task<bool> ChangeTransactionStatusAsync(TransactionDto transaction, TransactionStatus status);
+
     /// <summary>
     /// get user transactions
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<List<Domain.Entities.Transaction.Transaction>> GetAllTransactionByUserIdAsync(long userId);
-    
+
+    /// <summary>
+    /// increase user balanse
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <param name="userId"></param>
+    /// <param name="adminId"></param>
+    /// <returns></returns>
+    Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long adminId);
+
     Task UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction,
         long userId);
 

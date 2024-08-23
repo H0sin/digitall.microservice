@@ -43,6 +43,6 @@ public class AddTransactionDto
     public string? BankName { get; set; }
 
     [Display(Name = "عکس تراکنش")] public IFormFile? AvatarTransaction { get; set; }
-
+    
     public long TransactionDetailId { get; set; }
 }
