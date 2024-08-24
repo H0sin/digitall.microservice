@@ -27,7 +27,8 @@ services:
     networks:
       - nginx-network
     volumes:
-      - ./src/digitall/Api/wwwroot:/app
+      - ./images:/app/wwwroot/images
+      - ./log:/app
     depends_on:
       - sqlserver
 
