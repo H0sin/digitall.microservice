@@ -78,6 +78,10 @@ public class DigitallDbContext : DbContext
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
+            if (entry.Entity is Notification)
+            {
+                
+            }
             switch (entry.State)
             {
                 case EntityState.Added:

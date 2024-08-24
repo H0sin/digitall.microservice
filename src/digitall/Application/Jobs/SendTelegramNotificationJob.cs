@@ -80,7 +80,7 @@ public class SendTelegramNotificationJob : IJob
                             await botClient.SendPhotoAsync(
                                 chatId: notification.ChatId,
                                 photo: inputOnlineFile,
-                                caption: "فایل ارسالی",
+                                caption: notification.FileCaption,
                                 cancellationToken: default
                             );
                         }

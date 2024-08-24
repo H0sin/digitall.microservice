@@ -16,6 +16,7 @@ using Application.Static.Template;
 using Domain.DTOs.Agent;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Application.Services.Implementation.Transaction;
@@ -25,6 +26,7 @@ public class TransactionService(
     ITransactionDetailRepository transactionDetailRepository,
     IAgentService agentService,
     IUserService userService,
+    IWebHostEnvironment _env,
     INotificationService notificationService)
     : ITransactionService
 {
@@ -56,9 +58,9 @@ public class TransactionService(
         {
             var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(transaction.AvatarTransaction.FileName);
             transaction.AvatarTransaction.AddImageToServer(imageName,
-                PathExtension.TransactionAvatarOriginServer
+                PathExtension.TransactionAvatarOriginServer(_env)
                 , 100, 100,
-                PathExtension.TransactionAvatarThumbServer,
+                PathExtension.TransactionAvatarThumbServer(_env),
                 transaction.AvatarTransaction.FileName);
             newTransaction.AvatarTransaction = imageName;
         }
@@ -68,8 +70,8 @@ public class TransactionService(
 
         await notificationService.AddNotificationAsync(NotificationTemplate.AddTransactionNotification(
             agent.AgentAdminId, user.ChatId ?? 0, newTransaction,
-            PathExtension.TransactionAvatarOrigin + newTransaction
-                .AvatarTransaction), userId);
+            PathExtension.TransactionAvatarOriginServer(_env) + newTransaction
+                .AvatarTransaction,"رسید ارسالی"), userId);
         return AddTransactionResult.Success;
     }
 

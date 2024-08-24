@@ -15,6 +15,7 @@ public class NotificationDto
     public long Id { get; set; }
     public string? FileAddress { get; set; }
     public List<ButtonJsonDto?>? Buttons { get; set; }
+    public string? FileCaption { get; set; }
     public NotificationDto()
     {
     }
@@ -29,5 +30,6 @@ public class NotificationDto
         Id = notification.Id;
         Buttons = notification!.Buttons!;
         FileAddress = notification.FileAddress;
+        FileCaption = notification.FileCaption;
     }
 }

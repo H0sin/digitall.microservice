@@ -388,10 +388,10 @@ public class UserService(
 
         if (profile.Avatar != null && profile.Avatar.IsImage())
         {
-            var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(profile.Avatar.FileName);
-            profile.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer, 100, 100,
-                PathExtension.UserAvatarThumbServer, user.Avatar);
-            user.Avatar = imageName;
+            // var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(profile.Avatar.FileName);
+            // profile.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer, 100, 100,
+            //     PathExtension.UserAvatarThumbServer, user.Avatar);
+            // user.Avatar = imageName;
         }
 
         await userRepository.UpdateEntity(user);
@@ -481,10 +481,10 @@ public class UserService(
 
         if (user.Avatar != null && user.Avatar.IsImage())
         {
-            var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(user.Avatar.FileName);
-            user.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer, 100, 100,
-                PathExtension.UserAvatarThumbServer);
-            newUser.Avatar = imageName;
+            // var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(user.Avatar.FileName);
+            // user.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer, 100, 100,
+            //     PathExtension.UserAvatarThumbServer);
+            // newUser.Avatar = imageName;
         }
 
         await userRepository.AddEntity(newUser);

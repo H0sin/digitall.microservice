@@ -27,6 +27,7 @@ using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Application.Services.Implementation.Telegram;
 
