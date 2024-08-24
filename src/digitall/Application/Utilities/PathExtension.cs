@@ -16,8 +16,8 @@
         public static string ProductAvatarThumb = "/images/ProductAvatar/thumb/";
         public static string ProductAvatarThumbServer = "/app/wwwroot/images/ProductAvatar/thumb/";
 
-        public static string TransactionAvatarOrigin = "/images/TransactionAvatar/origin/";
-        public static string TransactionAvatarOriginServer = "/app/wwwroot/images/TransactionAvatar/origin/";
+        public static string TransactionAvatarOrigin = "/images2/TransactionAvatar/origin/";
+        public static string TransactionAvatarOriginServer = "/app/wwwroot/images2/TransactionAvatar/origin/";
 
         public static string TransactionAvatarThumb = "/images/TransactionAvatar/thumb/";
         public static string TransactionAvatarThumbServer = "/app/wwwroot/images/TransactionAvatar/thumb/";
