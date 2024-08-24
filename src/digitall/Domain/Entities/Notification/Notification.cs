@@ -31,4 +31,6 @@ public class Notification : BaseEntity
 
     public long? UserId { get; set; }
     public User? User { get; set; }
+
+    public string? FileAddress { get; set; }
 }

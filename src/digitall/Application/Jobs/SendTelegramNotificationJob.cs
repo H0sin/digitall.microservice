@@ -6,6 +6,7 @@ using Domain.Entities.Telegram;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -38,7 +39,7 @@ public class SendTelegramNotificationJob : IJob
                     TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
 
                     var options = new TelegramBotClientOptions(bot.Token!);
-                    
+
                     var botClient = new TelegramBotClient(options);
 
                     IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
@@ -65,6 +66,24 @@ public class SendTelegramNotificationJob : IJob
                             }
 
                             i++;
+                        }
+                    }
+                    string d = Path.GetFullPath(notification.FileAddress);
+                    if (!string.IsNullOrEmpty(notification.FileAddress) &&
+                        System.IO.File.Exists(Path.GetFullPath(notification.FileAddress)))
+                    {
+                        using (var stream = new FileStream(notification.FileAddress, FileMode.Open, FileAccess.Read,
+                                   FileShare.Read))
+                        {
+                            var inputOnlineFile =
+                                new InputFileStream(stream, Path.GetFileName(notification.FileAddress));
+
+                            await botClient.SendPhotoAsync(
+                                chatId: notification.ChatId,
+                                photo: inputOnlineFile,
+                                caption: "فایل ارسالی",
+                                cancellationToken: default
+                            );
                         }
                     }
 

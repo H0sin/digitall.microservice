@@ -17,7 +17,8 @@ public class NotificationService(INotificationRepository notificationRepository)
             ForAllMember = notification.ForAllMember,
             Message = notification.Message,
             NotificationType = notification.NotificationType,
-            Buttons = notification.Buttons
+            Buttons = notification.Buttons, 
+            FileAddress = notification.FileAddress
         };
 
         await notificationRepository.AddEntity(notify);

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Notification;
+using Application.Static.Template;
 using Domain.DTOs.Agent;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
@@ -64,7 +65,11 @@ public class TransactionService(
 
         await transactionRepository.AddEntity(newTransaction);
         await transactionRepository.SaveChanges(userId);
-        // await notificationService.AddNotificationAsync();
+
+        await notificationService.AddNotificationAsync(NotificationTemplate.AddTransactionNotification(
+            agent.AgentAdminId, user.ChatId ?? 0, newTransaction,
+            PathExtension.TransactionAvatarOrigin + newTransaction
+                .AvatarTransaction), userId);
         return AddTransactionResult.Success;
     }
 
@@ -74,7 +79,7 @@ public class TransactionService(
         return await transactionRepository.GetQuery().Where(x => x.CreateBy == userId).ToListAsync();
     }
 
-    public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long agentId)
+    public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
     {
         Domain.Entities.Transaction.Transaction newTransaction = new()
         {
@@ -89,7 +94,7 @@ public class TransactionService(
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
         };
-        
+
         await transactionRepository.AddEntity(newTransaction);
         await transactionRepository.SaveChanges(userId);
 
@@ -112,11 +117,11 @@ public class TransactionService(
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
         };
-        
+
         await transactionRepository.AddEntity(newTransaction);
         await transactionRepository.SaveChanges(userId);
 
-        await userService.UpdateUserBalanceAsync(newTransaction.Price  * -1, userId);
+        await userService.UpdateUserBalanceAsync(newTransaction.Price * -1, userId);
         await userService.UpdateUserBalanceAsync((newTransaction.Price), agentId);
     }
 
@@ -128,10 +133,10 @@ public class TransactionService(
         {
             Domain.Entities.Transaction.Transaction? transe =
                 await transactionRepository.GetEntityById(transaction.TransactionId);
-            
+
             TransactionDetail? transactionDetail =
                 await transactionDetailRepository.GetEntityById(transe.TransactionDetailId ?? 0);
-            
+
             AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
             UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
