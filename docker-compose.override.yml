@@ -28,7 +28,7 @@ services:
       - nginx-network
     volumes:
       - ./images:/app/wwwroot/images
-      - ../log*.json:/app/log
+      - ./log/log*.json:/app/log/
     depends_on:
       - sqlserver
 
