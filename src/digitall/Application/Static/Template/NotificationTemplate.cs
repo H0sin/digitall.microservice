@@ -83,7 +83,8 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto AddTransactionNotification(long chatId, Transaction transaction)
+    public static AddNotificationDto AddTransactionNotification(long userId, long chatId, Transaction transaction,
+        string newTransactionAvatarTransaction)
     {
         return new AddNotificationDto()
         {
@@ -94,10 +95,13 @@ public static class NotificationTemplate
                        🛒 کد پیگیری پرداخت: {transaction.TransactionCode}
                        ⚜️ نام کاربری: @mortezafae
                        💸 مبلغ پرداختی: 200,000 تومان
-                                       
                        توضیحات:
                        ✍️ در صورت درست بودن رسید پرداخت را تایید نمایی
-                       """
+                       """,
+            NotificationType = NotificationType.Alter,
+            UserId = userId,
+            ForAllMember = false,
+            FileAddress = newTransactionAvatarTransaction,
         };
     }
 }

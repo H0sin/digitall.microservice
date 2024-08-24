@@ -21,3 +21,4 @@ volumes:
   sqlserver-data:
     driver: local
   images-volume:
+  log-volume:  

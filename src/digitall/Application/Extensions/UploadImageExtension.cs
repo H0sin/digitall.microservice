@@ -9,6 +9,7 @@ namespace Application.Extensions
         {
             if (image != null)
             {
+                
                 if (!Directory.Exists(orginalPath))
                     Directory.CreateDirectory(orginalPath);
 

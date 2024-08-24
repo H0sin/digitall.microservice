@@ -13,6 +13,7 @@ public class NotificationDto
     public long? BotId { get; set; }
     public long? ChatId { get; set; }
     public long Id { get; set; }
+    public string? FileAddress { get; set; }
     public List<ButtonJsonDto?>? Buttons { get; set; }
     public NotificationDto()
     {
@@ -27,5 +28,6 @@ public class NotificationDto
         ChatId = notification.User?.ChatId;
         Id = notification.Id;
         Buttons = notification!.Buttons!;
+        FileAddress = notification.FileAddress;
     }
 }
