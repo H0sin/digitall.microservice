@@ -68,9 +68,8 @@ public class SendTelegramNotificationJob : IJob
                             i++;
                         }
                     }
-                    string d = Path.GetFullPath(notification.FileAddress);
-                    if (!string.IsNullOrEmpty(notification.FileAddress) &&
-                        System.IO.File.Exists(Path.GetFullPath(notification.FileAddress)))
+
+                    if (!string.IsNullOrEmpty(notification.FileAddress))
                     {
                         using (var stream = new FileStream(notification.FileAddress, FileMode.Open, FileAccess.Read,
                                    FileShare.Read))
