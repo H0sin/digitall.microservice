@@ -1,7 +1,8 @@
 ﻿using Data.DefaultData;
 using Data.SeedsData;
 using Domain.Common;
-using Domain.Entities.Account;
+using Domain.DTOs.Notification;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Agent;
 using Domain.Entities.Authorization;
 using Domain.Entities.Category;
@@ -19,6 +20,13 @@ using Domain.Entities.Transaction;
 using Domain.Entities.Vpn;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+using Quartz.Impl;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using User = Domain.Entities.Account.User;
 
 namespace Data.Context;
 
@@ -74,14 +82,10 @@ public class DigitallDbContext : DbContext
 
     #region config
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
-            if (entry.Entity is Notification)
-            {
-                
-            }
             switch (entry.State)
             {
                 case EntityState.Added:
@@ -95,7 +99,7 @@ public class DigitallDbContext : DbContext
             }
         }
 
-        return base.SaveChangesAsync(cancellationToken);
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
     public override int SaveChanges()

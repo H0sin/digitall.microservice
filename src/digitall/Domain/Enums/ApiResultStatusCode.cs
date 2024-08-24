@@ -38,5 +38,7 @@ public enum ApiResultStatusCode
 
     [Display(Name = "در حال توسعه")] NotImplemented = -3,
 
-    [Display(Name = "خطا از سمت مرزبان")] MarzbanError = -4
+    [Display(Name = "خطا از سمت مرزبان")] MarzbanError = -4,
+    
+    [Display(Name = "خطا از سمت ربات")] TelegramException = -5,
 }

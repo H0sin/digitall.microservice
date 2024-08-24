@@ -320,4 +320,21 @@ public interface ITelegramService
     /// <param name="transaction"></param>
     /// <returns></returns>
     Task DecreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
+
+    /// <summary>
+    /// update transaction status
+    /// </summary>
+    /// <param name="status"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task UpdateTransactionAsync(UpdateTransactionStatusDto status,long chatId);
+
+    /// <summary>
+    /// block user async
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="userChatId"></param>
+    /// <param name="block"></param>
+    /// <returns></returns>
+    Task BlockUserAsync(long chatId, long userChatId,bool block);
 }

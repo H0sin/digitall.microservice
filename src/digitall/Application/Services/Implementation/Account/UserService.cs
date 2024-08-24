@@ -144,21 +144,7 @@ public class UserService(
 
         if (user is null) throw new NotFoundException("چنین کاربری وجود ندارد");
 
-        return new UserDto()
-        {
-            Id = user.Id,
-            Mobile = user.Mobile,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Address = user.Address,
-            Avatar = user.Avatar,
-            AgentId = user.AgentId,
-            Email = user.Email,
-            IsMobileActive = user.IsMobileActive,
-            MobileActiveCode = user.MobileActiveCode,
-            Balance = user.Balance,
-            ModifiedDate = user.ModifiedDate
-        };
+        return new(user);
     }
 
     public async Task<UserDto?> GetUserByEmailAsync(string email)

@@ -37,7 +37,6 @@ builder.Services.AddSingleton<BotService>();
 builder.Services.AddSingleton<TelegramBotClientFactory>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
-
 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
 #region cors config
@@ -57,7 +56,7 @@ builder.Services.AddCors(option =>
 
 #region sql config
 
-builder.Services.AddDbContext<DigitallDbContext>(option =>
+builder.Services.AddDbContext<DigitallDbContext>((option) =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DigitallConnection"), op => op.UseHierarchyId());
 });

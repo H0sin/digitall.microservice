@@ -23,20 +23,22 @@ public class UserInformationDto
     
     public  string GetInformation()
     {
+        string userState = UserStatus ? "بلاک شده" : "فعال";
+        string cardNumberVisibility = CardNumberVisibility ? "فعال" : "غیر فعال";
         return $@"
         👀 اطلاعات کاربر:
-        ⭕️ وضعیت کاربر : {UserStatus}
+        ⭕️ وضعیت کاربر : {userState}
         ⭕️ نام کاربری کاربر : {TelegramUserName}
         ⭕️ آیدی عددی کاربر : {ChatId}
         ⭕️ زمان عضویت کاربر : {RegistrationDate}
         ⭕️ محدودیت اکانت تست : {TestAccountLimit}
-        ⭕️ شماره موبایل : {Mobile ?? "none"}
+        ⭕️ شماره موبایل : {Mobile ?? "ندارد"}
         ⭕️ موجودی کاربر : {Balance:N0}
         ⭕️ تعداد خرید کل کاربر : {TotalPurchaseCount}
         ⭕️ مبلغ کل پرداختی : {TotalPaymentAmount:N0}
         ⭕️ جمع کل خرید : {TotalPurchaseAmount:N0}
         ⭕️ تعداد زیرمجموعه کاربر : {ReferralCount}
-        ⭕️ نمایش شماره کارت : {CardNumberVisibility}
+        ⭕️ نمایش شماره کارت : {cardNumberVisibility}
         ";
     }
 }

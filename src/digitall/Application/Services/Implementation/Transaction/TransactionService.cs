@@ -69,9 +69,9 @@ public class TransactionService(
         await transactionRepository.SaveChanges(userId);
 
         await notificationService.AddNotificationAsync(NotificationTemplate.AddTransactionNotification(
-            agent.AgentAdminId, user.ChatId ?? 0, newTransaction,
+            agent!.AgentAdminId, user.ChatId ?? 0, newTransaction,
             PathExtension.TransactionAvatarOriginServer(_env) + newTransaction
-                .AvatarTransaction,"رسید ارسالی"), userId);
+                .AvatarTransaction, "رسید ارسالی", user.TelegramUsername), userId);
         return AddTransactionResult.Success;
     }
 
@@ -142,23 +142,26 @@ public class TransactionService(
             AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
             UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
-            if (transe.Price > (user?.Balance ?? 0))
+            if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted)
                 throw new BadRequestException("مبلغ شارج درخواستی بیشتر از موجودی حساب شما است!");
 
             if (transaction.TransactionStatus == TransactionStatus.Accepted &&
                 transe.TransactionStatus == TransactionStatus.Waiting)
             {
                 await userService.UpdateUserBalanceAsync(transe.Price, transe.CreateBy);
-                await userService.UpdateUserBalanceAsync(-transe.Price, user!.Id);
+                await userService.UpdateUserBalanceAsync(transe.Price * -1, user!.Id);
             }
-
-            else
+            else if (transe.TransactionStatus != TransactionStatus.Waiting)
                 throw new BadRequestException("شما قبلا این تراکنش را برسی کردید!");
 
             transe!.TransactionStatus = transaction.TransactionStatus;
 
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.TransactionStatusAsync(transe.CreateBy, transe), userId);
+
             await transactionRepository.UpdateEntity(transe);
             await transactionRepository.SaveChanges(userId);
+
             await t.CommitAsync();
         }
         catch (Exception e)

@@ -14,6 +14,7 @@ using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
 using Domain.Enums.Transaction;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -56,10 +57,11 @@ public class BotHookController(
 
     public async Task HandleUpdateAsync(Update update,
         CancellationToken cancellationToken)
-    
+
     {
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
             .SingleOrDefault(x => x.Key == update?.Message?.Chat.Id);
+
 
         if (user.Value.Value is null)
             BotSessions
@@ -109,28 +111,10 @@ public class BotHookController(
                                 cancellationToken: cancellationToken);
                             break;
                         }
-                        
-                        var inlineKeyboard = new InlineKeyboardMarkup(new[]
-                        {
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={userChatId}"),
-                                InlineKeyboardButton.WithCallbackData("کاهش موجودی \u2796", $"decrease_by_agent?id={userChatId}"),
-                            },
-                            new[]
-                            {
-                                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
-                            }
-                        });
 
-                        UserInformationDto? information =
-                            await telegramService.GetUserInformationAsync( message.Chat.Id,userChatId);
+                        await botService.ManagementUserAsync(_botClient, message!.Chat.Id, userChatId,
+                            cancellationToken);
 
-                        await _botClient!.SendTextMessageAsync(
-                            message.Chat.Id,
-                            information.GetInformation(),
-                            replyMarkup: inlineKeyboard,
-                            cancellationToken: cancellationToken);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDecrease:
                         string description_decrease = message!.Text;
@@ -176,7 +160,7 @@ public class BotHookController(
 
                         User? userChild =
                             await telegramService.GetUserByChatIdAsync(chatId: user.Value.Value.UserChatId);
-                        
+
                         if (userChild.Balance >= decrease_price)
                         {
                             user.Value.Value.DecreasePrice = decrease_price;
@@ -685,7 +669,19 @@ public class BotHookController(
                 await botService.ChangeStateCardToCard(_botClient, callbackQuery, cancellationToken);
                 break;
             case "user_management":
-                await botService.ManagementUserAsync(_botClient, callbackQuery, cancellationToken);
+                long id = 0;
+                string callbackData = callbackQuery.Data;
+                int questionMarkIndex = callbackData.IndexOf('?');
+
+                if (questionMarkIndex >= 0)
+                {
+                    string? query = callbackData?.Substring(questionMarkIndex);
+                    NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                    Int64.TryParse(queryParameters["Id"], out id);
+                }
+
+                await botService.ManagementUserAsync(_botClient!, callbackQuery.Message!.Chat.Id, id,
+                    cancellationToken);
                 break;
             case "renewal_service":
                 await _botClient!.SendTextMessageAsync(
@@ -698,6 +694,15 @@ public class BotHookController(
                 break;
             case "decrease_by_agent":
                 await botService.DecreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "update_trans":
+                await botService.UpdateTransactionStatusAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "blocked_user":
+                await botService.BlockUserAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "on_blocked_user":
+                await botService.BlockUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "agent_request":
                 long chatId = callbackQuery!.Message!.Chat.Id;

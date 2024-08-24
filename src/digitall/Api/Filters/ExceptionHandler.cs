@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Serilog;
+using Telegram.Bot;
 
 namespace Api.Filters;
 
@@ -38,6 +39,8 @@ public class ExceptionHandler : IAsyncExceptionFilter
 
             switch (context.Exception)
             {
+                case TelegramExceptions exception:
+                    break;
                 case ImplementedException exception:
                     if (exception.ApiStatusCode == ApiResultStatusCode.NotImplemented)
                         context.Result = new JsonResult(new ApiResult(false, ApiResultStatusCode.NotImplemented,
