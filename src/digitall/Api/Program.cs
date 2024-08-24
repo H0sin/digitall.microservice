@@ -67,7 +67,7 @@ builder.Services.AddDbContext<DigitallDbContext>(option =>
 #region serilog
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.File(new JsonFormatter(), @"log\log-.json",
+    .WriteTo.File(new JsonFormatter(), @"wwwroot\logs\log-.json",
         rollingInterval: RollingInterval.Day,
         rollOnFileSizeLimit: true,
         fileSizeLimitBytes: 123456)
