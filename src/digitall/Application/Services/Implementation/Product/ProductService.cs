@@ -58,10 +58,10 @@ public class ProductService(
 
         if (product.Avatar != null && product.Avatar.IsImage())
         {
-            var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(product.Avatar.FileName);
-            product.Avatar.AddImageToServer(imageName, PathExtension.ProductAvatarOriginServer, 500, 500,
-                PathExtension.ProductAvatarThumbServer);
-            newProduct.ProductImage = imageName;
+            // var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(product.Avatar.FileName);
+            // product.Avatar.AddImageToServer(imageName, PathExtension.ProductAvatarOriginServer, 500, 500,
+            //     PathExtension.ProductAvatarThumbServer);
+            // newProduct.ProductImage = imageName;
         }
 
         await productRepository.AddEntity(newProduct);

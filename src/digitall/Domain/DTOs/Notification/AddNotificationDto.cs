@@ -14,4 +14,5 @@ public class AddNotificationDto
     public long? UserId { get; set; } = 0;
     public List<ButtonJsonDto>? Buttons { get; set; }
     public string? FileAddress { get; set; }
+    public string? FileCaption { get; set; }
 }

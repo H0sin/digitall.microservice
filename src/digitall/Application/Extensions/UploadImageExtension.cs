@@ -26,7 +26,7 @@ namespace Application.Extensions
                 }
 
                 string OriginPath = orginalPath + fileName;
-
+                
                 using (var stream = new FileStream(OriginPath, FileMode.Create))
                 {
                     if (!Directory.Exists(OriginPath)) image.CopyTo(stream);

@@ -18,6 +18,10 @@ public class Notification : BaseEntity
     [MaxLength(8000, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Message { get; set; }
 
+    [Display(Name = "توضیحات فایل")]
+    [MaxLength(500, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
+    public string? FileCaption { get; set; }
+    
     public bool Send { get; set; }
 
     [Column(TypeName = "nvarchar(max)")] public string? ButtonsJson { get; set; }

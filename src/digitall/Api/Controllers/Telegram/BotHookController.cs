@@ -544,12 +544,12 @@ public class BotHookController(
                 }
             }
 
-            bool? started = message?.Text.StartsWith("/start");
+            bool? started = message?.Text?.StartsWith("/start");
 
             Message action = new Message();
             if (started != null && started == true)
             {
-                action = message?.Text.Split(" ")[0] switch
+                action = message?.Text?.Split(" ")[0] switch
                 {
                     "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken),
                 };

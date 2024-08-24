@@ -84,7 +84,7 @@ public static class NotificationTemplate
     }
 
     public static AddNotificationDto AddTransactionNotification(long userId, long chatId, Transaction transaction,
-        string newTransactionAvatarTransaction)
+        string newTransactionAvatarTransaction,string fileCaption)
     {
         return new AddNotificationDto()
         {
@@ -102,6 +102,7 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
             FileAddress = newTransactionAvatarTransaction,
+            FileCaption = fileCaption
         };
     }
 }
