@@ -1215,6 +1215,8 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 text: text,
                 replyMarkup: inlineKeyboard,
                 cancellationToken: cancellationToken);
+
+            await Task.CompletedTask;
         }
     }
 
@@ -2159,46 +2161,70 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         }
     }
 
-    public async Task ManagementUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    public async Task ManagementUserAsync(ITelegramBotClient botClient, long chatId, long userId,
         CancellationToken cancellationToken)
     {
-        long chatId = callbackQuery!.Message!.Chat.Id;
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
-        long id = 0;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
+        // var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        // {
+        //     new[]
+        //     {
+        //         InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={userId}"),
+        //         InlineKeyboardButton.WithCallbackData("کاهش موجودی \u2796", $"decrease_by_agent?id={userId}"),
+        //     },
+        //     new[]
+        //     {
+        //         InlineKeyboardButton.WithCallbackData("غیر فعال کردن \u274c", $"blocked_user?id={userId}"),
+        //         InlineKeyboardButton.WithCallbackData("فعال کردن \u2705", $"on_blocked_user?id={userId}"),
+        //     },
+        // });
 
-        if (questionMarkIndex >= 0)
+
+        keys.Add(new()
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["Id"], out id);
-        }
-
-        var inlineKeyboard = new InlineKeyboardMarkup(new[]
-        {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={id}"),
-                InlineKeyboardButton.WithCallbackData("کاهش موجودی \u2796", $"decrease_by_agent?id={id}"),
-            },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
-            }
+            InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={userId}"),
+            InlineKeyboardButton.WithCallbackData("کاهش موجودی \u2796", $"decrease_by_agent?id={userId}"),
         });
 
-        UserInformationDto information =
-            await telegramService.GetUserInformationAsync(chatId, id);
+        UserInformationDto information = await telegramService.GetUserInformationAsync(chatId, userId);
 
-        await botClient!.SendTextMessageAsync(
+        List<InlineKeyboardButton> line_2 = new();
+
+        if (information.UserStatus)
+            line_2.Add(
+                InlineKeyboardButton.WithCallbackData("فعال کردن \u2705", $"on_blocked_user?id={userId}")
+            );
+        else
+            line_2.Add(
+                InlineKeyboardButton.WithCallbackData("غیر فعال کردن \u274c", $"blocked_user?id={userId}")
+            );
+
+        if (!information.CardNumberVisibility)
+            line_2.Add(
+                InlineKeyboardButton.WithCallbackData("نمایش شماره کارت \ud83d\udc41",
+                    $"action_card?id={userId}&action={true}")
+            );
+        else
+            line_2.Add(
+                InlineKeyboardButton.WithCallbackData("پنهان کردن شماره کارت  \ud83d\udc41",
+                    $"action_card?id={userId}&action={false}")
+            );
+        
+        keys.Add(line_2);
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
+        });
+        await botClient.SendTextMessageAsync(
             chatId,
             information.GetInformation(),
-            replyMarkup: inlineKeyboard,
+            replyMarkup: new InlineKeyboardMarkup(keys),
             cancellationToken: cancellationToken);
 
         await Task.CompletedTask;
     }
+
 
     public async Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
@@ -2282,7 +2308,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         long chatId = message!.Chat.Id;
-        
+
         TelegramMarzbanVpnSession? user_value = BotSessions
             .users_Sessions!
             .SingleOrDefault(x => x.Key == chatId).Value;
@@ -2293,6 +2319,121 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             chatId: chatId,
             "ایدی عددی کاربر را ارسال کنید.",
             cancellationToken: cancellationToken);
+    }
+
+    public async Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long id = 0;
+            TransactionStatus status = TransactionStatus.Waiting;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+                Enum.TryParse(queryParameters["status"], true, out status);
+            }
+
+            await telegramService.UpdateTransactionAsync(new UpdateTransactionStatusDto(status, id), chatId);
+
+            string typeTransaction = status == TransactionStatus.Accepted ? "قبول" : "رد";
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                $"تراکنش {typeTransaction}  شد",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                e.Message,
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
+    }
+
+    public async Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
+
+            await telegramService.BlockUserAsync(chatId, id, true);
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                "کاربر غیر فعال شد.",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                e.Message,
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
+    }
+
+    public async Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+        try
+        {
+            long id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
+
+            await telegramService.BlockUserAsync(chatId, id, false);
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                "کاربر فعال شد.",
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId,
+                e.Message,
+                replyMarkup: null,
+                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
+        }
     }
 
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)

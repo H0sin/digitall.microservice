@@ -79,8 +79,13 @@ public class TelegramService(
 
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
-        return await userRepository.GetQuery()
+        User? user = await userRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.ChatId == chatId);
+
+        if (user != null && user.IsBlocked)
+            throw new ApplicationException("کاربری بلاک شده است");
+
+        return user;
     }
 
     public async Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnTestAsync()
@@ -269,11 +274,11 @@ public class TelegramService(
 
             await userRepository.AddEntity(newUser);
             await userRepository.SaveChanges(newUser.Id);
-            
+
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
-                    start.TelegramUsername ?? (user?.UserFullName() ?? newUser?.UserFullName()),
-                    user.CardToCardPayment,
+                    start.TelegramUsername ?? newUser.UserFullName(),
+                    newUser!.CardToCardPayment,
                     start.ChatId),
                 user?.Id ?? newUser.Id);
         }
@@ -500,5 +505,34 @@ public class TelegramService(
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
 
         await transactionService.DecreaseUserAsync(transaction, userChild!.Id, user!.Id);
+    }
+
+    public async Task UpdateTransactionAsync(UpdateTransactionStatusDto status, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        await transactionService.UpdateTransactionStatusAsync(status, user!.Id);
+    }
+
+    public async Task BlockUserAsync(long chatId, long userChatId, bool block)
+    {
+        User? user_agent = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user_agent!.Id);
+
+
+        List<UserDto>? users = await agentService.GetAgentUserAsync(agent.Id);
+
+        bool user_exists = users.Any(x => x.ChatId == userChatId);
+
+        if (user_exists)
+        {
+            User? user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == userChatId);
+            user.IsBlocked = block;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
+        }
+        else
+        {
+            throw new ApplicationException("کاربر یافت نشد");
+        }
     }
 }

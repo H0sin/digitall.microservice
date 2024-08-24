@@ -454,10 +454,12 @@ public interface IBotService
     /// management user
     /// </summary>
     /// <param name="botClient"></param>
-    /// <param name="callbackQuery"></param>
+    /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="chatId"></param>
     /// <returns></returns>
-    Task ManagementUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task ManagementUserAsync(ITelegramBotClient botClient, long chatId, long userId,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// increase user by agent 
@@ -485,4 +487,31 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Message> SearchUserByChatAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// update transaction status
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// block user async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// on blocked user
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }
