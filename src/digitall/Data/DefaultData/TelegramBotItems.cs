@@ -23,7 +23,7 @@ public static class TelegramBotItems
             Id = 1,
             SecretToken = "",
             ModifiedDate = DateTime.Now,
-            ModifyBy = 1,
+            ModifyBy = 1
         }
     };
 }
