@@ -147,6 +147,7 @@ public class DigitallDbContext : DbContext
         modelBuilder.AddData(PermissionsItems.Permissions);
         modelBuilder.AddData(RolePermissionItems.RolePermissions);
         modelBuilder.AddData(TransactionDetailItems.TransactionDetails);
+        modelBuilder.AddData(TelegramBotItems.TelegramBots);
 
         #endregion
 

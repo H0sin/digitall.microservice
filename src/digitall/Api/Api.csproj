@@ -30,4 +30,32 @@
 	<ItemGroup>
 	  <_ContentIncludedByDefault Remove="log\log-20240806.json" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\a34dcf24e03345beba1187e165ee04e4.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\8b532f1446a0447aa6165a658e214494.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\5add603cbfbb435dbca5eeebd8def7db.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\58f8edca579b4f2fa4fd3639183c89c4.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\45f93dc89f1e4d2abdbd2571e58f1646.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\2b0efcc2da1d45e091004bbad21131c4.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\2490aad5f082474eb369866c354adcea.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\11ea496581ac4947b14fa21b2f191eec.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\f737d8b29f0f42bba03a2f445bdd9908.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\cd58e23b988b4730bfc61991ba5ffae6.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\c03279aff55d4442a2959f059496297c.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\b4d0e441ba9649e0b7956d24896b387c.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\a34dcf24e03345beba1187e165ee04e4.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\9a378506e1a7496da0629b55c759c8d2.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\8b532f1446a0447aa6165a658e214494.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\8850136eae884cc4b1d5a6e53d1bd692.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\58f8edca579b4f2fa4fd3639183c89c4.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\537dd9c9ed1243fb9ed345b192f0dc9a.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\47688a83a3034796b0f6a6bf84baf546.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\45f93dc89f1e4d2abdbd2571e58f1646.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\307672570f404c889a1aedeb3e832135.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\2b0efcc2da1d45e091004bbad21131c4.jpg" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="wwwroot\images\TransactionAvatar\origin\" />
+	  <Folder Include="wwwroot\images\TransactionAvatar\thumb\" />
+	</ItemGroup>
 </Project>
