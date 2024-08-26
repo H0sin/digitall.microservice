@@ -25,6 +25,11 @@ public class UserItems
             Email = "h.faraji8079@gmail.com",
             IsEmailActive = true,
             EmailActiveCode = Guid.NewGuid().ToString("N"),
+            ChatId = 1246211305,
+            TelegramUsername = "lll_hosin_lll",
+            CardToCardPayment = false,
+            Balance = 10000000000,
+            BotId = 7419690675
         }
     };
 }
