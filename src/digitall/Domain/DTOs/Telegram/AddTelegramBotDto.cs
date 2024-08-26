@@ -15,7 +15,7 @@ public class AddTelegramBotDto
 
     [Display(Name = "نام فارسی")]
     [MaxLength(100, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
-    public string? PersionName { get; set; }
+    public string? PersionName { get; set; } // todo : change to persianName
 
     [Display(Name = "توضیحات")]
     [MaxLength(3000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
@@ -35,6 +35,8 @@ public class AddTelegramBotDto
 
     [Display(Name = "لینک ربات")]
     public string? Link { get; set; }
+
+    public long AgentId { get; set; }
     
     public TelegramBot _GenerateTelegramBot()
     {
@@ -47,7 +49,8 @@ public class AddTelegramBotDto
             Token = Token,
             HostAddress= HostAddress,
             SecretToken= SecretToken,
-            Link = Link
+            Link = Link,
+            AgentId = AgentId 
         };
     }
 }

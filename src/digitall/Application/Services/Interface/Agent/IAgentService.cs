@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Transaction;
@@ -17,14 +18,14 @@ public interface IAgentService
     /// <param name="agentId"></param>
     /// <returns></returns>
     Task<List<UserDto>?> GetAgentUserAsync(long agentId);
-    
+
     /// after add transaction added agent transaction details 
     /// </summary>
     /// <param name="agentsTransactionsDetails"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsIncomesDetail, long userId);
-    
+
     /// <summary>
     /// get agent information by code
     /// </summary>
@@ -96,20 +97,20 @@ public interface IAgentService
     /// <param name="id"></param>
     /// <returns></returns>
     Task<AgentOptionDto?> GetAgentOptionByAgentIdAsync(long id);
-    
+
     /// <summary>
     /// get list agentrequest admin see request agent
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<List<AgentRequestDto>> GetListAgentRequestAsync(long userId);
-    
+
     /// <summary>
     /// get agent link
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<string?> GetAgentTelegramLink(long userId);
+    Task<TelegramLinkDto?> GetAgentTelegramLink(long userId);
 
     /// <summary>
     /// cheked for user is agent or not agent
@@ -117,7 +118,7 @@ public interface IAgentService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<bool> IsAgentAsync(long userId);
-    
+
     /// <summary>
     /// send agent information by user id
     /// </summary>
@@ -130,10 +131,10 @@ public interface IAgentService
     /// </summary>
     /// <param name="agent"></param>
     /// <returns></returns>
-    Task<bool> UpdateAgentAsync(AgentDto agent,long userId);
-    
+    Task<bool> UpdateAgentAsync(AgentDto agent, long userId);
+
     Task<bool> HaveRequestAgentAsync(long userId);
-    
+
     Task<List<AgentDto>> GetAgentsListAsync();
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);

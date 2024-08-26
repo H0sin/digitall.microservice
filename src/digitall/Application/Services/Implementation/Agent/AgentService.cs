@@ -1,6 +1,7 @@
 ﻿using Application.Services.Interface.Agent;
 using Application.Extensions;
 using Application.Services.Interface.Notification;
+using Application.Services.Interface.Telegram;
 using Application.Static.Template;
 using Application.Utilities;
 using Data.DefaultData;
@@ -131,8 +132,6 @@ public class AgentService(
                     {
                         Description = request.PaymentDescription,
                         CardNumber = request.CardNumber,
-                        MaximumAmount = request.MaximumAmount,
-                        MinimalAmount = request.MinimalAmount,
                         CardHolderName = request.CardHolderName,
                     },
                     AgentPercent = request.AgentPercent ?? 0,
@@ -227,7 +226,7 @@ public class AgentService(
             .Select(x => new AgentRequestDto(x)).ToListAsync();
     }
 
-    public async Task<string?> GetAgentTelegramLink(long userId)
+    public async Task<TelegramLinkDto?> GetAgentTelegramLink(long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
         AgentDto? admin = await GetAgentByAdminIdAsync(userId);
@@ -239,7 +238,8 @@ public class AgentService(
                     .GetQuery()
                     .Include(x => x.TelegramBot)
                     .SingleOrDefaultAsync(x => x.Id == admin!.Id);
-            return agentAdmin?.AgentCode.ToString();
+
+            return new(agentAdmin?.TelegramBot?.Link, agentAdmin?.AgentCode);
         }
 
         Domain.Entities.Agent.Agent? agent =
@@ -248,7 +248,7 @@ public class AgentService(
                 .Include(x => x.TelegramBot)
                 .SingleOrDefaultAsync(x => x.Id == user!.AgentId);
 
-        return agent?.AgentCode.ToString();
+        return new(agent?.TelegramBot?.Link, agent.AgentCode);
     }
 
     public async Task<bool> IsAgentAsync(long userId)
@@ -302,7 +302,7 @@ public class AgentService(
             AdminName = admin.UserFullName(),
             AgentPercent = agent.AgentPercent,
             UserPercent = agent.UserPercent,
-            TelegramBotId = agent.TelegramBotId,
+            // TelegramBotId = agent.TelegramBotId,
             AgentAdminId = agent.AgentAdminId,
             AgentCode = agent.AgentCode,
             BrandAddress = agent.BrandAddress,
@@ -315,7 +315,7 @@ public class AgentService(
             Sale = agent!.AgentsTransactionsDetails?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,
-            BotId = agent.TelegramBotId
+            // BotId = agent.TelegramBotId
         };
     }
 
@@ -473,7 +473,7 @@ public class AgentService(
             BrandAddress = agent.BrandAddress,
             AgentPercent = agent.AgentPercent,
             UserPercent = agent.UserPercent,
-            TelegramBotId = agent.TelegramBotId,
+            // TelegramBotId = agent.TelegramBotId,
             AdminName = user?.UserFullName(),
             Mobile = user?.Mobile,
             Email = user?.Email,

@@ -50,7 +50,7 @@ public class TransactionService(
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,
             CardNumber = transaction.CardNumber,
-            TransactionDetailId = agent?.TransactionDeatilId ?? 0
+            TransactionDetailId = agent?.TransactionDetailId ?? 0
         };
 
         //transaction.AvatarTransaction.IsImage()
@@ -219,7 +219,7 @@ public class TransactionService(
         return filter;
     }
 
-    public async Task AddTransactionDetailAsync(AddTransactionDetialDto transaction, long userId)
+    public async Task AddTransactionDetailAsync(AddTransactionDetailDto transaction, long userId)
     {
         if (await transactionDetailRepository.GetQuery()
                 .AnyAsync(x => x.CardNumber == transaction.CardNumber))
@@ -248,13 +248,25 @@ public class TransactionService(
         if (detail?.Agent?.AgentAdminId != userId)
             throw new NotFoundException("چنین نمایندگی وجود ندارد");
 
-        detail!.CardNumber = transactionDetail.CardNumber;
-        detail!.CardHolderName = transactionDetail.CardHolderName;
-        detail!.Description = transactionDetail.Description;
-        detail.MaximumAmount =
-            transactionDetail.MaximumAmount > 0 ? transactionDetail.MaximumAmount : detail.MaximumAmount;
-        detail.MinimalAmount =
-            transactionDetail.MinimalAmount > 0 ? transactionDetail.MinimalAmount : detail.MinimalAmount;
+        detail.CardNumber = transactionDetail.CardNumber ?? detail.CardNumber;
+        detail.CardHolderName = transactionDetail.CardHolderName ?? detail.CardHolderName;
+        detail.Description = transactionDetail.Description ?? detail.Description;
+        detail.MaximumAmountForUser =
+            transactionDetail.MaximumAmountForUser > 0
+                ? transactionDetail.MaximumAmountForUser
+                : detail.MaximumAmountForUser;
+        detail.MinimalAmountForUser =
+            transactionDetail.MinimalAmountForUser > 0
+                ? transactionDetail.MinimalAmountForUser
+                : detail.MinimalAmountForUser;
+        detail.MaximumAmountForAgent =
+            transactionDetail.MaximumAmountForAgent > 0
+                ? transactionDetail.MaximumAmountForAgent
+                : detail.MaximumAmountForAgent;
+        detail.MinimalAmountForAgent =
+            transactionDetail.MinimalAmountForAgent > 0
+                ? transactionDetail.MinimalAmountForAgent
+                : detail.MinimalAmountForAgent;
         await transactionDetailRepository.UpdateEntity(detail);
         await transactionDetailRepository.SaveChanges(userId);
 

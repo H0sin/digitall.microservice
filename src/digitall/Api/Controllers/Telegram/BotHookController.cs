@@ -98,6 +98,130 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                       case TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser:
+                        long MinimalAmountForUser = -1;
+                        Int64.TryParse(message.Text, out MinimalAmountForUser);
+                        if (MinimalAmountForUser <= 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.⚠️
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        if (user.Value.Value.MinimalAmountForUser > user.Value.Value.MaximumAmountForUser)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      نمیتواند سقف پرداخت کوچیک تر⚠️
+                                      از کف پرداخت باشد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
+
+                        user.Value.Value.MinimalAmountForUser = MinimalAmountForUser;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+
+
+                        await telegramService.UpdateUserPaymentAsync(message.Chat.Id,
+                            user.Value.Value.MinimalAmountForUser, user.Value.Value.MaximumAmountForUser);
+
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                   ✅ عملیات با موفقیت انجام شد
+                                  """,
+                            cancellationToken: cancellationToken);
+                        break;
+
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForUser:
+                        long MaximumAmountForUser = -1;
+                        Int64.TryParse(message.Text, out MaximumAmountForUser);
+                        if (MaximumAmountForUser <= 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.⚠️
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        user.Value.Value.MaximumAmountForUser = MaximumAmountForUser;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser;
+
+                        await _botClient!.SendTextMessageAsync(message!.Chat.Id,
+                            "\u26a0\ufe0fلطفا کف پرداخت کاربر ها را ارسال کنید",
+                            cancellationToken: cancellationToken);
+
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForAgent:
+                        long MinimalAmountForAgent = -1;
+                        Int64.TryParse(message.Text, out MinimalAmountForAgent);
+                        if (MinimalAmountForAgent <= 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.⚠️
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        if (user.Value.Value.MinimalAmountForAgent > user.Value.Value.MaximumAmountForAgent)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      نمیتواند سقف پرداخت کوچیک تر⚠️
+                                      از کف پرداخت باشد
+                                      """,
+                                cancellationToken: cancellationToken);
+                        }
+
+                        user.Value.Value.MinimalAmountForAgent = MinimalAmountForAgent;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+
+
+                        await telegramService.UpdateAgentPaymentAsync(message.Chat.Id,
+                            user.Value.Value.MinimalAmountForAgent, user.Value.Value.MaximumAmountForAgent);
+
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                   ✅ عملیات با موفقیت انجام شد
+                                  """,
+                            cancellationToken: cancellationToken);
+                        break;
+
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForAgent:
+                        long MaximumAmountForAgent = -1;
+                        Int64.TryParse(message.Text, out MaximumAmountForAgent);
+                        if (MaximumAmountForAgent <= 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.⚠️
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        user.Value.Value.MaximumAmountForAgent = MaximumAmountForAgent;
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForAgent;
+
+                        await _botClient!.SendTextMessageAsync(message!.Chat.Id,
+                            "\u26a0\ufe0fلطفا کف پرداخت نماینده را ارسال کنید",
+                            cancellationToken: cancellationToken);
+
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSearchUserByChatId:
                         long userChatId = 0;
                         Int64.TryParse(message.Text, out userChatId);
@@ -567,6 +691,10 @@ public class BotHookController(
                         _botClient,
                         message, cancellationToken),
                     "جستجو کاربر \ud83d\udd0d" => await botService.SearchUserByChatAsync(_botClient,
+                        message, cancellationToken),
+                    "\ud83d\udd22 پرداخت نمایندگی" => await botService.ChangeAgentPaymentOptionAsync(_botClient,
+                        message, cancellationToken),
+                    "\ud83d\udd22 پرداخت کاربری" => await botService.ChangeUserPaymentOptionAsync(_botClient,
                         message, cancellationToken),
                     _ => new Message()
                 };

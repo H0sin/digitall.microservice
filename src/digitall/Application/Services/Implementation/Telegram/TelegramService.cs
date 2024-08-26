@@ -19,6 +19,7 @@ using Application.Services.Interface.Order;
 using Application.Services.Interface.Transaction;
 using Application.Sessions;
 using Application.Static.Template;
+using Data.Migrations;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
@@ -207,7 +208,6 @@ public class TelegramService(
     }
 
     public async Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId)
-
     {
         User? user = await GetUserByChatIdAsync(chatId);
         if (!user!.CardToCardPayment) return null;
@@ -249,20 +249,25 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(start.ChatId);
 
-        AgentDto? agent = await agentService.GetAgentByUserIdAsync(user?.Id ?? 0);
+        TelegramBot? telegramBot =
+            await telegramBotRepository.GetQuery()
+                .Include(x => x.Agent)
+                .SingleOrDefaultAsync(x => x.BotId == start.BotId);
+
         User? newUser = null;
+        AgentDto? agent = null;
 
         if (user is null)
         {
-            agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);
-
-            if (agent == null)
-                agent = await agentService.GetAgentByIdAsync(AgentItems.Agents.First().Id);
+            if (start.AgentCode != null)
+            {
+                agent = await agentService.GetAgentByCode(start.AgentCode ?? 0);
+            }
 
             newUser = new User()
             {
                 Balance = 0,
-                AgentId = agent!.Id,
+                AgentId = agent?.Id ?? telegramBot!.Agent!.Id,
                 FirstName = start.FirstName,
                 LastName = start.LastName,
                 Password = PasswordHelper.EncodePasswordMd5(start.ChatId.ToString()),
@@ -276,22 +281,24 @@ public class TelegramService(
             await userRepository.SaveChanges(newUser.Id);
 
             await notificationService.AddNotificationAsync(
-                NotificationTemplate.StartedBotNotification(agent!.AgentAdminId,
+                NotificationTemplate.StartedBotNotification(agent?.AgentAdminId ?? telegramBot!.Agent!.AgentAdminId,
                     start.TelegramUsername ?? newUser.UserFullName(),
                     newUser!.CardToCardPayment,
                     start.ChatId),
                 user?.Id ?? newUser.Id);
+
+            return await agentService.GetAgentOptionByAgentIdAsync(agent?.AgentAdminId ?? telegramBot!.Agent!.Id);
         }
 
-        if ((newUser?.BotId ?? user!.BotId) != start.BotId)
+        if (user?.BotId != start.BotId && telegramBot?.Agent?.AgentAdminId != user?.Id)
             throw new ApplicationException("شما در ربات دیگری عضو شدید");
 
-        return await agentService.GetAgentOptionByAgentIdAsync(agent.Id);
+        return await agentService.GetAgentOptionByAgentIdAsync(agent?.AgentAdminId ?? telegramBot!.Agent!.Id);
     }
 
     public async Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long chatId)
     {
-        User user = await GetUserByChatIdAsync(chatId);
+        User? user = await GetUserByChatIdAsync(chatId);
         await marzbanService.ChangeMarzbanUserStatusAsync(status, marzbanUserId, user.Id);
     }
 
@@ -338,7 +345,7 @@ public class TelegramService(
         return await agentService.IsAgentAsync(user!.Id);
     }
 
-    public async Task<string?> GetAgentBotLinkAsync(long chatId)
+    public async Task<TelegramLinkDto?> GetAgentBotLinkAsync(long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
         return await agentService.GetAgentTelegramLink(user!.Id);
@@ -365,7 +372,7 @@ public class TelegramService(
         {
             CardNumber = session.CardNumber,
             CardHolderName = session.CardHolderName,
-            Id = agent.TransactionDeatilId
+            Id = agent.TransactionDetailId
         };
 
         return await transactionService.UpdateTransactionDetailsAsync(transactionDetail, user!.Id);
@@ -534,5 +541,29 @@ public class TelegramService(
         {
             throw new ApplicationException("کاربر یافت نشد");
         }
+    }
+
+    public async Task UpdateAgentPaymentAsync(long chatId, long minimalAmountForAgent, long maximumAmountForAgent)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user?.Id);
+        await transactionService.UpdateTransactionDetailsAsync(new TransactionDetailDto()
+        {
+            Id = agent!.TransactionDetailId,
+            MaximumAmountForAgent = maximumAmountForAgent,
+            MinimalAmountForAgent = minimalAmountForAgent,
+        }, user!.Id);
+    }
+
+    public async Task UpdateUserPaymentAsync(long chatId, long minimalAmountForUser, long maximumAmountForUser)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user?.Id);
+        await transactionService.UpdateTransactionDetailsAsync(new TransactionDetailDto()
+        {
+            Id = agent!.TransactionDetailId,
+            MaximumAmountForUser = maximumAmountForUser,
+            MinimalAmountForUser = minimalAmountForUser,
+        }, user!.Id);
     }
 }

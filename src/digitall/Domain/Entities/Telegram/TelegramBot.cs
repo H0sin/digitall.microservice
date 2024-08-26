@@ -3,7 +3,7 @@ using Domain.Common;
 
 namespace Domain.Entities.Telegram;
 
-public class TelegramBot : BaseEntity
+public class  TelegramBot : BaseEntity
 {
     [Display(Name = "توکن")]
     [MaxLength(200)]

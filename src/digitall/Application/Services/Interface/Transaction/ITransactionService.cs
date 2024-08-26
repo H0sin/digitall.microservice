@@ -40,7 +40,7 @@ public interface ITransactionService
         long userId);
 
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
-    Task AddTransactionDetailAsync(AddTransactionDetialDto transaction, long userId);
+    Task AddTransactionDetailAsync(AddTransactionDetailDto transaction, long userId);
     Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);
 
     /// <summary>
