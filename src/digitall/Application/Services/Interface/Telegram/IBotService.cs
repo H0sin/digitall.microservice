@@ -514,4 +514,22 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// change payment
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> ChangeAgentPaymentOptionAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// change user payment
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> ChangeUserPaymentOptionAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
 }

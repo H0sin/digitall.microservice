@@ -5,8 +5,10 @@ namespace Domain.DTOs.Transaction;
 public class TransactionDetailDto
 {
     public long Id { get; set; }
-    public int MaximumAmount { get; set; }
-    public int MinimalAmount { get; set; }
+    public long MaximumAmountForAgent { get; set; }
+    public long MinimalAmountForAgent { get; set; }
+    public long MaximumAmountForUser { get; set; }
+    public long MinimalAmountForUser { get; set; }
     public string? CardNumber { get; set; }
     public string? CardHolderName { get; set; }
     public string? Description { get; set; }
@@ -20,8 +22,10 @@ public class TransactionDetailDto
 
     public TransactionDetailDto(TransactionDetail? detail)
     {
-        MaximumAmount = detail?.MaximumAmount ?? 0;
-        MinimalAmount = detail?.MinimalAmount ?? 0;
+        MaximumAmountForAgent = detail?.MaximumAmountForAgent ?? 0;
+        MinimalAmountForAgent = detail?.MinimalAmountForAgent ?? 0;
+        MaximumAmountForUser = detail?.MaximumAmountForUser ?? 0;
+        MinimalAmountForUser = detail?.MinimalAmountForUser ?? 0;
         CardNumber = detail?.CardNumber;
         CardHolderName = detail?.CardHolderName;
         AgentId = detail.AgentId;
@@ -29,11 +33,5 @@ public class TransactionDetailDto
         Id = detail?.Id ?? 0;
         UserPercent = detail!.Agent!.UserPercent;
         AgentPercent = detail!.Agent!.AgentPercent;
-    }
-
-    public string GetTransactionMessage()
-    {
-        return
-            $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {MinimalAmount} حداکثر مبلغ {MaximumAmount} تومان می باشد";
     }
 }

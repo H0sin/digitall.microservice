@@ -82,7 +82,7 @@ public interface ITelegramService
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>> 
+    Task<List<MarzbanVpnTemplateDto>>
         GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId);
 
     /// <summary>
@@ -153,7 +153,7 @@ public interface ITelegramService
     Task<string> ResetUserPasswordAsync(long chatId, int charter = 6);
 
     Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId);
-    
+
     Task AddTransactionAsync(AddTransactionDto transaction, long chatId);
 
     /// <summary>
@@ -185,7 +185,7 @@ public interface ITelegramService
     /// <param name="description"></param>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task AddRequestAgentAsync(string description,string phone, long chatId);
+    Task AddRequestAgentAsync(string description, string phone, long chatId);
 
     /// <summary>
     /// delete marzban user
@@ -222,7 +222,7 @@ public interface ITelegramService
     /// </summary>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task<string?> GetAgentBotLinkAsync(long chatId);
+    Task<TelegramLinkDto?> GetAgentBotLinkAsync(long chatId);
 
     /// <summary>
     /// get telegramBot by bot Id
@@ -237,7 +237,7 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="session"></param>
     /// <returns></returns>
-    Task<bool> EditeAgentTransactionDetailAsync(long chatId,TelegramMarzbanVpnSession session);
+    Task<bool> EditeAgentTransactionDetailAsync(long chatId, TelegramMarzbanVpnSession session);
 
     /// <summary>
     /// get agent transaction deatil dto
@@ -245,7 +245,7 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<TransactionDetailDto?> GetAgentTransactionDetailAsync(long chatId);
-    
+
     /// <summary>
     /// send agent information 
     /// </summary>
@@ -259,16 +259,16 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="percent"></param>
     /// <returns></returns>
-    Task<bool> UpdateAgentPercentAsync(long chatId,long percent);
-    
+    Task<bool> UpdateAgentPercentAsync(long chatId, long percent);
+
     /// <summary>
     /// update user percent
     /// </summary>
     /// <param name="chatId"></param>
     /// <param name="percent"></param>
     /// <returns></returns>
-    Task<bool> UpdateUserPercentAsync(long chatId,long percent);
-    
+    Task<bool> UpdateUserPercentAsync(long chatId, long percent);
+
     /// <summary>
     /// update user brand name
     /// </summary>
@@ -285,7 +285,7 @@ public interface ITelegramService
     /// <param name="i"></param>
     /// <param name="accept"></param>
     /// <returns></returns>     
-    Task ChangeAgentRequestAsync(long chatId,UpdateAgentRequestDto status);
+    Task ChangeAgentRequestAsync(long chatId, UpdateAgentRequestDto status);
 
     /// <summary>
     /// active or not active card to card
@@ -293,7 +293,7 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="action"></param>
     /// <returns></returns>
-    Task<bool> ActionForCardToCardAsync(long chatId,long userchatId, bool action);
+    Task<bool> ActionForCardToCardAsync(long chatId, long userchatId, bool action);
 
     /// <summary>
     /// for send management user 
@@ -301,7 +301,7 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="userchatId"></param>
     /// <returns></returns>
-    Task<UserInformationDto> GetUserInformationAsync(long chatId,long userchatId);
+    Task<UserInformationDto> GetUserInformationAsync(long chatId, long userchatId);
 
     /// <summary>
     /// increase user balanse
@@ -309,9 +309,9 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="valueUserChatId"></param>
     /// <param name="transaction"></param>
-    /// <returns></returns>
+    /// <returns></returns> 
     Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
-    
+
     /// <summary>
     /// decrease user balanse
     /// </summary>
@@ -327,7 +327,7 @@ public interface ITelegramService
     /// <param name="status"></param>
     /// <param name="chatId"></param>
     /// <returns></returns>
-    Task UpdateTransactionAsync(UpdateTransactionStatusDto status,long chatId);
+    Task UpdateTransactionAsync(UpdateTransactionStatusDto status, long chatId);
 
     /// <summary>
     /// block user async
@@ -336,5 +336,23 @@ public interface ITelegramService
     /// <param name="userChatId"></param>
     /// <param name="block"></param>
     /// <returns></returns>
-    Task BlockUserAsync(long chatId, long userChatId,bool block);
+    Task BlockUserAsync(long chatId, long userChatId, bool block);
+
+    /// <summary>
+    /// update agent payemnt information 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="minimalAmountForAgent"></param>
+    /// <param name="maximumAmountForAgent"></param>
+    /// <returns></returns>
+    Task UpdateAgentPaymentAsync(long chatId, long minimalAmountForAgent, long maximumAmountForAgent);
+
+    /// <summary>
+    /// update user payment async
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="minimalAmountForUser"></param>
+    /// <param name="maximumAmountForUser"></param>
+    /// <returns></returns>
+    Task UpdateUserPaymentAsync(long chatId, long minimalAmountForUser, long maximumAmountForUser);
 }

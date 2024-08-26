@@ -5,11 +5,17 @@ namespace Domain.Entities.Transaction;
 
 public class TransactionDetail : BaseEntity
 {
-    [Display(Name = "بیشترین مقدار تراکنش")]
-    public int MaximumAmount { get; set; } = 2000000;
+    [Display(Name = "بیشترین مقدار تراکنش برای نماینده")]
+    public long? MaximumAmountForAgent { get; set; }
 
-    [Display(Name = "کمترین مقدار تراکنش")]
-    public int MinimalAmount { get; set; } = 1000000;
+    [Display(Name = "کمترین مقدار تراکنش برای نماینده")]
+    public long? MinimalAmountForAgent { get; set; }
+    
+    [Display(Name = "بیشترین مقدار تراکنش برای کاربر")]
+    public long? MaximumAmountForUser { get; set; }
+    
+    [Display(Name = "کمترین مقدار تراکنش برای کاربر")]
+    public long? MinimalAmountForUser { get; set; } = 0;
 
     [Display(Name = "شماره کارت")]
     [MaxLength(50, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]

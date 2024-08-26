@@ -1136,7 +1136,17 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             if (transactionDetail is null)
                 throw new ApplicationException("پرداخت کارت به کارت برای شما غیر فعال است.");
 
-            string information = transactionDetail!.GetTransactionMessage();
+            bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
+
+            string information = "";
+
+            if (isAgent)
+                information =
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForAgent} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent} تومان می باشد";
+            else
+                information =
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser} حداکثر مبلغ {transactionDetail.MaximumAmountForUser} تومان می باشد";
+
 
             if (string.IsNullOrEmpty(transactionDetail.CardNumber))
             {
@@ -1177,27 +1187,43 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         var uservalue = user.Value.Value;
 
-        if (transactionDetail.MaximumAmount < uservalue.Price | transactionDetail.MinimalAmount > uservalue.Price)
-        {
-            string exText =
-                $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail.MinimalAmount} تومان و حداکثر {transactionDetail.MaximumAmount} تومان باشد";
+        bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
 
-            await botClient!.SendTextMessageAsync(
-                chatId: chatId,
-                text: exText,
-                cancellationToken: cancellationToken);
+        if (isAgent)
+        {
+            if (transactionDetail!.MaximumAmountForAgent < uservalue.Price |
+                transactionDetail.MinimalAmountForAgent > uservalue.Price)
+            {
+                string exText =
+                    $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail.MinimalAmountForAgent} تومان و حداکثر {transactionDetail.MaximumAmountForAgent} تومان باشد";
+
+                await Task.CompletedTask;
+                throw new AppException(exText);
+            }
         }
         else
         {
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            if (transactionDetail!.MaximumAmountForUser < uservalue.Price |
+                transactionDetail.MinimalAmountForUser > uservalue.Price)
             {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("✅ پرداخت کردم  | ارسال رسید", "send_transaction_image")
-                }
-            });
+                string exText =
+                    $"\u274c خطا \n\ud83d\udcac مبلغ باید حداقل {transactionDetail.MinimalAmountForUser} تومان و حداکثر {transactionDetail.MaximumAmountForUser} تومان باشد";
+                
+                await Task.CompletedTask;
+                throw new AppException(exText);
+            }
+        }
 
-            string text = $@"برای افزایش موجودی، مبلغ {uservalue.Price}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("✅ پرداخت کردم  | ارسال رسید", "send_transaction_image")
+            }
+        });
+
+        string text =
+            $@"برای افزایش موجودی، مبلغ {uservalue.Price}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
         
         ==================== 
         {transactionDetail.CardNumber}
@@ -1210,14 +1236,14 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 🔝بعد از پرداخت  دکمه پرداخت کردم را زده سپس تصویر رسید را ارسال نمایید
 💵بعد از تایید پرداختتون توسط ادمین کیف پول شما شارژ خواهد شد و در صورتی که سفارشی داشته باشین انجام خواهد شد";
 
-            await botClient!.SendTextMessageAsync(
-                chatId: chatId,
-                text: text,
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken);
 
-            await Task.CompletedTask;
-        }
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: text,
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+
+        await Task.CompletedTask;
     }
 
     public async Task WatingForTransactionImageAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -1730,11 +1756,10 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         CancellationToken cancellationToken)
     {
         var userInfo = await botClient!.GetMeAsync(cancellationToken: cancellationToken);
-        string? agentCode = await telegramService.GetAgentBotLinkAsync(callbackQuery!.Message!.Chat.Id);
-        string? link = $"https://t.me/{userInfo.Username}?start={agentCode}";
+        TelegramLinkDto? link = await telegramService.GetAgentBotLinkAsync(callbackQuery!.Message!.Chat.Id);
         await botClient!.SendTextMessageAsync(
             callbackQuery!.Message!.Chat.Id,
-            $"با استفاده از لینک زیر شما میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link}",
+            $"با استفاده از لینک میتونید از دعوت دوستان خودتون به ربات کسب درآمد کنید.\n\n👇👇👇👇👇👇👇👇👇👇\n\n🔗 {link.GenerateLink(userInfo.Username)}",
             cancellationToken: cancellationToken
         );
         await Task.CompletedTask;
@@ -1775,6 +1800,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 new KeyboardButton[] { "ثبت | تغییر شماره کارت \ud83d\udcb3", "ثبت | تغییر نام نمایندگی \ud83d\udc65" },
                 new KeyboardButton[] { "مشاهده اطلاعات پرداخت \ud83d\udcb0" },
                 new KeyboardButton[] { "تغییر درصد کاربر", "تغییر درصد نماینده" },
+                new KeyboardButton[] { "\ud83d\udd22 پرداخت نمایندگی" ,"\ud83d\udd22 پرداخت کاربری"},
                 new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" }
             })
             {
@@ -1869,10 +1895,16 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
             if (transaction is null)
                 throw new ApplicationException("اطلاعات پرداخت ثبت نشده");
 
-            string text = $"شماره کارت: {transaction.CardNumber ?? "ثبت نشده"} \n" +
-                          $"نام صاحب کارت: {transaction.CardHolderName ?? "ثبت نشده"}\n" +
-                          $"درصد سود پیش‌ فرض از کاربر عادی: %{transaction.AgentPercent}\n" +
-                          $"درصد سود پیش‌ فرض از نماینده: %{transaction.UserPercent}";
+            string text = $"💳 شماره کارت: {transaction.CardNumber ?? "ثبت نشده"} \n" +
+                          $"👤 نام صاحب کارت: {transaction.CardHolderName ?? "ثبت نشده"}\n" +
+                          $"📈 درصد سود پیش‌ فرض از کاربر عادی: %{transaction.AgentPercent}\n" +
+                          $"📊 درصد سود پیش‌ فرض از نماینده: %{transaction.UserPercent}\n" +
+                          $"💰 سقف پرداخت نماینده: {transaction.MaximumAmountForAgent:N0}\n" +
+                          $"💵 کف پرداخت نماینده: {transaction.MinimalAmountForAgent:N0}\n" +
+                          $"💰 سقف پرداخت کاربر: {transaction.MaximumAmountForUser:N0}\n" +
+                          $"💵 کف پرداخت کاربر: {transaction.MinimalAmountForUser:N0}\n";
+
+
             return await botClient!.SendTextMessageAsync(chatId,
                 text, cancellationToken: cancellationToken);
         }
@@ -2210,7 +2242,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 InlineKeyboardButton.WithCallbackData("پنهان کردن شماره کارت  \ud83d\udc41",
                     $"action_card?id={userId}&action={false}")
             );
-        
+
         keys.Add(line_2);
         keys.Add(new()
         {
@@ -2434,6 +2466,51 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 cancellationToken: cancellationToken);
             await Task.CompletedTask;
         }
+    }
+
+    public async Task<Message> ChangeAgentPaymentOptionAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        TelegramMarzbanVpnSession? user_value = BotSessions
+            .users_Sessions!
+            .SingleOrDefault(x => x.Key == chatId).Value;
+
+        user_value.State = TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForAgent;
+
+        TransactionDetailDto? transactionDetail = await telegramService.GetAgentTransactionDetailAsync(chatId);
+        string text = 
+            "💰 سقف پرداخت: " + transactionDetail?.MaximumAmountForAgent.ToString("N0") + " تومان\n" +
+            "💵 کف پرداخت: " + transactionDetail?.MinimalAmountForAgent.ToString("N0") + " تومان\n" +
+            "📤 لطفاً سقف پرداخت نماینده را ارسال کنید";
+
+        return await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: text,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task<Message> ChangeUserPaymentOptionAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+
+        TelegramMarzbanVpnSession? user_value = BotSessions
+            .users_Sessions!
+            .SingleOrDefault(x => x.Key == chatId).Value;
+
+        user_value.State = TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForUser;
+
+        TransactionDetailDto? transactionDetail = await telegramService.GetAgentTransactionDetailAsync(chatId);
+        string text = 
+            "💰 سقف پرداخت: " + transactionDetail?.MaximumAmountForUser.ToString("N0") + " تومان\n" +
+            "💵 کف پرداخت: " + transactionDetail?.MinimalAmountForUser.ToString("N0") + " تومان\n" +
+            "📤 لطفاً سقف پرداخت کاربر را ارسال کنید";
+
+        return await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: text,
+            cancellationToken: cancellationToken);
     }
 
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken)

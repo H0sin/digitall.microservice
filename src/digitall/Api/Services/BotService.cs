@@ -36,9 +36,9 @@ public class BotService(
         {
             Thread.Sleep(500);  // Optional: برای اینکه به هر بات زمان بدهیم
 
-            var botClient = botClientFactory.Create(bot.Token); // Create a new instance with the bot's token
+            var botClient = botClientFactory.Create(bot?.Token!); // Create a new instance with the bot's token
 
-            var webhookAddress = $"{bot.HostAddress}{bot.Route}";
+            var webhookAddress = $"{bot?.HostAddress}{bot?.Route}";
             logger.LogInformation("Setting webhook for bot {BotName}: {WebhookAddress}", bot.Name, webhookAddress);
 
             await botClient.SetWebhookAsync(

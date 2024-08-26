@@ -83,7 +83,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     public async Task<ApiResult> AddTransactionDetial(
-        [FromBody] AddTransactionDetialDto transaction)
+        [FromBody] AddTransactionDetailDto transaction)
     {
         await transactionService.AddTransactionDetailAsync(transaction, User.GetId());
         return Ok();

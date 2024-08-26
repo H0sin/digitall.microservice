@@ -21,5 +21,5 @@ public class AddAgentDto
 
     [Display(Name = "درصد")] public long Percent { get; set; }
 
-    public AddTransactionDetialDto? AddTransactionDetialDto { get; set; }
+    public AddTransactionDetailDto? AddTransactionDetialDto { get; set; }
 }
