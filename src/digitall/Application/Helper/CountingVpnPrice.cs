@@ -24,7 +24,15 @@ public class CountingVpnPrice
         for (int i = numberOfAgents; i >= 0; i--)
         {
             HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
+            HierarchyId? childAncestorPath = null;
+
+            if (i != 0)
+                childAncestorPath = agent.AgentPath.GetAncestor(i - 1);
+
             Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+
+            Domain.Entities.Agent.Agent?
+                childByPath = await agentService.GetAgentByPathAsync(childAncestorPath ?? null);
 
             if (agentByPath != null)
             {
@@ -32,6 +40,10 @@ public class CountingVpnPrice
                 if (admin != null)
                 {
                     percent = agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent;
+                    if (childByPath?.SpecialPercent != null)
+                    {
+                        percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
+                    }
                 }
                 else
                 {
@@ -52,7 +64,8 @@ public class CountingVpnPrice
     }
 
     public async Task<List<CalculatorUserIncome>> CalculateUserIncomes(IAgentService agentService, long userId,
-        long price, long totalGb, long totalDays, long gbPrice, long dayPrice,long templatePrice = 0,long count=1, int numberOfAgents = 1)
+        long price, long totalGb, long totalDays, long gbPrice, long dayPrice, long templatePrice = 0, long count = 1,
+        int numberOfAgents = 1)
     {
         AgentDto? admin = await agentService.GetAgentByAdminIdAsync(userId);
         AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
@@ -68,41 +81,53 @@ public class CountingVpnPrice
         long currentGbPrice = initialGbPrice;
         long currentDayPrice = initialDayPrice;
         long currentTemplatePrice = templatePrice;
-        
+
         // محاسبه درآمد از پایین‌ترین سطح
         for (int i = numberOfAgents; i >= 0; i--)
         {
             HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+            HierarchyId? childAncestorPath = null;
 
+            if (i != 0)
+                childAncestorPath = agent.AgentPath.GetAncestor(i - 1);
+
+            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
+            Domain.Entities.Agent.Agent?
+                childByPath = await agentService.GetAgentByPathAsync(childAncestorPath ?? null);
+            
             if (agentByPath != null)
             {
                 double percent = GetAgentPercent(agentByPath, admin, i);
-                 
+
+                if (childByPath?.SpecialPercent != null)
+                {
+                    percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
+                }
+
                 double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;
-                
+
                 long totalProfit = 0;
-                
+
                 if (templatePrice != 0)
                 {
-                     totalProfit = Convert.ToInt64(currentTemplatePrice * multiplier) - currentTemplatePrice;
-                     currentTemplatePrice += totalProfit;
+                    totalProfit = Convert.ToInt64(currentTemplatePrice * multiplier) - currentTemplatePrice;
+                    currentTemplatePrice += totalProfit;
                 }
                 else
                 {
-                
                     long newGbPrice = Convert.ToInt64(currentGbPrice * multiplier);
                     long newDayPrice = Convert.ToInt64(currentDayPrice * multiplier);
                     long gbProfit = (newGbPrice - currentGbPrice) * totalGb;
                     long dayProfit = (newDayPrice - currentDayPrice) * totalDays;
-                    currentGbPrice = newGbPrice; 
+                    currentGbPrice = newGbPrice;
                     currentDayPrice = newDayPrice;
-                    totalProfit = gbProfit + dayProfit;    
+                    totalProfit = gbProfit + dayProfit;
                 }
-                users.Add(new CalculatorUserIncome(agentByPath.AgentAdminId, totalProfit, agentByPath.Id));        
+
+                users.Add(new CalculatorUserIncome(agentByPath.AgentAdminId, totalProfit, agentByPath.Id));
             }
         }
-        
+
         return users;
     }
 
@@ -120,7 +145,7 @@ public class CountingVpnPrice
         }
     }
 
-    
+
     public async Task<List<CalculatorUserIncome>> CalculateUserIncomesAsync(
         IAgentService agentService,
         long finalPrice,
@@ -179,52 +204,4 @@ public class CountingVpnPrice
 
         return users;
     }
-
-    
-    // public async Task<List<CalculatorUserIncome>> CalculateUserIncomes(IAgentService agentService, long userId,
-    //     long price, int count = 1, int numberOfAgents = 2)
-    // {
-    //     AgentDto? admin = await agentService.GetAgentByAdminIdAsync(userId);
-    //     AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
-    //
-    //     if (agent == null)
-    //         throw new NotFoundException("نمایندگی شما غیر فعال شده است");
-    //
-    //     List<CalculatorUserIncome> users = new();
-    //
-    //     for (int i = 0; i <= numberOfAgents; i++)
-    //     {
-    //         HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-    //         Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
-    //
-    //         if (agentByPath != null)
-    //         {
-    //             double percent;
-    //             if (admin != null)
-    //             {
-    //                 percent = agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent;
-    //             }
-    //             else
-    //             {
-    //                 percent = i == 0
-    //                     ? agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent
-    //                     : agentByPath.AgentPercent == 0
-    //                         ? 1
-    //                         : agentByPath.AgentPercent;
-    //             }
-    //
-    //             double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;
-    //             User? user = await agentService.GetAdminAgentUserAsync(agentByPath.AgentAdminId);
-    //
-    //             if (user != null)
-    //             {
-    //                 long income = Convert.ToInt64((price - (price / multiplier)) * count);
-    //                 user.Balance += income;
-    //                 users.Add(new CalculatorUserIncome(user.Id, income, agentByPath.Id));
-    //             }
-    //         }
-    //     }
-    //
-    //     return users;
-    // }
 }

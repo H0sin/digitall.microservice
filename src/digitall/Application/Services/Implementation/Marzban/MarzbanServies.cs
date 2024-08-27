@@ -608,8 +608,9 @@ public class MarzbanServies(
             .GetEntityById(vpnId);
 
         CountingVpnPrice countingVpnPrice = new();
-        vpn!.DayPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.DayPrice);
-        vpn!.GbPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.GbPrice);
+
+        vpn.DayPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.DayPrice);
+        vpn.GbPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.GbPrice);
 
         return vpn switch
         {

@@ -17,6 +17,7 @@ public class AgentDto
         UserPercent = agent!.UserPercent;
         AgentPath = agent!.AgentPath;
         Id = agent!.Id;
+        SpecialPercent = agent.SpecialPercent ?? 0;
     }
 
     public AgentDto()
@@ -36,4 +37,5 @@ public class AgentDto
     public long TransactionDetailId { get; set; }
     public long AgentPercent { get; set; }
     public long UserPercent { get; set; }
+    public long SpecialPercent { get; set; } = 0;
 }

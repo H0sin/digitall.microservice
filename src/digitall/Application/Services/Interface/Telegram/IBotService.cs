@@ -430,8 +430,9 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task AcceptAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
-    
+    Task AcceptAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
     /// <summary>
     /// reject agent request async
     /// </summary>
@@ -439,7 +440,8 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task RejectAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task RejectAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// change state card to card 
@@ -448,7 +450,8 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ChangeStateCardToCard(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task ChangeStateCardToCard(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// management user
@@ -468,8 +471,9 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
-    
+    Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
     /// <summary>
     /// decrease user by agent 
     /// </summary>
@@ -477,7 +481,8 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// send user management by chat id
@@ -486,7 +491,8 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Message> SearchUserByChatAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+    Task<Message> SearchUserByChatAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// update transaction status
@@ -495,8 +501,9 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
-    
+    Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
     /// <summary>
     /// block user async
     /// </summary>
@@ -504,8 +511,9 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
-    
+    Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
     /// <summary>
     /// on blocked user
     /// </summary>
@@ -513,7 +521,8 @@ public interface IBotService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// change payment
@@ -522,7 +531,8 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Message> ChangeAgentPaymentOptionAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+    Task<Message> ChangeAgentPaymentOptionAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// change user payment
@@ -531,5 +541,35 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Message> ChangeUserPaymentOptionAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+    Task<Message> ChangeUserPaymentOptionAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list agent by filter
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendListAgentsAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send agent information async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendChildAgentInformation(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send message befor update agent percent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMessageForUpdateSpecialPercent(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }

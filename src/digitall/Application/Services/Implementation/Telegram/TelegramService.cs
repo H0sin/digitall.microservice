@@ -494,7 +494,9 @@ public class TelegramService(
         information.Email = current_user.Email;
         information.RegistrationDate = PersianDateTimeHelper.GetPersianDate(current_user.CreateDate);
         information.ChatId = current_user.ChatId;
-
+        information.CardNumberVisibility = current_user.CardToCardPayment;
+        information.IsBlocked = current_user.IsBlocked;
+        
         return information;
     }
 
@@ -565,5 +567,35 @@ public class TelegramService(
             MaximumAmountForUser = maximumAmountForUser,
             MinimalAmountForUser = minimalAmountForUser,
         }, user!.Id);
+    }
+
+    public async Task<FilterAgentDto> FilterAgentsAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        FilterAgentDto filter = new()
+        {
+            AdminId = user!.Id,
+            TakeEntity = 60,
+        };
+
+        return await agentService.FilterAgentAsync(filter);
+    }
+
+    public async Task<AgentInformationDto> GetAgentInformationByIdAsync(long chatId, long agentId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        AgentDto? agent = await agentService.GetAgentByIdAsync(agentId);
+
+        return await agentService.GetAgentInformationAsync(agent.AgentAdminId);
+    }
+
+    public async Task UpdateAgentSpecialPercent(long chatId, long childAgentId, long specialPercent)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByIdAsync(childAgentId);
+        agent!.SpecialPercent = specialPercent;
+        await agentService.UpdateAgentAsync(agent, user!.Id);
     }
 }

@@ -25,7 +25,8 @@ public class TelegramMarzbanVpnSession
     public long MinimalAmountForAgent { get; set; }
     public long MaximumAmountForUser { get; set; }
     public long MinimalAmountForUser { get; set; }
-
+    public long ChildAgentId { get; set; }
+    
     public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,
         long? vpnId = null, long? UserSubscribeId = null, string? cardNumber = null, string? cardHolderName = null)
     {
@@ -64,7 +65,8 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendMaximumAmountForAgent,
     AwaitingSendMinimalAmountForAgent,
     AwaitingSendMaximumAmountForUser,
-    AwaitingSendMinimalAmountForUser
+    AwaitingSendMinimalAmountForUser,
+    AwaitingSendSpecialPercent
 }
 
 public static class BotSessions

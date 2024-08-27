@@ -32,7 +32,7 @@ public class MarzbanVpnDto
     {
         GbMax = vpn.GbMax;
         GbMin = vpn.GbMin;
-        GbPrice = GbPrice;
+        GbPrice = vpn.GbPrice;
         DayMax = vpn.DayMax;
         DayMin = vpn.DayMin;
         DayPrice = vpn.DayPrice;
