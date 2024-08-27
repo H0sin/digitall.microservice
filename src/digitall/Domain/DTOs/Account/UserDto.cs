@@ -51,7 +51,10 @@ public class  UserDto
     public string? TelegramUsername { get; set; }
 
     public bool UserStatus { get; set; }
+
+    public bool IsBlocked { get; set; }
     
+    public bool CardToCardPayment  { get; set; }
     public DateTime CreateDate { get; set; }
 
     public UserDto()
@@ -76,6 +79,8 @@ public class  UserDto
         TelegramUsername = user.TelegramUsername;
         UserStatus = user.UserStatus;
         CreateDate = user.CreateDate;
+        CardToCardPayment  = user.CardToCardPayment;
+        IsBlocked = user.IsBlocked;
     }
     
 }

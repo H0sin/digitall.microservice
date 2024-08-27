@@ -38,6 +38,7 @@ public class BotHookController(
     public async Task<IActionResult> Post(string botName,
         [FromBody] Update update,
         CancellationToken cancellationToken)
+
     {
         string? token = await telegramService.GetTelegramBotAsyncByName(botName);
 
@@ -98,10 +99,35 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
-                       case TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser:
-                        long MinimalAmountForUser = -1;
-                        Int64.TryParse(message.Text, out MinimalAmountForUser);
-                        if (MinimalAmountForUser <= 0)
+                    case TelegramMarzbanVpnSessionState.AwaitingSendSpecialPercent:
+                        long specialPercent = -1;
+                        Int64.TryParse(message.Text, out specialPercent);
+                        if (specialPercent <= 0)
+                        {
+                            await _botClient!.SendTextMessageAsync(
+                                chatId: message!.Chat.Id,
+                                text: """
+                                      لطفا فرمت درست را ارسال کنید.⚠️
+                                      """,
+                                cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        await telegramService.UpdateAgentSpecialPercent(message.Chat.Id, user.Value.Value.ChildAgentId,
+                            specialPercent);
+                        await _botClient!.SendTextMessageAsync(
+                            chatId: message!.Chat.Id,
+                            text: """
+                                   ✅ عملیات با موفقیت انجام شد
+                                  """,
+                            cancellationToken: cancellationToken);
+
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        break;
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser:
+                        long minimalAmountForUser = -1;
+                        Int64.TryParse(message.Text, out minimalAmountForUser);
+                        if (minimalAmountForUser <= 0)
                         {
                             await _botClient!.SendTextMessageAsync(
                                 chatId: message!.Chat.Id,
@@ -123,7 +149,7 @@ public class BotHookController(
                                 cancellationToken: cancellationToken);
                         }
 
-                        user.Value.Value.MinimalAmountForUser = MinimalAmountForUser;
+                        user.Value.Value.MinimalAmountForUser = minimalAmountForUser;
                         user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
 
 
@@ -696,6 +722,8 @@ public class BotHookController(
                         message, cancellationToken),
                     "\ud83d\udd22 پرداخت کاربری" => await botService.ChangeUserPaymentOptionAsync(_botClient,
                         message, cancellationToken),
+                    "مدیریت نماینده ها \ud83d\udc65" => await botService.SendListAgentsAsync(_botClient,
+                        message, cancellationToken),
                     _ => new Message()
                 };
             }
@@ -830,7 +858,13 @@ public class BotHookController(
                 await botService.BlockUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "on_blocked_user":
-                await botService.BlockUserAsync(_botClient, callbackQuery, cancellationToken);
+                await botService.OnBlockUserAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "agent_management":
+                await botService.SendChildAgentInformation(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "change_agent_percent":
+                await botService.SendMessageForUpdateSpecialPercent(_botClient, callbackQuery, cancellationToken);
                 break;
             case "agent_request":
                 long chatId = callbackQuery!.Message!.Chat.Id;

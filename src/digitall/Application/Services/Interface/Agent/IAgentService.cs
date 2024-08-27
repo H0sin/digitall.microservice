@@ -136,7 +136,16 @@ public interface IAgentService
     Task<bool> HaveRequestAgentAsync(long userId);
 
     Task<List<AgentDto>> GetAgentsListAsync();
+    
+    /// <summary>
+    /// filter agent list async
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
+    
+    
+    
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
     Task<AgentDto?> GetAgentByAdminIdAsync(long? adminId);

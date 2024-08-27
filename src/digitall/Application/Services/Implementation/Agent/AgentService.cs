@@ -199,7 +199,9 @@ public class AgentService(
 
     public async Task<Domain.Entities.Agent.Agent?> GetAgentByPathAsync(HierarchyId path)
     {
-        return await agentRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentPath == path);
+        return await agentRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(x => x.AgentPath == path);
     }
 
     public async Task<User?> GetAdminAgentUserAsync(long id)
@@ -324,16 +326,14 @@ public class AgentService(
         Domain.Entities.Agent.Agent? currentAgent = await agentRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
-
-        // if (agent.AgentAdminId != userId)
-        //     throw new NotFoundException("چنین نمایندگی وجود ندارد");
-
+        
         currentAgent!.AgentPercent = agent.AgentPercent;
         currentAgent!.UserPercent = agent.UserPercent;
-
+        currentAgent.SpecialPercent = agent.SpecialPercent;
+        
         currentAgent.PersianBrandName = agent.PersianBrandName;
         currentAgent.BrandName = agent.BrandName;
-
+        
         await agentRepository.UpdateEntity(currentAgent);
         await agentRepository.SaveChanges(userId);
 
@@ -389,16 +389,19 @@ public class AgentService(
 
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
+        Domain.Entities.Agent.Agent? parent = await
+            agentRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentAdminId == filter.AdminId);
+
         IQueryable<Domain.Entities.Agent.Agent> queryable = agentRepository
-            .GetQuery();
+            .GetQuery()
+            .Where(x => x.AgentPath!.GetAncestor(filter.Ancestor) == parent!.AgentPath);
 
         if (string.IsNullOrEmpty(filter.PersianBrandName))
             queryable = queryable.Where(a => EF.Functions.Like(a.PersianBrandName, $"%{filter.PersianBrandName}%"));
 
-        if (filter.AdminId is not null and not 0)
-        {
-            AgentDto? agent = await GetAgentByAdminIdAsync(filter.AdminId ?? 0);
-        }
+        IQueryable<AgentDto> agents = queryable.Select(x => new AgentDto(x));
+
+        await filter.Paging(agents);
 
         return filter;
     }

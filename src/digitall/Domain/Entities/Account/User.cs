@@ -83,6 +83,7 @@ public class User : BaseEntity
     [Display(Name = "پرداخت کارت به کارت")]
     public bool CardToCardPayment { get; set; } = false;
     
+    
     #endregion
 
     #region relations

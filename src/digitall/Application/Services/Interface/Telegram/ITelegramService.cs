@@ -355,4 +355,28 @@ public interface ITelegramService
     /// <param name="maximumAmountForUser"></param>
     /// <returns></returns>
     Task UpdateUserPaymentAsync(long chatId, long minimalAmountForUser, long maximumAmountForUser);
+
+    /// <summary>
+    /// send list agents
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<FilterAgentDto> FilterAgentsAsync(long chatId);
+    
+    /// <summary>
+    /// return agent by information Id
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<AgentInformationDto> GetAgentInformationByIdAsync(long chatId,long agentId);
+
+    /// <summary>
+    /// update agent percent
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="childAgentId"></param>
+    /// <param name="specialPercent"></param>
+    /// <returns></returns>
+    Task UpdateAgentSpecialPercent(long chatId,long childAgentId, long specialPercent);
 }

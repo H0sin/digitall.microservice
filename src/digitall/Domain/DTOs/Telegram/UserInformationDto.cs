@@ -20,13 +20,18 @@ public class UserInformationDto
     public long TotalPurchaseAmount { get; set; }
     public int ReferralCount { get; set; }
     public bool CardNumberVisibility { get; set; }
-    
-    public  string GetInformation()
+    public bool IsBlocked { get; set; }
+    public bool IsAgent { get; set; }
+    public long? SpecialPercent { get; set; }
+
+    public string GetInformation()
     {
-        string userState = UserStatus ? "بلاک شده" : "فعال";
+        string userState = IsBlocked ? "بلاک شده" : "فعال";
         string cardNumberVisibility = CardNumberVisibility ? "فعال" : "غیر فعال";
+        string agentDescription = IsAgent ? "کاربر نماینده است" : "کاربر نماینده نیست";
+        string specialPercent = IsAgent ? $"\u2b55\ufe0f در صد سود دریافتی : {SpecialPercent}" : "";
         return $@"
-        👀 اطلاعات کاربر:
+         👀 اطلاعات کاربر:
         ⭕️ وضعیت کاربر : {userState}
         ⭕️ نام کاربری کاربر : {TelegramUserName}
         ⭕️ آیدی عددی کاربر : {ChatId}
@@ -39,6 +44,8 @@ public class UserInformationDto
         ⭕️ جمع کل خرید : {TotalPurchaseAmount:N0}
         ⭕️ تعداد زیرمجموعه کاربر : {ReferralCount}
         ⭕️ نمایش شماره کارت : {cardNumberVisibility}
+         {specialPercent}
+         ⭕️{agentDescription} 
         ";
     }
 }
