@@ -379,4 +379,5 @@ public interface ITelegramService
     /// <param name="specialPercent"></param>
     /// <returns></returns>
     Task UpdateAgentSpecialPercent(long chatId,long childAgentId, long specialPercent);
+    
 }
