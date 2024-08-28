@@ -2207,7 +2207,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         UserInformationDto information = await telegramService.GetUserInformationAsync(chatId, userId);
 
-        bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
+        bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(information.ChatId ?? 0);
 
         List<InlineKeyboardButton> line_2 = new();
 
@@ -2233,11 +2233,11 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         if (isAgent)
         {
-            AgentDto? admin = await telegramService.GetAgentByChatIdAsync(information.ChatId ?? 0);
+            AgentDto? admin = await telegramService.GetAgentByAdminChatIdAsync(information.ChatId ?? 0);
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("تغییر در صد نماینده  \u2699\ufe0f",
-                    $"change_agent_percent?id={admin.Id}")
+                    $"change_agent_percent?id={admin!.Id}")
             });
             information.IsAgent = true;
             information.SpecialPercent = (admin.SpecialPercent != 0 && admin?.SpecialPercent != null)

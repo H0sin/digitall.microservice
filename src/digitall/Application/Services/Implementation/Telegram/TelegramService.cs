@@ -598,4 +598,11 @@ public class TelegramService(
         agent!.SpecialPercent = specialPercent;
         await agentService.UpdateAgentAsync(agent, user!.Id);
     }
+
+    public async Task<AgentDto?> GetAgentByAdminChatIdAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
+        return agent;
+    }
 }
