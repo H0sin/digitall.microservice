@@ -83,7 +83,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public async Task<TEntity?> GetEntityById(long entityId)
     {
-        return await _dbSet.AsNoTracking().SingleOrDefaultAsync(s => s.Id == entityId);
+        return await _dbSet.SingleOrDefaultAsync(s => s.Id == entityId);
     }
 
     public async Task UpdateEntity(TEntity entity)
