@@ -40,10 +40,12 @@ public class CountingVpnPrice
                 if (admin != null)
                 {
                     percent = agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent;
-                    if (childByPath?.SpecialPercent != null)
+                    if (childByPath != null && childByPath.SpecialPercent.HasValue && childByPath.SpecialPercent != 0)
                     {
                         percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
                     }
+                    if(admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
+                        percent = admin?.SpecialPercent == 0 ? 1 : admin?.SpecialPercent ?? 1;
                 }
                 else
                 {
@@ -94,16 +96,19 @@ public class CountingVpnPrice
             Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
             Domain.Entities.Agent.Agent?
                 childByPath = await agentService.GetAgentByPathAsync(childAncestorPath ?? null);
-            
+
             if (agentByPath != null)
             {
                 double percent = GetAgentPercent(agentByPath, admin, i);
 
-                if (childByPath?.SpecialPercent != null)
+                if (childByPath?.SpecialPercent != null && childByPath?.SpecialPercent != 0)
                 {
                     percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
                 }
-
+                
+                if(admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
+                    percent = admin?.SpecialPercent == 0 ? 1 : admin?.SpecialPercent ?? 1;
+                
                 double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;
 
                 long totalProfit = 0;
