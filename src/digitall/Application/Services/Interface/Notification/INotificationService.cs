@@ -5,12 +5,20 @@ namespace Application.Services.Interface.Notification;
 public interface INotificationService
 {
     /// <summary>
-    /// add notification admin aded notification
+    /// add notification admin added notification
     /// </summary>
     /// <param name="notification"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddNotificationAsync(AddNotificationDto notification,long userId);
+    
+    /// <summary>
+    /// add notifications
+    /// </summary>
+    /// <param name="notifications"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddNotificationsAsync(List<AddNotificationDto> notifications,long userId);
     
     /// <summary>
     /// for get list notifications and show user

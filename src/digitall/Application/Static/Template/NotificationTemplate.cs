@@ -1,4 +1,6 @@
-﻿using Domain.DTOs.Notification;
+﻿using Application.Helper;
+using Domain.DTOs.Account;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
@@ -74,7 +76,7 @@ public static class NotificationTemplate
                        کاربری با ایدی
                        @{name}
                        و شناسه
-                       {chatId}
+                       `\{chatId}`\
                        ربات را استارت کرد
                        """,
             NotificationType = NotificationType.Warning,
@@ -88,7 +90,7 @@ public static class NotificationTemplate
     {
         string status = transaction.TransactionStatus == TransactionStatus.Accepted
             ? $"""
-                   ✅ تراکنش شما با کد {transaction.TransactionCode}** با موفقیت پذیرفته شد!
+                   ✅ تراکنش شما با کد {transaction.TransactionCode}با موفقیت پذیرفته شد!
                    💰 مبلغ {transaction.Price:N0} تومان به موجودی حساب شما افزوده شد.
                """
             : $"""
@@ -105,6 +107,35 @@ public static class NotificationTemplate
         };
     }
 
+    public static AddNotificationDto ErrorForAddTransactionNotification(long userId, string userName, long chatId,
+        long price, bool notSeeCardToCard = false)
+    {
+        string message = notSeeCardToCard
+            ? $"""
+                ⚠️ خطا در پرداخت
+               کاربری با شناسه چت : `\{chatId}`\
+                نام کاربری : @{userName}
+               قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل عدم فعال بودن درگاه کارت به کارت برای این کاربر،
+               تراکنش انجام نشد
+               """
+            : $"""
+                ⚠️ خطا در پرداخت
+               کاربری با شناسه چت : `\{chatId}`\
+                نام کاربری : @{userName}
+               قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل عدم وجود شماره کارت، تراکنش انجام نشد.
+               لطفا شماره کارت خود را از پنل مدیریت نمایندگی تنظیم کنید
+               """;
+
+
+        return new AddNotificationDto()
+        {
+            Message = message,
+            NotificationType = NotificationType.Alter,
+            UserId = userId,
+            ForAllMember = false,
+        };
+    }
+
     public static AddNotificationDto AddTransactionNotification(long userId, long chatId, Transaction transaction,
         string newTransactionAvatarTransaction, string fileCaption, string? userName = null)
     {
@@ -114,7 +145,7 @@ public static class NotificationTemplate
             new("تایید پرداخت \u2705", $"update_trans?status=Accepted&id={transaction.Id}"),
             new("بلاک کردن کاربر \u2b55\ufe0f", $"blocked_user?id={chatId}"),
             new("افزایش دستی موجودی \u2b55\ufe0f", $"increase_by_agent?id={chatId}")
-        }; 
+        };
 
         userName = userName == null ? "ندارد" : "@" + userName;
         return new AddNotificationDto()
@@ -122,7 +153,7 @@ public static class NotificationTemplate
             Message = $"""
                        ⭕️ یک پرداخت جدید انجام شده است .
                        افزایش موجودی
-                       👤 شناسه کاربر: {chatId}
+                       👤 شناسه کاربر:`\{chatId}`\
                        🛒 کد پیگیری پرداخت: {transaction.TransactionCode}
                        ⚜️ نام کاربری: {userName}
                        💸 مبلغ پرداختی: {transaction.Price:N0} تومان
@@ -136,5 +167,37 @@ public static class NotificationTemplate
             FileCaption = fileCaption,
             Buttons = buttons
         };
+    }
+
+    public static List<AddNotificationDto> IncomeFromPaymentAsync(List<CalculatorUserIncome> incomes,
+        string? userName,
+        long chatId,
+        long price,
+        DateTime createServiceTime)
+    {
+        List<AddNotificationDto> notifications = new();
+        string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
+        foreach (var income in incomes)
+        {
+            string message = $"""
+                              🛍 خرید جدید
+                              کاربری با شناسه :`\{chatId}
+                              نام کاربری :@{userName}
+                              سفارسی ثبت کرد
+                              سود شما از خرید :{income.Balance:No}
+                              مبلغ کسر شده از موجودی کاربر:{price:No}
+                              تاریخ خرید سرویس:{persianTime}
+                              """;
+            
+            notifications.Add(new AddNotificationDto()
+            {
+                Message = message,
+                NotificationType = NotificationType.Alter,
+                UserId = income.UserId,
+                ForAllMember = false,
+            });
+        }
+
+        return notifications;
     }
 }
