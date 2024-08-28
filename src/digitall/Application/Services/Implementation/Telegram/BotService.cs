@@ -4,8 +4,10 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Web;
 using Application.Extensions;
 using Application.Helper;
+using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
+using Application.Static.Template;
 using Application.Utilities;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
@@ -32,7 +34,7 @@ using User = Domain.Entities.Account.User;
 
 namespace Application.Services.Implementation.Telegram;
 
-public class BotService(ITelegramService telegramService, ILogger<BotService> logger) : IBotService
+public class BotService(ITelegramService telegramService, INotificationService notificationService) : IBotService
 {
     private static ConcurrentDictionary<long, TelegramMarzbanVpnSession>? userSessions =
         new ConcurrentDictionary<long, TelegramMarzbanVpnSession>();
@@ -1147,13 +1149,6 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 information =
                     $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser} حداکثر مبلغ {transactionDetail.MaximumAmountForUser} تومان می باشد";
 
-
-            if (string.IsNullOrEmpty(transactionDetail.CardNumber))
-            {
-                information = "پرداخت غیر فعال است";
-                uservalue.State = TelegramMarzbanVpnSessionState.None;
-            }
-
             BotSessions
                 .users_Sessions?
                 .AddOrUpdate(chatId, uservalue,
@@ -1223,7 +1218,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
         });
 
         string text =
-            $@"برای افزایش موجودی، مبلغ {uservalue.Price}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
+            $@"برای افزایش موجودی، مبلغ {uservalue.Price:No}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
         
         ==================== 
         {transactionDetail.CardNumber}
@@ -1236,6 +1231,32 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 🔝بعد از پرداخت  دکمه پرداخت کردم را زده سپس تصویر رسید را ارسال نمایید
 💵بعد از تایید پرداختتون توسط ادمین کیف پول شما شارژ خواهد شد و در صورتی که سفارشی داشته باشین انجام خواهد شد";
 
+        User? current_user = await telegramService.GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await telegramService.GetAgentByChatIdAsync(chatId);
+
+        if (string.IsNullOrEmpty(transactionDetail.CardNumber) || !current_user.CardToCardPayment)
+        {
+            if (!current_user.CardToCardPayment)
+            {
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate
+                        .ErrorForAddTransactionNotification(agent.AgentAdminId, current_user.TelegramUsername,
+                            current_user.ChatId ?? 0, uservalue.Price, true), current_user.Id
+                );
+            }
+            else
+            {
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate
+                        .ErrorForAddTransactionNotification(agent.AgentAdminId, current_user.TelegramUsername,
+                            current_user.ChatId ?? 0, uservalue.Price), current_user.Id
+                );
+            }
+
+            text = "پرداخت غیر فعال است";
+            uservalue.State = TelegramMarzbanVpnSessionState.None;
+            throw new AppException(text);
+        }
 
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
@@ -2209,28 +2230,21 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(information.ChatId ?? 0);
 
-        List<InlineKeyboardButton> line_2 = new();
 
-        if (information.IsBlocked)
-            line_2.Add(
-                InlineKeyboardButton.WithCallbackData("فعال کردن \u2705", $"on_blocked_user?id={userId}")
-            );
-        else
-            line_2.Add(
-                InlineKeyboardButton.WithCallbackData("غیر فعال کردن \u274c", $"blocked_user?id={userId}")
-            );
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("رفع مسدودی کاربر\u2705", $"on_blocked_user?id={userId}"),
+            InlineKeyboardButton.WithCallbackData("مسدود کردن کاربر\u274c", $"blocked_user?id={userId}")
+        });
 
-        if (!information.CardNumberVisibility)
-            line_2.Add(
-                InlineKeyboardButton.WithCallbackData("فعال کردن شماره کارت \u2705",
-                    $"action_card?id={userId}&action={true}")
-            );
-        else
-            line_2.Add(
-                InlineKeyboardButton.WithCallbackData("غیر فعال کردن شماره کارت  \u274c",
-                    $"action_card?id={userId}&action={false}")
-            );
-
+        keys.Add(new()
+        {
+            InlineKeyboardButton.WithCallbackData("فعال کردن شماره کارت \u2705",
+                $"action_card?id={userId}&action={true}"),
+            InlineKeyboardButton.WithCallbackData("غیر فعال کردن شماره کارت  \u274c",
+                $"action_card?id={userId}&action={false}")
+        });
+        
         if (isAgent)
         {
             AgentDto? admin = await telegramService.GetAgentByAdminChatIdAsync(information.ChatId ?? 0);
@@ -2244,9 +2258,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
                 ? admin.SpecialPercent
                 : admin?.AgentPercent;
         }
-
-        keys.Add(line_2);
-
+        
         keys.Add(new()
         {
             InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
@@ -2580,7 +2592,7 @@ public class BotService(ITelegramService telegramService, ILogger<BotService> lo
 
             if (callbackQuery.Message.MessageId != 0)
             {
-                await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
+                await botClient!.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId, cancellationToken);
             }
 
             AgentInformationDto information = await telegramService.GetAgentInformationByIdAsync(chatId, id);

@@ -86,10 +86,31 @@ public class SendTelegramNotificationJob : IJob
                         }
                     }
 
+                    string? text = notification?.Message!
+                        .Replace("_", "\\_")
+                        .Replace("*", "\\*")
+                        .Replace("[", "\\[")
+                        .Replace("]", "\\]")
+                        .Replace("(", "\\(")
+                        .Replace(")", "\\)")
+                        .Replace("~", "\\~")
+                        .Replace(">", "\\>")
+                        .Replace("#", "\\#")
+                        .Replace("+", "\\+")
+                        .Replace("-", "\\-")
+                        .Replace("=", "\\=")
+                        .Replace("|", "\\|")
+                        .Replace("{", "\\{")
+                        .Replace("}", "\\}")
+                        .Replace(".", "\\.")
+                        .Replace("!", "\\!");
+
+
                     await botClient.SendTextMessageAsync(
-                        chatId: notification.ChatId,
-                        text: notification.Message ?? "",
-                        replyMarkup: new InlineKeyboardMarkup(keys)
+                        chatId: notification!.ChatId,
+                        text: text ?? "بدون پیام",
+                        replyMarkup: new InlineKeyboardMarkup(keys),
+                        parseMode: ParseMode.MarkdownV2
                     );
 
                     await notificationService.UpdateSendNotification(notification.Id);

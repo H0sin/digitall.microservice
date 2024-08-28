@@ -210,7 +210,7 @@ public class TelegramService(
     public async Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        if (!user!.CardToCardPayment) return null;
+        // if (!user!.CardToCardPayment) return null;
         return await transactionService.GetTransactionDetailsAsync(user?.AgentId ?? 0);
     }
 

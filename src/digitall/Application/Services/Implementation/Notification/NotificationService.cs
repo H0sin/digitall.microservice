@@ -17,12 +17,31 @@ public class NotificationService(INotificationRepository notificationRepository)
             ForAllMember = notification.ForAllMember,
             Message = notification.Message,
             NotificationType = notification.NotificationType,
-            Buttons = notification.Buttons, 
+            Buttons = notification.Buttons,
             FileAddress = notification.FileAddress,
             FileCaption = notification.FileCaption
         };
 
         await notificationRepository.AddEntity(notify);
+        await notificationRepository.SaveChanges(userId);
+    }
+
+    public async Task AddNotificationsAsync(List<AddNotificationDto> notifications, long userId)
+    {
+        List<Domain.Entities.Notification.Notification> notifies = notifications.Select(x =>
+            new Domain.Entities.Notification.Notification()
+            {
+                Expire = x.Expire,
+                UserId = x.UserId,
+                ForAllMember = x.ForAllMember,
+                Message = x.Message,
+                NotificationType = x.NotificationType,
+                Buttons = x.Buttons,
+                FileAddress = x.FileAddress,
+                FileCaption = x.FileCaption
+            }).ToList();
+        
+        await notificationRepository.AddEntities(notifies);
         await notificationRepository.SaveChanges(userId);
     }
 

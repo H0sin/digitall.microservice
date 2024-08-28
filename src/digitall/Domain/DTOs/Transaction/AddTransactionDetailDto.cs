@@ -9,7 +9,7 @@ public class AddTransactionDetailDto
     public long MaximumAmountForAgent { get; set; } = 2000000;
 
     [Display(Name = "کمترین مقدار تراکنش")]
-    public long MinimalAmountForAgent { get; set; }
+    public long MinimalAmountForAgent { get; set; } = 0;
 
     [Display(Name = "بیشترین مقدار تراکنش برای کاربر")]
     public long MaximumAmountForUser { get; set; } = 2000000;
@@ -30,7 +30,8 @@ public class AddTransactionDetailDto
     public string? Description { get; set; }
 
     public long AgentId { get; set; }
-
+    
+    
     public TransactionDetail _GenerateTransaction()
     {
         return new()

@@ -4,8 +4,11 @@ using System.Net.Http.Headers;
 using Application.Extensions;
 using Application.Helper;
 using Application.Http.Request;
+using Application.Services.Implementation.Notification;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
+using Application.Services.Interface.Notification;
+using Application.Static.Template;
 using Application.Utilities;
 using Data.Repositories.Marzban;
 // using Data.Migrations;
@@ -38,6 +41,7 @@ public class MarzbanServies(
     IMarzbanUserRepository marzbanUserRepository,
     IMarzbanVpnTemplatesRepository marzbanVpnTemplatesRepository,
     IOrderRepository orderRepository,
+    INotificationService notificationService,
     IAgentService agentService) : IMarzbanService
 {
     public async Task AddMarzbanServerAsync(AddMarzbanServerDto marzban, long userId)
@@ -414,13 +418,14 @@ public class MarzbanServies(
             long orderDetailId = orders.First().OrderDetails.First().Id;
 
 
-            await agentService.AddAgentsIncomesDetail(incomes.Select(x => new AgentsIncomesDetail()
-            {
-                OrderDetailId = orderDetailId,
-                Profit = x.Balance,
-                AgentId = x.AgentId,
-                UserId = x.UserId
-            }).ToList(), userId);
+            await agentService.AddAgentsIncomesDetail(
+                incomes.Select(x => new AgentsIncomesDetail()
+                {
+                    OrderDetailId = orderDetailId,
+                    Profit = x.Balance,
+                    AgentId = x.AgentId,
+                    UserId = x.UserId
+                }).ToList(), userId);
 
             List<MarzbanUser> marzbanUsers = await AddMarzbanUserAsync(users, marzbanServer.Id);
 
@@ -431,6 +436,10 @@ public class MarzbanServies(
                 x.MarzbanServerId = marzbanServer.Id;
                 x.MarzbanVpnId = marzbanVpn.Id;
             });
+
+            await notificationService.AddNotificationsAsync(NotificationTemplate
+                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
+                    DateTime.Now), userId);
 
             await marzbanUserRepository.AddEntities(marzbanUsers);
             await marzbanUserRepository.SaveChanges(userId);
