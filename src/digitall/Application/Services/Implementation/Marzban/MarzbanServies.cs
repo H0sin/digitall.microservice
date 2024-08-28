@@ -810,6 +810,7 @@ public class MarzbanServies(
             CountingVpnPrice countingVpnPrice = new();
 
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
+
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
@@ -823,7 +824,7 @@ public class MarzbanServies(
                 GetMarzbanVpnTemplateByIdAsync(vpn.MarzbanVpnTemplateId ?? 0);
 
 
-            if (vpn.MarzbanVpnTemplateId is not null)
+            if (vpn.MarzbanVpnTemplateId is null || vpn.MarzbanVpnTemplateId == 0)
             {
                 daysPrice = (vpn.TotalDay *
                              await countingVpnPrice.CalculateFinalPrice(agentService, userId, marzbanVpn.DayPrice)) *
@@ -929,6 +930,10 @@ public class MarzbanServies(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
 
+            await notificationService.AddNotificationsAsync(NotificationTemplate
+                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
+                    DateTime.Now), userId);
+
             await UpdateMarzbanUserAsync(marzbanUser, userId);
 
             return response;
@@ -936,7 +941,7 @@ public class MarzbanServies(
         catch (Exception e)
         {
             await transaction.RollbackAsync();
-            throw e;
+            throw new AppException(e.Message);
         }
     }
 
@@ -1005,6 +1010,7 @@ public class MarzbanServies(
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                     MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
                     HttpMethod.Delete);
+
             await transaction.CommitAsync();
         }
         catch (Exception e)
