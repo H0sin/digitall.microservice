@@ -325,7 +325,7 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? currentAgent = await agentRepository
             .GetQuery()
-            .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
+            .SingleOrDefaultAsync(x => x.Id == agent.Id);
         
         currentAgent!.AgentPercent = agent.AgentPercent;
         currentAgent!.UserPercent = agent.UserPercent;
