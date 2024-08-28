@@ -115,7 +115,7 @@ public class BotHookController(
 
                         await telegramService.UpdateAgentSpecialPercent(message.Chat.Id, user.Value.Value.ChildAgentId,
                             specialPercent);
-                        
+
                         await _botClient!.SendTextMessageAsync(
                             chatId: message!.Chat.Id,
                             text: """
@@ -419,8 +419,13 @@ public class BotHookController(
                             break;
                         }
 
-                        if (!EnglishText.IsEnglishText(englishBrandName))
-                            throw new ApplicationException("لطفا حروف انگیلیسی ارسال کنید");
+                        if (!EnglishText.IsValidUsername(englishBrandName))
+                            throw new ApplicationException(
+                                "\u26a0\ufe0f نام کاربری باید بدون کاراکترهای اضافه مانند @، فاصله، خط تیره باشد.\n" +
+                                "\u26a0\ufe0f نام کاربری باید انگلیسی باشد.\n" +
+                                "\u2705 نام کاربری های صحیح : ali12 | mahdi | ws1_ksdf\n" +
+                                "\u274c نام کاربری های نادرست : ali_ | tele@ | _mahdi | محسن"
+                            );
 
                         user.Value.Value.EnglishBrandName = message.Text;
                         bool updateBrandNamesResponse = await telegramService.UpdateAgentBrandNames(message.Chat.Id,
