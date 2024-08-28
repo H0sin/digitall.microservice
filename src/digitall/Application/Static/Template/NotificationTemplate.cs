@@ -179,16 +179,18 @@ public static class NotificationTemplate
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
         foreach (var income in incomes)
         {
+            string? price_No = $"{price:N0}";
+            string? balance_No = $"{income.Balance:NO}";
             string message = $"""
                               🛍 خرید جدید
-                              کاربری با شناسه :`\{chatId}
+                              کاربری با شناسه :`\{chatId}`\
                               نام کاربری :@{userName}
                               سفارسی ثبت کرد
-                              سود شما از خرید :{income.Balance:No}
-                              مبلغ کسر شده از موجودی کاربر:{price:No}
+                              سود شما از خرید:{balance_No} تومان
+                              مبلغ کسر شده از موجودی کاربر:{price_No} تومان
                               تاریخ خرید سرویس:{persianTime}
                               """;
-            
+
             notifications.Add(new AddNotificationDto()
             {
                 Message = message,
