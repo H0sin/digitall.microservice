@@ -180,7 +180,7 @@ public static class NotificationTemplate
         foreach (var income in incomes)
         {
             string? price_No = $"{price:N0}";
-            string? balance_No = $"{income.Balance:NO}";
+            string? balance_No = $"{income.Balance:N0}";
             string message = $"""
                               🛍 خرید جدید
                               کاربری با شناسه :`\{chatId}`\
