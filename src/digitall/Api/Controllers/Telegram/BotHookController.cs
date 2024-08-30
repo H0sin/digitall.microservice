@@ -99,6 +99,9 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser:
+                        await botService.SendMessageForUserAsync(_botClient, message, cancellationToken);
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage:
                         await botService.SendTicketAsync(_botClient, message, cancellationToken);
                         user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
@@ -340,7 +343,7 @@ public class BotHookController(
                             Description = description,
                             CardNumber = "",
                             Price = user.Value.Value.IncreasePrice,
-                            Title = "افزایش دستی موحودی",
+                            Title = "افزایش دستی موجودی",
                             AccountName = "",
                             BankName = null,
                             TransactionType = TransactionType.Increase,
@@ -882,10 +885,41 @@ public class BotHookController(
             case "default_question":
                 await botService.SendDefaultQuestionAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "sendvpntemplate":
+                await botService.SendMarzbanVpnTemplatesGbAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "send_message_user":
+                KeyValuePair<long, TelegramMarzbanVpnSession>? user3 = BotSessions
+                    .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
+
+                if (user3.Value.Value is null)
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(callbackQuery?.Message?.Chat.Id ?? 0,
+                            new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                            (key, old)
+                                => old = new TelegramMarzbanVpnSession(
+                                    TelegramMarzbanVpnSessionState.None));
+
+
+                user3 = BotSessions
+                    .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery!.Message!.Chat.Id);
+
+                TelegramMarzbanVpnSession? uservalue3 = user3?.Value;
+
+                uservalue3.State = TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser;
+                uservalue3.UserChatId = callbackQuery!.Message!.Chat.Id;
+
+                await _botClient!.SendTextMessageAsync(
+                    callbackQuery?.Message?.Chat.Id,
+                    "لطفا پیغام خود را ارسال کنید!",
+                    cancellationToken: cancellationToken);
+                break;
+
             case "send_message_agent":
                 KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
                     .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
-                
+
                 if (user.Value.Value is null)
                     BotSessions
                         .users_Sessions?
@@ -894,15 +928,15 @@ public class BotHookController(
                             (key, old)
                                 => old = new TelegramMarzbanVpnSession(
                                     TelegramMarzbanVpnSessionState.None));
-                
-                
+
+
                 user = BotSessions
                     .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
-               
+
                 TelegramMarzbanVpnSession? uservalue2 = user?.Value;
-                
+
                 uservalue2.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;
-                
+
                 await _botClient!.SendTextMessageAsync(
                     chatId: callbackQuery.Message.Chat.Id,
                     text: "لطفا پیغام خود را ارسال کنید",
@@ -942,6 +976,7 @@ public class BotHookController(
                         text: "لطفا شماره تلفن خود را برای ثبت نمایندگی ارسال کنید",
                         cancellationToken: cancellationToken);
                 }
+
                 break;
             default:
                 break;

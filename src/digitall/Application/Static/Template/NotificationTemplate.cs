@@ -221,4 +221,20 @@ public static class NotificationTemplate
             FileAddress = filaAddress,
         };
     }
+    
+    public static AddNotificationDto SendTicketForUserAsync(long userId, string message,
+        DateTime dateTime,string? filaAddress = null)
+    {
+        return new()
+        {
+            Message = $"""
+                       ✉️ کاربر عزیز یک پیام از سمت نماینده برای شما ارسال گردید
+                       زمان ارسال:{PersianDateTimeHelper.GetPersianDateTime(dateTime)}
+                       متن پیغام : {message}
+                       """,
+            UserId = userId,
+            ForAllMember = false,
+            FileAddress = filaAddress,
+        };
+    }
 }
