@@ -66,7 +66,8 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendMinimalAmountForAgent,
     AwaitingSendMaximumAmountForUser,
     AwaitingSendMinimalAmountForUser,
-    AwaitingSendSpecialPercent
+    AwaitingSendSpecialPercent,
+    AwaitingSendTicketMessage
 }
 
 public static class BotSessions

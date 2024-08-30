@@ -26,7 +26,11 @@ namespace Application.Utilities
 
         public static string FileOrigin = "/files/Origin/";
         // public static string FileOriginServer = "/app/wwwroot/files/Origin/";
-        
+
+        public static string TicketAvatarOrigin = "/images/ticket/origin/";
+
+        public static string TicketAvatarThumb = "/images/ticket/thumb/";   
+            
         public static string GetServerPath(string relativePath, IWebHostEnvironment env)
         {
             return Path.Combine(env.WebRootPath, relativePath.TrimStart('/'));
@@ -41,6 +45,9 @@ namespace Application.Utilities
         public static string TransactionAvatarOriginServer(IWebHostEnvironment env) => GetServerPath(TransactionAvatarOrigin, env);
         public static string TransactionAvatarThumbServer(IWebHostEnvironment env) => GetServerPath(TransactionAvatarThumb, env);
 
+        public static string TicketAvatarOriginServer(IWebHostEnvironment env) => GetServerPath(TicketAvatarOrigin, env);
+        public static string TicketAvatarThumbServer(IWebHostEnvironment env) => GetServerPath(TicketAvatarThumb, env);
+        
         public static string FileOriginServer(IWebHostEnvironment env) => GetServerPath(FileOrigin, env);
     }
 }

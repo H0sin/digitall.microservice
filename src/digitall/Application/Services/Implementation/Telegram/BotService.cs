@@ -9,8 +9,10 @@ using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
+using Data.Migrations;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
@@ -20,6 +22,7 @@ using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -29,12 +32,16 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using File = Telegram.Bot.Types.File;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using User = Domain.Entities.Account.User;
 
 namespace Application.Services.Implementation.Telegram;
 
-public class BotService(ITelegramService telegramService, INotificationService notificationService) : IBotService
+public class BotService(
+    ITelegramService telegramService,
+    INotificationService notificationService,
+    IWebHostEnvironment _env) : IBotService
 {
     private static ConcurrentDictionary<long, TelegramMarzbanVpnSession>? userSessions =
         new ConcurrentDictionary<long, TelegramMarzbanVpnSession>();
@@ -182,10 +189,17 @@ public class BotService(ITelegramService telegramService, INotificationService n
                 "web_information")
         });
 
+        if (isAgent)
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                    "invitation_link")
+            });
+
         keys.Add(new()
         {
-            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                "invitation_link")
+            InlineKeyboardButton.WithCallbackData("ارسال پیغام",
+                "send_message")
         });
 
         if (callbackQuery.Message.MessageId != 0)
@@ -2244,7 +2258,7 @@ public class BotService(ITelegramService telegramService, INotificationService n
             InlineKeyboardButton.WithCallbackData("غیر فعال کردن شماره کارت  \u274c",
                 $"action_card?id={userId}&action={false}")
         });
-        
+
         if (isAgent)
         {
             AgentDto? admin = await telegramService.GetAgentByAdminChatIdAsync(information.ChatId ?? 0);
@@ -2258,7 +2272,7 @@ public class BotService(ITelegramService telegramService, INotificationService n
                 ? admin.SpecialPercent
                 : admin?.AgentPercent;
         }
-        
+
         keys.Add(new()
         {
             InlineKeyboardButton.WithCallbackData("\ud83c\udfe0 بازگشت به منو اصلی", "back_to_main")
@@ -2653,15 +2667,157 @@ public class BotService(ITelegramService telegramService, INotificationService n
         }
     }
 
+    public async Task SendTicketMenuAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+        keys.Add(new List<InlineKeyboardButton>()
+        {
+            InlineKeyboardButton.WithCallbackData(" \u2709\ufe0f ارسال پیام به پشتیبانی", "send_message_agent"),
+            InlineKeyboardButton.WithCallbackData("سوالات متداول \u2753", "default_question")
+        });
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text:
+            "\u260e\ufe0f  در دکمه زیر ( سوالات متداول ) سوالات پرتکرار شما آمده است. روی دکمه زیر کلیک کنید در صورت نیافتن سوال خود روی دکمه پشتیبانی کلیک کنید",
+            replyMarkup: new InlineKeyboardMarkup(keys),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendDefaultQuestionAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text:
+            """
+            💡 سوالات متداول ⁉️
+
+            1️⃣ فیلترشکن شما آیپی ثابته؟ میتونم برای صرافی های ارز دیجیتال استفاده کنم؟
+
+            ✅ به دلیل وضعیت نت و محدودیت های کشور سرویس ما مناسب ترید نیست و فقط لوکیشن‌ ثابته.
+
+            2️⃣ اگه قبل از منقضی شدن اکانت، تمدیدش کنم روزهای باقی مانده می سوزد؟
+
+            ✅ خیر، روزهای باقیمونده اکانت موقع تمدید حساب میشن و اگه مثلا 5 روز قبل از منقضی شدن اکانت 1 ماهه خودتون اون رو تمدید کنید 5 روز باقیمونده + 30 روز تمدید میشه.
+
+            3️⃣ اگه به یک اکانت بیشتر از حد مجاز متصل شیم چه اتفاقی میافته؟
+
+            ✅ در این صورت حجم سرویس شما زود تمام خواهد شد.
+
+            4️⃣ فیلترشکن شما از چه نوعیه؟
+
+            ✅ فیلترشکن های ما v2ray است و پروتکل‌های مختلفی رو ساپورت میکنیم تا حتی تو دورانی که اینترنت اختلال داره بدون مشکل و افت سرعت بتونید از سرویستون استفاده کنید.
+
+            5️⃣ فیلترشکن از کدوم کشور است؟
+
+            ✅ سرور فیلترشکن ما از کشور  آلمان است
+
+            6️⃣ چطور باید از این فیلترشکن استفاده کنم؟
+
+            ✅ برای آموزش استفاده از برنامه، روی دکمه «📚 آموزش» بزنید.
+
+            7️⃣ فیلترشکن وصل نمیشه، چیکار کنم؟
+
+            ✅ به همراه یک عکس از پیغام خطایی که میگیرید به پشتیبانی مراجعه کنید.
+
+            8️⃣ فیلترشکن شما تضمینی هست که همیشه مواقع متصل بشه؟
+
+            ✅ به دلیل قابل پیش‌بینی نبودن وضعیت نت کشور، امکان دادن تضمین نیست فقط می‌تونیم تضمین کنیم که تمام تلاشمون رو برای ارائه سرویس هر چه بهتر انجام بدیم.
+
+            9️⃣ امکان بازگشت وجه دارید؟
+
+            ✅ امکان بازگشت وجه در صورت حل نشدن مشکل از سمت ما وجود دارد.
+
+            💡 در صورتی که جواب سوالتون رو نگرفتید میتونید به «پشتیبانی» مراجعه کنید.
+            """,
+            cancellationToken: cancellationToken);
+    }
+
+    public Task SendTicketGroupingAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Message> SendTicketAsync(ITelegramBotClient botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message.Chat.Id;
+        try
+        {
+             AgentDto? agent = await telegramService.GetAgentByChatIdAsync(chatId);
+            User? user = await telegramService.GetUserByChatIdAsync(chatId);
+
+            IFormFile? formFile = null;
+            File? file = null;
+
+            string? fileId = message?.Photo?[^1].FileId;
+            
+            if (fileId != null && await botClient.GetFileAsync(
+                    fileId ?? null,
+                    cancellationToken: cancellationToken) != null)
+            {
+                  file = await botClient.GetFileAsync(
+                    message.Photo?[^1].FileId ?? null,
+                    cancellationToken: cancellationToken);
+                
+                using var memoryStream = new MemoryStream();
+
+                await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                formFile =
+                    new FormFile(
+                        memoryStream,
+                        0,
+                        memoryStream.Length,
+                        file.FileId, $"{file.FileId}.jpg");
+
+                 formFile.AddImageToServer(formFile.FileName,
+                    PathExtension.TicketAvatarOriginServer(_env)
+                    , 100, 100,
+                    PathExtension.TicketAvatarThumbServer(_env));
+            }
+
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.SendTicketForAgentAsync(
+                    agent.AgentAdminId,
+                    message.Text ?? "",
+                    user?.ChatId ?? 0,
+                    user?.TelegramUsername ?? "NOUSERNAME",
+                    DateTime.Now,
+                    file is not null ? PathExtension.UserAvatarOrigin + formFile.FileName : null
+                ), user!.Id);
+
+            return await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: "پیغام شما با موفقیت برای نماینده ارسال شد.",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            return await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message + "مشکلی در ثبت پیام رخ داد.",
+                cancellationToken: cancellationToken);
+        }
+    }
+
     private async Task DeleteMenu(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken)
     {
         await botClient!.EditMessageReplyMarkupAsync(
             chatId: message.Chat.Id,
             messageId: message.MessageId,
-            replyMarkup: InlineKeyboardMarkup.Empty(),
+            replyMarkup: null, // حذف تمام دکمه‌ها
             cancellationToken: cancellationToken
         );
-        await Task.CompletedTask;
     }
 }
