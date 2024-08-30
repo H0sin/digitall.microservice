@@ -2793,7 +2793,7 @@ public class BotService(
                     user?.ChatId ?? 0,
                     user?.TelegramUsername ?? "NOUSERNAME",
                     DateTime.Now,
-                    file is not null ? PathExtension.UserAvatarOrigin + formFile.FileName : null
+                    file is not null ? PathExtension.TicketAvatarOrigin + formFile.FileName : null
                 ), user!.Id);
 
             return await botClient!.SendTextMessageAsync(
