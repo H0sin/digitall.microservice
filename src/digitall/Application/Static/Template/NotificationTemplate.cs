@@ -23,14 +23,15 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto NewRequestForAgent(long userId, string userName, string phone, string description,
+    public static AddNotificationDto NewRequestForAgent(long userId, long chatId, string userName, string phone,
+        string description,
         string? telegramUsername = null,
         List<ButtonJsonDto>? buttonJson = null)
     {
         string message = $@"
         📣 یک کاربر درخواست نمایندگی ثبت کرده لطفا اطلاعات را بررسی و وضعیت را مشخص کنید.
 
-        آیدی عددی : {userId}
+        آیدی عددی : `\{chatId}`\
         نام کاربری : {userName}
          شماره تماس :{phone}
          شناسه تلگرام:{telegramUsername ?? ""}
@@ -212,7 +213,7 @@ public static class NotificationTemplate
             new("مدیریت کاربر", $"user_management?id={chatId}"),
             new("ارسال پیام", $"send_message_user?id={chatId}"),
         };
-        
+
         return new()
         {
             Message = $"""
@@ -232,7 +233,6 @@ public static class NotificationTemplate
     public static AddNotificationDto SendTicketForUserAsync(long userId, long chatId, string message,
         DateTime dateTime, string? filaAddress = null)
     {
-        
         return new()
         {
             Message = $"""

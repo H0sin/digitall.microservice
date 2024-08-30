@@ -32,7 +32,7 @@ public class Agent : BaseEntity
 
     [Display(Name = "کد برند")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
-    public long AgentCode { get; set; } = new Random().Next(10000, 9999999);
+    public long AgentCode { get; set; }
 
     [Display(Name = "آدرس مغازه")] public string? BrandAddress { get; set; }
     [Display(Name = "درصد نماینده")] public long AgentPercent { get; set; }

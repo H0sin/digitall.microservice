@@ -110,7 +110,8 @@ public class AgentService(
         #endregion
 
         await notificationService.AddNotificationAsync(
-            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user!.UserFullName(), request.Phone,
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0, user!.TelegramUsername ?? "NOUSERNAME",
+                request.Phone,
                 request.Description ?? "", user!.TelegramUsername ?? "",
                 buttonJsons), userId);
     }
@@ -139,7 +140,8 @@ public class AgentService(
                     BrandAddress = request.BrandAddress,
                     BrandName = request.BrandName,
                     PersianBrandName = request.PersianBrandName,
-                    AgentAdminId = request.UserId
+                    AgentAdminId = request.UserId,
+                    AgentCode = new Random().Next(10000, 9999999),
                 };
 
                 await agentRepository.AddEntity(agent);
@@ -326,14 +328,14 @@ public class AgentService(
         Domain.Entities.Agent.Agent? currentAgent = await agentRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == agent.Id);
-        
+
         currentAgent!.AgentPercent = agent.AgentPercent;
         currentAgent!.UserPercent = agent.UserPercent;
         currentAgent.SpecialPercent = agent.SpecialPercent;
-        
+
         currentAgent.PersianBrandName = agent.PersianBrandName;
         currentAgent.BrandName = agent.BrandName;
-        
+
         await agentRepository.UpdateEntity(currentAgent);
         await agentRepository.SaveChanges(userId);
 
