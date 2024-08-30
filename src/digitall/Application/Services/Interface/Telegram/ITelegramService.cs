@@ -388,4 +388,12 @@ public interface ITelegramService
     /// <returns></returns>
     Task<AgentDto?> GetAgentByAdminChatIdAsync(long chatId);
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="vpnId"></param>
+    /// <param name="days"></param>
+    /// <returns></returns>
+    Task<List<MarzbanVpnTemplateDto>> SendTemplatesGroupingByDays(long chatId, long vpnId, int days);
 }

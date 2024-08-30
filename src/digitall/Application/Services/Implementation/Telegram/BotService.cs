@@ -175,6 +175,8 @@ public class BotService(
         keys.Add(new List<InlineKeyboardButton>()
         {
             InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+            InlineKeyboardButton.WithCallbackData("پشتیبانی",
+                "send_message")
         });
 
         keys.Add(new()
@@ -196,11 +198,6 @@ public class BotService(
                     "invitation_link")
             });
 
-        keys.Add(new()
-        {
-            InlineKeyboardButton.WithCallbackData("ارسال پیغام",
-                "send_message")
-        });
 
         if (callbackQuery.Message.MessageId != 0)
         {
@@ -429,21 +426,37 @@ public class BotService(
 
             foreach (MarzbanVpnTemplateDto template in templates)
             {
+                string text = template.Days switch
+                {
+                    31 => "یک ماه",
+                    61 => "دو ماه",
+                    91 => "سه ماه",
+                    121 => "چهار ماه",
+                    151 => "پنج ماه",
+                    181 => "شش ماه",
+                    211 => "هفت ماه",
+                    241 => "هشت ماه",
+                    271 => "نه ماه",
+                    301 => "ده ماه",
+                    331 => "یازده ماه",
+                    361 => "یک سال",
+                    _ => template.Days + " روزه "
+                };
+
                 List<InlineKeyboardButton> button = new()
                 {
-                    InlineKeyboardButton.WithCallbackData(
-                        (template!.Days! + " روزه ") +
-                        (template.Gb > 200 ? " نامحدود " : template.Gb + " گیگ ")
-                        + (template.Price + " تومان "),
-                        "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
+                    InlineKeyboardButton.WithCallbackData(text,
+                        "sendvpntemplate?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId +
+                        "&days=" + template.Days)
                 };
+
                 keys.Add(button);
             }
 
             List<InlineKeyboardButton> custom = new()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
-                    "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
+                // InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
+                //     "custom_subscribe?vpnId=" + id + "&subscribeId" + subscribeId)
             };
 
             List<InlineKeyboardButton> home = new()
@@ -2253,6 +2266,11 @@ public class BotService(
 
         keys.Add(new()
         {
+            InlineKeyboardButton.WithCallbackData("ارسال پیام \ud83d\udcac", $"send_message_user?id={userId}"),
+        });
+
+        keys.Add(new()
+        {
             InlineKeyboardButton.WithCallbackData("فعال کردن شماره کارت \u2705",
                 $"action_card?id={userId}&action={true}"),
             InlineKeyboardButton.WithCallbackData("غیر فعال کردن شماره کارت  \u274c",
@@ -2751,22 +2769,22 @@ public class BotService(
         long chatId = message.Chat.Id;
         try
         {
-             AgentDto? agent = await telegramService.GetAgentByChatIdAsync(chatId);
+            AgentDto? agent = await telegramService.GetAgentByChatIdAsync(chatId);
             User? user = await telegramService.GetUserByChatIdAsync(chatId);
 
             IFormFile? formFile = null;
             File? file = null;
 
             string? fileId = message?.Photo?[^1].FileId;
-            
+
             if (fileId != null && await botClient.GetFileAsync(
                     fileId ?? null,
                     cancellationToken: cancellationToken) != null)
             {
-                  file = await botClient.GetFileAsync(
+                file = await botClient.GetFileAsync(
                     message.Photo?[^1].FileId ?? null,
                     cancellationToken: cancellationToken);
-                
+
                 using var memoryStream = new MemoryStream();
 
                 await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
@@ -2780,7 +2798,7 @@ public class BotService(
                         memoryStream.Length,
                         file.FileId, $"{file.FileId}.jpg");
 
-                 formFile.AddImageToServer(formFile.FileName,
+                formFile.AddImageToServer(formFile.FileName,
                     PathExtension.TicketAvatarOriginServer(_env)
                     , 100, 100,
                     PathExtension.TicketAvatarThumbServer(_env));
@@ -2789,11 +2807,11 @@ public class BotService(
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTicketForAgentAsync(
                     agent.AgentAdminId,
-                    message.Text ?? "",
+                    message?.Caption ?? message?.Text,
                     user?.ChatId ?? 0,
                     user?.TelegramUsername ?? "NOUSERNAME",
                     DateTime.Now,
-                    file is not null ? PathExtension.TicketAvatarOrigin + formFile.FileName : null
+                    file is not null ? PathExtension.TicketAvatarOriginServer(_env) + formFile.FileName : null
                 ), user!.Id);
 
             return await botClient!.SendTextMessageAsync(
@@ -2807,6 +2825,124 @@ public class BotService(
                 chatId: chatId,
                 text: e.Message + "مشکلی در ثبت پیام رخ داد.",
                 cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendMarzbanVpnTemplatesGbAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+        try
+        {
+            IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+
+            long id = 0;
+            long vpnId = 0;
+            int days = 0;
+            long subscribeId = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+                Int64.TryParse(queryParameters["vpnId"], out vpnId);
+                Int64.TryParse(queryParameters["subscribeId"], out subscribeId);
+                Int32.TryParse(queryParameters["days"], out days);
+            }
+
+            List<MarzbanVpnTemplateDto> templates =
+                await telegramService.SendTemplatesGroupingByDays(chatId, vpnId, days);
+
+            foreach (var template in templates)
+            {
+                keys.Add(new()
+                {
+                    InlineKeyboardButton.WithCallbackData($"{template.Gb} گیگ {template.Price:N0} تومان",
+                        "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
+                });
+            }
+
+            keys.Add(
+                new List<InlineKeyboardButton>()
+                {
+                    InlineKeyboardButton.WithCallbackData("بازگشت", $"vpn_template?id={vpnId}")
+                });
+
+            await botClient!.SendTextMessageAsync(chatId, "یکی از آیتم هایه زیر را انتخاب کنید",
+                replyMarkup: new InlineKeyboardMarkup(keys),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message!.Chat.Id;
+        try
+        {
+            TelegramMarzbanVpnSession? user_value = BotSessions
+                .users_Sessions!
+                .SingleOrDefault(x => x.Key == chatId).Value;
+            
+            IFormFile? formFile = null;
+            File? file = null;
+
+            string? fileId = message?.Photo?[^1].FileId;
+
+            if (fileId != null && await botClient.GetFileAsync(
+                    fileId ?? null,
+                    cancellationToken: cancellationToken) != null)
+            {
+                file = await botClient.GetFileAsync(
+                    message.Photo?[^1].FileId ?? null,
+                    cancellationToken: cancellationToken);
+
+                using var memoryStream = new MemoryStream();
+
+                await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                formFile =
+                    new FormFile(
+                        memoryStream,
+                        0,
+                        memoryStream.Length,
+                        file.FileId, $"{file.FileId}.jpg");
+
+                formFile.AddImageToServer(formFile.FileName,
+                    PathExtension.TicketAvatarOriginServer(_env)
+                    , 100, 100,
+                    PathExtension.TicketAvatarThumbServer(_env));
+            }
+
+            User? user = await telegramService.GetUserByChatIdAsync(user_value.UserChatId); 
+            
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.SendTicketForUserAsync(
+                    user!.Id,
+                    user.ChatId ?? 0,
+                    message?.Caption ?? message?.Text,
+                    DateTime.Now,
+                    file is not null ? PathExtension.TicketAvatarOriginServer(_env) + formFile.FileName : null
+                ), user!.Id);
+            
+             await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: "پیغام شما با موفقیت برای نماینده ارسال شد.",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 

@@ -496,7 +496,7 @@ public class TelegramService(
         information.ChatId = current_user.ChatId;
         information.CardNumberVisibility = current_user.CardToCardPayment;
         information.IsBlocked = current_user.IsBlocked;
-        
+
         return information;
     }
 
@@ -604,5 +604,11 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
         return agent;
+    }
+
+    public async Task<List<MarzbanVpnTemplateDto>> SendTemplatesGroupingByDays(long chatId, long vpnId, int days)
+    {
+        List<MarzbanVpnTemplateDto> template = await GetMarzbanVpnTemplatesByVpnIdAsync(vpnId,chatId);
+        return template.Where(x => x.Days == days).ToList();
     }
 }

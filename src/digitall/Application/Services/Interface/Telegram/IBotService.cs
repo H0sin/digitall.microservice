@@ -615,4 +615,23 @@ public interface IBotService
     /// <returns></returns>
     Task<Message> SendTicketAsync(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMarzbanVpnTemplatesGbAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMessageForUserAsync(ITelegramBotClient? botClient,Message message,CancellationToken cancellationToken);
 }
