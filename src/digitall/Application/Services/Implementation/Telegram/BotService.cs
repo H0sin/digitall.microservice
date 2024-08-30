@@ -2928,6 +2928,7 @@ public class BotService(
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTicketForUserAsync(
                     user!.Id,
+                    user.ChatId ?? 0,
                     message?.Caption ?? message?.Text,
                     DateTime.Now,
                     file is not null ? PathExtension.TicketAvatarOriginServer(_env) + formFile.FileName : null

@@ -205,7 +205,7 @@ public static class NotificationTemplate
     }
 
     public static AddNotificationDto SendTicketForAgentAsync(long userId, string message, long chatId, string username,
-        DateTime dateTime,string? filaAddress = null)
+        DateTime dateTime, string? filaAddress = null)
     {
         return new()
         {
@@ -221,10 +221,16 @@ public static class NotificationTemplate
             FileAddress = filaAddress,
         };
     }
-    
-    public static AddNotificationDto SendTicketForUserAsync(long userId, string message,
-        DateTime dateTime,string? filaAddress = null)
+
+    public static AddNotificationDto SendTicketForUserAsync(long userId, long chatId, string message,
+        DateTime dateTime, string? filaAddress = null)
     {
+        List<ButtonJsonDto> buttons = new()
+        {
+            new("مدیریت کاربر", $"user_management?id={chatId}"),
+            new("ارسال پیام", $"send_message_user?id={userId}"),
+        };
+
         return new()
         {
             Message = $"""
@@ -235,6 +241,7 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
             FileAddress = filaAddress,
+            Buttons = buttons
         };
     }
 }

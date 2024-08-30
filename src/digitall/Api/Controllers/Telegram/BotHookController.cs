@@ -889,6 +889,15 @@ public class BotHookController(
                 await botService.SendMarzbanVpnTemplatesGbAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "send_message_user":
+                long userChatId = 0;
+                string callbackData2 = callbackQuery.Data;
+                int questionMarkIndex2 = callbackData2.IndexOf('?');
+                if (questionMarkIndex2 >= 0)
+                {
+                    string? query = callbackData2?.Substring(questionMarkIndex2);
+                    NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                    Int64.TryParse(queryParameters["id"], out userChatId);
+                }
                 KeyValuePair<long, TelegramMarzbanVpnSession>? user3 = BotSessions
                     .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
 
@@ -908,10 +917,10 @@ public class BotHookController(
                 TelegramMarzbanVpnSession? uservalue3 = user3?.Value;
 
                 uservalue3.State = TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser;
-                uservalue3.UserChatId = callbackQuery!.Message!.Chat.Id;
+                uservalue3.UserChatId = userChatId;
 
                 await _botClient!.SendTextMessageAsync(
-                    callbackQuery?.Message?.Chat.Id,
+                    callbackQuery.Message?.Chat.Id,
                     "لطفا پیغام خود را ارسال کنید!",
                     cancellationToken: cancellationToken);
                 break;
