@@ -213,7 +213,7 @@ public static class NotificationTemplate
                        ✉️ نماینده عزیز یک پیام از سمت کاربر برای شما ارسال گردید
                        زمان ارسال:{PersianDateTimeHelper.GetPersianDateTime(dateTime)}
                        آیدی عددی کاربر `\{chatId}`\
-                       @{username}نام کاربری کاربر
+                       نام کاربری: @{username}
                        متن پیغام : {message}
                        """,
             UserId = userId,
