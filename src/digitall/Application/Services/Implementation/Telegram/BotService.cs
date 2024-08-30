@@ -2858,6 +2858,8 @@ public class BotService(
             List<MarzbanVpnTemplateDto> templates =
                 await telegramService.SendTemplatesGroupingByDays(chatId, vpnId, days);
 
+            templates = templates.OrderBy(x => x.Gb).ToList();
+            
             foreach (var template in templates)
             {
                 keys.Add(new()
