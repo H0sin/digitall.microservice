@@ -547,8 +547,6 @@ public class BotService(
 
         TelegramMarzbanVpnSession? uservalue = userSesstion?.Value;
 
-        // if (uservalue is null)
-
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: uservalue?.UserSubscribeId != null ? sub.GetRenewalInfo() : sub.GetInfo(),
@@ -2865,7 +2863,7 @@ public class BotService(
                 keys.Add(new()
                 {
                     InlineKeyboardButton.WithCallbackData($"{template.Gb} گیگ {template.Price:N0} تومان",
-                        "factor_subscribe?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId)
+                        "factor_subscribe?id=" + template.Id + "&vpnId=" + vpnId + "&subscribeId=" + subscribeId)
                 });
             }
 
