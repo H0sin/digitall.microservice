@@ -42,7 +42,7 @@ public class Agent : BaseEntity
     [Display(Name = "درصد ویژه")] public long? SpecialPercent { get; set; } = null;
 
     public HierarchyId? AgentPath { get; set; }
-
+    
     #endregion
 
     #region relation

@@ -99,6 +99,10 @@ public class BotHookController(
             {
                 switch (user.Value.Value.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage:
+                        await botService.SendTicketAsync(_botClient, message, cancellationToken);
+                        user.Value.Value.State = TelegramMarzbanVpnSessionState.None;
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendSpecialPercent:
                         long specialPercent = -1;
                         Int64.TryParse(message.Text, out specialPercent);
@@ -872,8 +876,41 @@ public class BotHookController(
             case "change_agent_percent":
                 await botService.SendMessageForUpdateSpecialPercent(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "send_message":
+                await botService.SendTicketMenuAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "default_question":
+                await botService.SendDefaultQuestionAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "send_message_agent":
+                KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions
+                    .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
+                
+                if (user.Value.Value is null)
+                    BotSessions
+                        .users_Sessions?
+                        .AddOrUpdate(callbackQuery?.Message?.Chat.Id ?? 0,
+                            new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                            (key, old)
+                                => old = new TelegramMarzbanVpnSession(
+                                    TelegramMarzbanVpnSessionState.None));
+                
+                
+                user = BotSessions
+                    .users_Sessions?.SingleOrDefault(x => x.Key == callbackQuery.Message.Chat.Id);
+               
+                TelegramMarzbanVpnSession? uservalue2 = user?.Value;
+                
+                uservalue2.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;
+                
+                await _botClient!.SendTextMessageAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    text: "لطفا پیغام خود را ارسال کنید",
+                    cancellationToken: cancellationToken);
+                break;
             case "agent_request":
                 long chatId = callbackQuery!.Message!.Chat.Id;
+
                 bool have = await telegramService.HaveRequestForAgentAsync(callbackQuery!.Message!.Chat.Id);
                 if (have)
                 {
@@ -905,7 +942,6 @@ public class BotHookController(
                         text: "لطفا شماره تلفن خود را برای ثبت نمایندگی ارسال کنید",
                         cancellationToken: cancellationToken);
                 }
-
                 break;
             default:
                 break;

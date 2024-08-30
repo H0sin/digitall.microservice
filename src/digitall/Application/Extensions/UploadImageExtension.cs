@@ -40,8 +40,8 @@ namespace Application.Extensions
 
                     ImageOptimizer resizer = new ImageOptimizer();
 
-                    if (width != null && height != null)
-                        resizer.ImageResizer(orginalPath + fileName, thumbPath + fileName, width, height);
+                     if (width != null && height != null)
+                         resizer.ImageResizer(orginalPath + fileName, thumbPath + fileName, width, height);
                 }
             }
         }

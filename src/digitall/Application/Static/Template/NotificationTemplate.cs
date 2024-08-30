@@ -1,4 +1,5 @@
 ﻿using Application.Helper;
+using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
@@ -201,5 +202,23 @@ public static class NotificationTemplate
         }
 
         return notifications;
+    }
+
+    public static AddNotificationDto SendTicketForAgentAsync(long userId, string message, long chatId, string username,
+        DateTime dateTime,string? filaAddress = null)
+    {
+        return new()
+        {
+            Message = $"""
+                       ✉️ نماینده عزیز یک پیام از سمت کاربر برای شما ارسال گردید
+                       زمان ارسال:{PersianDateTimeHelper.GetPersianDateTime(dateTime)}
+                       آیدی عددی کاربر `\{chatId}`\
+                       @{username}نام کاربری کاربر
+                       متن پیغام : {message}
+                       """,
+            UserId = userId,
+            ForAllMember = false,
+            FileAddress = filaAddress,
+        };
     }
 }
