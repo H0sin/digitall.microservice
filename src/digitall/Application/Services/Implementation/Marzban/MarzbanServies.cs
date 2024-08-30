@@ -681,6 +681,7 @@ public class MarzbanServies(
 
         if (user == null) throw new NotFoundException("کاربری با این شناسه یافت نشد");
         CountingVpnPrice countingVpnPrice = new();
+        
         List<MarzbanVpnTemplateDto>? templates = await marzbanVpnTemplatesRepository
             .GetQuery()
             .Where(x => x.MarzbanVpnId == vpnId)
