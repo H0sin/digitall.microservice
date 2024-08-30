@@ -424,9 +424,13 @@ public class BotService(
             List<MarzbanVpnTemplateDto>
                 templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
 
-            foreach (MarzbanVpnTemplateDto template in templates)
+            var groupedTemplates = templates.GroupBy(x => x.Days);
+            
+            foreach (var group in groupedTemplates)
             {
-                string text = template.Days switch
+                var firstTemplate = group.First();
+                
+                string text = group.Key switch
                 {
                     31 => "یک ماه",
                     61 => "دو ماه",
@@ -440,19 +444,20 @@ public class BotService(
                     301 => "ده ماه",
                     331 => "یازده ماه",
                     361 => "یک سال",
-                    _ => template.Days + " روزه "
+                    _ => firstTemplate.Days + " روزه "
                 };
+
 
                 List<InlineKeyboardButton> button = new()
                 {
                     InlineKeyboardButton.WithCallbackData(text,
-                        "sendvpntemplate?id=" + template.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId +
-                        "&days=" + template.Days)
+                        "sendvpntemplate?id=" + firstTemplate.Id + "&vpnId=" + id + "&subscribeId=" + subscribeId +
+                        "&days=" + firstTemplate.Days)
                 };
 
                 keys.Add(button);
             }
-
+            
             List<InlineKeyboardButton> custom = new()
             {
                 // InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
