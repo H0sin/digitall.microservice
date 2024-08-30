@@ -496,7 +496,8 @@ public class TelegramService(
         information.ChatId = current_user.ChatId;
         information.CardNumberVisibility = current_user.CardToCardPayment;
         information.IsBlocked = current_user.IsBlocked;
-
+        information.Balance = current_user.Balance;
+        
         return information;
     }
 
