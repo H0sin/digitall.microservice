@@ -3037,6 +3037,9 @@ public class BotService(
 
             List<TransactionDto> transactions = await telegramService.GetTransactionsAsync(Id);
 
+            if (transactions.Count <= 0)
+                throw new AppException("تراکنشی ثبت نشده است");
+
             foreach (var transaction in transactions)
             {
                 string type = transaction.TransactionType switch
@@ -3047,7 +3050,7 @@ public class BotService(
                     TransactionType.Increase => "افزایش \u2795",
                     _ => ""
                 };
-                
+
                 string status = transaction.TransactionStatus switch
                 {
                     TransactionStatus.Accepted => "تایید شده \u2705",
