@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Account;
+﻿using Domain.DTOs.Account;
+using Domain.Entities.Account;
 using Domain.Enums.Agent;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,8 +40,7 @@ public class AgentDto
         AgentPath = agent!.AgentPath;
         Id = agent!.Id;
         SpecialPercent = agent.SpecialPercent ?? 0;
-        AdminAgentName = admin.FirstName + " " + admin.LastName;
-        ChatId = admin.ChatId ?? 0;
+        User = new UserDto(admin);
     }
 
     
@@ -51,11 +51,10 @@ public class AgentDto
     public long AgentAdminId { get; set; }
     public long AgentCode { get; set; }
     public string? BrandAddress { get; set; }
-    public string? AdminAgentName { get; set; }
     public string AgentRequestStatus { get; set; }
     public long TransactionDetailId { get; set; }
     public long AgentPercent { get; set; }
     public long UserPercent { get; set; }
     public long SpecialPercent { get; set; } = 0;
-    public long ChatId { get; set; }
+    public UserDto? User { get; set; }
 }

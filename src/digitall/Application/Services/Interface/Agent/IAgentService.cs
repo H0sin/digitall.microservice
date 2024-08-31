@@ -145,7 +145,6 @@ public interface IAgentService
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
     
     
-    
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
     Task<AgentDto?> GetAgentByAdminIdAsync(long? adminId);

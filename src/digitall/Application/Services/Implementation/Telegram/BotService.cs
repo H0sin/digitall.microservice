@@ -2596,10 +2596,10 @@ public class BotService(
 
                 List<InlineKeyboardButton> key = new()
                 {
-                    InlineKeyboardButton.WithCallbackData(agent?.AdminAgentName, $"user_management?id={agent?.ChatId}"),
-                    InlineKeyboardButton.WithCallbackData(name, $"user_management?id={agent?.ChatId}"),
-                    InlineKeyboardButton.WithCallbackData(agent?.ChatId.ToString(),
-                        $"user_management?id={agent?.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(agent?.User.UserFullName(), $"user_management?id={agent?.User?.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(name, $"user_management?id={agent?.User.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(agent?.User?.ChatId.ToString(),
+                        $"user_management?id={agent?.User?.ChatId}"),
                 };
                 keys.Add(key);
             }
