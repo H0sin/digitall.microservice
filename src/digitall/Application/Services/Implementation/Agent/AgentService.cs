@@ -110,7 +110,8 @@ public class AgentService(
         #endregion
 
         await notificationService.AddNotificationAsync(
-            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0, user!.TelegramUsername ?? "NOUSERNAME",
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0,
+                user!.TelegramUsername ?? "NOUSERNAME",
                 request.Phone,
                 request.Description ?? "", user!.TelegramUsername ?? "",
                 buttonJsons), userId);
@@ -392,7 +393,10 @@ public class AgentService(
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
         Domain.Entities.Agent.Agent? parent = await
-            agentRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentAdminId == filter.AdminId);
+            agentRepository
+                .GetQuery()
+                .Include(c => c.Users)
+                .SingleOrDefaultAsync(x => x.AgentAdminId == filter.AdminId);
 
         IQueryable<Domain.Entities.Agent.Agent> queryable = agentRepository
             .GetQuery()
@@ -401,7 +405,12 @@ public class AgentService(
         if (string.IsNullOrEmpty(filter.PersianBrandName))
             queryable = queryable.Where(a => EF.Functions.Like(a.PersianBrandName, $"%{filter.PersianBrandName}%"));
 
-        IQueryable<AgentDto> agents = queryable.Select(x => new AgentDto(x));
+        // var agents = queryable
+        //     .Select(async x => new AgentDto(x, await userRepository.GetEntityById(x.AgentAdminId))).ToList();
+        List<Domain.Entities.Agent.Agent> agentsList = await queryable.ToListAsync();
+
+        AgentDto[] agents = await Task.WhenAll(agentsList.Select(async x =>
+            new AgentDto(x, await userRepository.GetEntityById(x.AgentAdminId))));
 
         await filter.Paging(agents);
 

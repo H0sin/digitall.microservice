@@ -33,7 +33,7 @@ public class UserInformationDto
         return $@"
          👀 اطلاعات کاربر:
         ⭕️ وضعیت کاربر : {userState}
-        ⭕️ نام کاربری کاربر : {TelegramUserName}
+        ⭕️ نام کاربری کاربر : @{TelegramUserName}
         ⭕️ آیدی عددی کاربر : {ChatId}
         ⭕️ زمان عضویت کاربر : {RegistrationDate}
         ⭕️ محدودیت اکانت تست : {TestAccountLimit}

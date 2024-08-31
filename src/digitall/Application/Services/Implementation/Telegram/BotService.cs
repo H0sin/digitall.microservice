@@ -359,29 +359,30 @@ public class BotService(
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        long id = 0;
-
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["id"], out id);
-        }
+            long id = 0;
 
-        MarzbanUserInformationDto user =
-            await telegramService
-                .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
 
-        MarzbanVpnDto? vpn = await telegramService
-            .GetMarzbanVpnInformationByIdAsync(id, chatId);
+            MarzbanUserInformationDto user =
+                await telegramService
+                    .GetMarzbanTestVpnsAsync(id, callbackQuery!.Message!.Chat.Id);
 
-        byte[] QrImage = await GenerateQrCode
-            .GetQrCodeAsync(user.Subscription_Url);
+            MarzbanVpnDto? vpn = await telegramService
+                .GetMarzbanVpnInformationByIdAsync(id, chatId);
 
-        string caption = $@"
+            byte[] QrImage = await GenerateQrCode
+                .GetQrCodeAsync(user.Subscription_Url);
+
+            string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
 
 👤 نام کاربری سرویس: {user.Username.TrimEnd()}
@@ -391,13 +392,18 @@ public class BotService(
 لینک اتصال:
 {user.Subscription_Url.TrimEnd()}
 ";
-        using (var Qr = new MemoryStream(QrImage))
+            using (var Qr = new MemoryStream(QrImage))
+            {
+                await botClient.SendPhotoAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    photo: new InputFileStream(Qr, user.Username),
+                    caption: caption,
+                    cancellationToken: cancellationToken);
+            }
+        }
+        catch (Exception e)
         {
-            await botClient.SendPhotoAsync(
-                chatId: callbackQuery.Message.Chat.Id,
-                photo: new InputFileStream(Qr, user.Username),
-                caption: caption,
-                cancellationToken: cancellationToken);
+            await botClient.SendTextMessageAsync(chatId, e.Message, cancellationToken: cancellationToken);
         }
     }
 
@@ -425,11 +431,11 @@ public class BotService(
                 templates = await telegramService.GetMarzbanVpnTemplatesByVpnIdAsync(id, chatId);
 
             var groupedTemplates = templates.GroupBy(x => x.Days);
-            
+
             foreach (var group in groupedTemplates)
             {
                 var firstTemplate = group.First();
-                
+
                 string text = group.Key switch
                 {
                     31 => "یک ماه",
@@ -457,7 +463,7 @@ public class BotService(
 
                 keys.Add(button);
             }
-            
+
             List<InlineKeyboardButton> custom = new()
             {
                 // InlineKeyboardButton.WithCallbackData("\ud83d\udecd حجم و زمان دلخواه",
@@ -2575,17 +2581,25 @@ public class BotService(
 
             IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
+            keys.Add(new List<InlineKeyboardButton>()
+            {
+                InlineKeyboardButton.WithCallbackData("نام نماینده"),
+                InlineKeyboardButton.WithCallbackData("نام نمایندگی"),
+                InlineKeyboardButton.WithCallbackData("آیدی عددی کاربر")
+            });
+
             foreach (var agent in agents.Entities)
             {
-                string? text = (!string.IsNullOrEmpty(agent?.PersianBrandName)
+                string? name = (!string.IsNullOrEmpty(agent?.PersianBrandName)
                     ? agent.PersianBrandName
                     : (!string.IsNullOrEmpty(agent?.BrandName) ? agent?.BrandName : "نام ثبت نشده"));
 
                 List<InlineKeyboardButton> key = new()
                 {
-                    InlineKeyboardButton.WithCallbackData(
-                        text,
-                        $"agent_management?id={agent?.Id}")
+                    InlineKeyboardButton.WithCallbackData(agent?.AdminAgentName, $"user_management?id={agent?.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(name, $"user_management?id={agent?.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(agent?.ChatId.ToString(),
+                        $"user_management?id={agent?.ChatId}"),
                 };
                 keys.Add(key);
             }
@@ -2594,6 +2608,7 @@ public class BotService(
                 chatId: chatId,
                 text: """
                       یکی از نماینده هایه لیست زیر را انتخاب کنید !
+                      لطفا رویه نام نمایندگی ضربه بزنید
                       """,
                 replyMarkup: new InlineKeyboardMarkup(keys),
                 cancellationToken: cancellationToken);
@@ -2859,7 +2874,7 @@ public class BotService(
                 await telegramService.SendTemplatesGroupingByDays(chatId, vpnId, days);
 
             templates = templates.OrderBy(x => x.Gb).ToList();
-            
+
             foreach (var template in templates)
             {
                 keys.Add(new()
@@ -2895,7 +2910,7 @@ public class BotService(
             TelegramMarzbanVpnSession? user_value = BotSessions
                 .users_Sessions!
                 .SingleOrDefault(x => x.Key == chatId).Value;
-            
+
             IFormFile? formFile = null;
             File? file = null;
 
@@ -2928,8 +2943,8 @@ public class BotService(
                     PathExtension.TicketAvatarThumbServer(_env));
             }
 
-            User? user = await telegramService.GetUserByChatIdAsync(user_value.UserChatId); 
-            
+            User? user = await telegramService.GetUserByChatIdAsync(user_value.UserChatId);
+
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTicketForUserAsync(
                     user!.Id,
@@ -2938,8 +2953,8 @@ public class BotService(
                     DateTime.Now,
                     file is not null ? PathExtension.TicketAvatarOriginServer(_env) + formFile.FileName : null
                 ), user!.Id);
-            
-             await botClient!.SendTextMessageAsync(
+
+            await botClient!.SendTextMessageAsync(
                 chatId: chatId,
                 text: "پیغام شما با موفقیت برای نماینده ارسال شد.",
                 cancellationToken: cancellationToken);
