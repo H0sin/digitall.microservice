@@ -16,7 +16,7 @@ public class TransactionDto
     public string CardNumber { get; set; }
     public string? BankName { get; set; }
     [Display(Name = "عکس تراکنش")] public string? AvatarTransaction { get; set; }
-
+    public long TransactionCode { get; set; }
     public long CreateBy { get; set; }
 
     public long TransactionDetailId { get; set; }
@@ -39,5 +39,6 @@ public class TransactionDto
         BankName = transaction.BankName;
         AvatarTransaction = transaction?.AvatarTransaction;
         TransactionDetailId = transaction.TransactionDetailId ?? 0;
+        TransactionCode = transaction.TransactionCode;
     }
 }

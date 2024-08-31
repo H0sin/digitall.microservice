@@ -867,6 +867,9 @@ public class BotHookController(
             case "update_trans":
                 await botService.UpdateTransactionStatusAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "transactions":
+                await botService.SendTransactionsAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "blocked_user":
                 await botService.BlockUserAsync(_botClient, callbackQuery, cancellationToken);
                 break;

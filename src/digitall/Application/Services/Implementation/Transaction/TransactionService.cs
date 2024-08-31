@@ -76,9 +76,13 @@ public class TransactionService(
     }
 
 
-    public async Task<List<Domain.Entities.Transaction.Transaction>> GetAllTransactionByUserIdAsync(long userId)
+    public async Task<List<TransactionDto>> GetAllTransactionByUserIdAsync(long userId)
     {
-        return await transactionRepository.GetQuery().Where(x => x.CreateBy == userId).ToListAsync();
+        return await transactionRepository
+            .GetQuery()
+            .Where(x => x.CreateBy == userId)
+            .Select(x=> new TransactionDto(x))
+            .ToListAsync();
     }
 
     public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
@@ -90,7 +94,7 @@ public class TransactionService(
             Price = transaction.Price,
             Title = transaction.Title,
             AccountName = transaction.AccountName,
-            TransactionType = transaction.TransactionType,
+            TransactionType = TransactionType.ManualIncrease,
             TransactionStatus = TransactionStatus.Accepted,
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,
@@ -113,7 +117,7 @@ public class TransactionService(
             Price = transaction.Price,
             Title = transaction.Title,
             AccountName = transaction.AccountName,
-            TransactionType = transaction.TransactionType,
+            TransactionType = TransactionType.ManualDecrease,
             TransactionStatus = TransactionStatus.Accepted,
             BankName = transaction.BankName,
             TransactionTime = transaction.TransactionTime,

@@ -404,4 +404,11 @@ public interface ITelegramService
     /// <param name="id"></param>
     /// <returns></returns>
     Task AddAgentAsync(long chatId, long id);
+    
+    /// <summary>
+    /// send list transactions
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<List<TransactionDto>> GetTransactionsAsync(long chatId);
 }
