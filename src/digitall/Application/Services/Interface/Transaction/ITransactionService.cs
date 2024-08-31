@@ -16,7 +16,7 @@ public interface ITransactionService
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<List<Domain.Entities.Transaction.Transaction>> GetAllTransactionByUserIdAsync(long userId);
+    Task<List<TransactionDto>> GetAllTransactionByUserIdAsync(long userId);
 
     /// <summary>
     /// increase user balanse

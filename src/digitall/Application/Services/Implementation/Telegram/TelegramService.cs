@@ -479,7 +479,7 @@ public class TelegramService(
         UserInformationDto information = new UserInformationDto();
         List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(current_user.Id);
 
-        List<Domain.Entities.Transaction.Transaction> transactions =
+        List<TransactionDto> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(current_user.Id);
 
         information.TotalPurchaseAmount = await orderService.GetAllUserOrderPriceAsync(current_user.Id);
@@ -489,7 +489,7 @@ public class TelegramService(
         information.TelegramUserName = current_user.TelegramUsername;
         information.Mobile = current_user.Mobile;
         information.TotalPaymentAmount = transactions.Where(x => x.TransactionStatus == TransactionStatus.Accepted)
-            .Sum(x => x.Price);
+            .Sum(x => x.Price) ?? 0;
         information.UserStatus = current_user.UserStatus;
         information.Email = current_user.Email;
         information.RegistrationDate = PersianDateTimeHelper.GetPersianDate(current_user.CreateDate);
@@ -633,5 +633,12 @@ public class TelegramService(
         };
 
         await agentService.AddAgentAsync(agent, parentUser.Id);
+    }
+
+    public async Task<List<TransactionDto>> GetTransactionsAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return await transactionService
+            .GetAllTransactionByUserIdAsync(user!.Id);
     }
 }

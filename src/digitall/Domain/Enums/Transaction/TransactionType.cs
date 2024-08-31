@@ -6,5 +6,9 @@ public enum TransactionType
 {
     [Display(Name = "کاهش")] Decrease,
 
-    [Display(Name = "افزایش")] Increase
+    [Display(Name = "افزایش")] Increase,
+    
+    [Display(Name = "افزایش دستی")] ManualIncrease,
+    
+    [Display(Name = "افزایش دستی")] ManualDecrease,
 }

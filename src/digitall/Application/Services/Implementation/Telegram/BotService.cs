@@ -6,6 +6,7 @@ using Application.Extensions;
 using Application.Helper;
 using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
+using Application.Services.Interface.Transaction;
 using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
@@ -109,6 +110,8 @@ public class BotService(
             keys.Add(new List<InlineKeyboardButton>()
             {
                 InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services"),
+                InlineKeyboardButton.WithCallbackData("پشتیبانی",
+                    "send_message")
             });
 
             keys.Add(new()
@@ -126,7 +129,9 @@ public class BotService(
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                    "invitation_link")
+                    "invitation_link"),
+                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8",
+                    $"transactions?id={message.Chat.Id}"),
             });
 
             InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
@@ -195,9 +200,14 @@ public class BotService(
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                    "invitation_link")
+                    "invitation_link"),
+                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
             });
-
+        else
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
+            });
 
         if (callbackQuery.Message.MessageId != 0)
         {
@@ -2280,6 +2290,11 @@ public class BotService(
 
         keys.Add(new()
         {
+            InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={userId}"),
+        });
+
+        keys.Add(new()
+        {
             InlineKeyboardButton.WithCallbackData("فعال کردن شماره کارت \u2705",
                 $"action_card?id={userId}&action={true}"),
             InlineKeyboardButton.WithCallbackData("غیر فعال کردن شماره کارت  \u274c",
@@ -2995,6 +3010,95 @@ public class BotService(
 
             await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده",
                 cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(chatId, e.Message,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendTransactionsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        try
+        {
+            long Id = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out Id);
+            }
+
+            List<TransactionDto> transactions = await telegramService.GetTransactionsAsync(Id);
+
+            foreach (var transaction in transactions)
+            {
+                string type = transaction.TransactionType switch
+                {
+                    TransactionType.ManualIncrease => "افزایش دستی \u2705",
+                    TransactionType.ManualDecrease => "کاهش دستی \u274c",
+                    TransactionType.Decrease => "کاهش \u2796",
+                    TransactionType.Increase => "افزایش \u2795",
+                    _ => ""
+                };
+                
+                string status = transaction.TransactionStatus switch
+                {
+                    TransactionStatus.Accepted => "تایید شده \u2705",
+                    TransactionStatus.NotAccepted => "رد شده \u274c",
+                    _ => "در انتظار برسی \u23f1"
+                };
+
+                if (!string.IsNullOrEmpty(transaction.AvatarTransaction))
+                {
+                    using (var stream = new FileStream(
+                               PathExtension.TransactionAvatarOriginServer(_env) + transaction.AvatarTransaction,
+                               FileMode.Open, FileAccess.Read,
+                               FileShare.Read))
+                    {
+                        var inputOnlineFile =
+                            new InputFileStream(stream,
+                                Path.GetFileName(PathExtension.TransactionAvatarOriginServer(_env) +
+                                                 transaction.AvatarTransaction));
+
+                        await botClient!.SendPhotoAsync(
+                            chatId: chatId,
+                            photo: inputOnlineFile,
+                            caption: $"""
+                                       🕖 تاریخ تراکنش :{PersianDateTimeHelper.GetPersianDateTime(transaction.TransactionTime)}
+                                      💸 مبلغ تراکنش : {transaction.Price:N0} تومان
+                                       💫 وضعیت تراکنش :{status}
+                                       🔢 کد تراکنش :{transaction.TransactionCode}
+                                       توضیحات تراکنش :
+                                       {transaction.Description}
+                                      """,
+                            cancellationToken: default
+                        );
+                    }
+                }
+                else
+                {
+                    await botClient!.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: $"""
+                                🕖 تاریخ تراکنش :{PersianDateTimeHelper.GetPersianDateTime(transaction.TransactionTime)}
+                               💸 مبلغ تراکنش : {transaction.Price:N0} تومان
+                                💫 وضعیت تراکنش :{status}
+                                🔢 کد تراکنش :{transaction.TransactionCode}
+                                نوع تراکنش :{type}
+                                توضیحات تراکنش :
+                                {transaction.Description}
+                               """,
+                        cancellationToken: cancellationToken
+                    );
+                }
+            }
         }
         catch (Exception e)
         {

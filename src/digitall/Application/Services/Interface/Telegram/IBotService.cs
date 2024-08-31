@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Domain.DTOs.Transaction;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace Application.Services.Interface.Telegram;
@@ -643,5 +644,15 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// send list transactions
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendTransactionsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
 }
