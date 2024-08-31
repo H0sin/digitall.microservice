@@ -2299,6 +2299,14 @@ public class BotService(
                 ? admin.SpecialPercent
                 : admin?.AgentPercent;
         }
+        else
+        {
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("نماینده کردن \ud83e\udd39\u200d\u2642\ufe0f",
+                    $"added_agent?id={information!.ChatId}")
+            });
+        }
 
         keys.Add(new()
         {
@@ -2596,7 +2604,8 @@ public class BotService(
 
                 List<InlineKeyboardButton> key = new()
                 {
-                    InlineKeyboardButton.WithCallbackData(agent?.User.UserFullName(), $"user_management?id={agent?.User?.ChatId}"),
+                    InlineKeyboardButton.WithCallbackData(agent?.User.UserFullName(),
+                        $"user_management?id={agent?.User?.ChatId}"),
                     InlineKeyboardButton.WithCallbackData(name, $"user_management?id={agent?.User.ChatId}"),
                     InlineKeyboardButton.WithCallbackData(agent?.User?.ChatId.ToString(),
                         $"user_management?id={agent?.User?.ChatId}"),
@@ -2963,6 +2972,34 @@ public class BotService(
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    public async Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+        try
+        {
+            long Id = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out Id);
+            }
+
+            await telegramService.AddAgentAsync(chatId, Id);
+
+            await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(chatId, e.Message,
+                cancellationToken: cancellationToken);
         }
     }
 

@@ -497,7 +497,7 @@ public class TelegramService(
         information.CardNumberVisibility = current_user.CardToCardPayment;
         information.IsBlocked = current_user.IsBlocked;
         information.Balance = current_user.Balance;
-        
+
         return information;
     }
 
@@ -505,7 +505,10 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
-
+        
+        notificationService.AddNotificationAsync(
+            NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
+        
         await transactionService.IncreaseUserAsync(transaction, userChild!.Id, user!.Id);
     }
 
@@ -513,7 +516,10 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
-
+        
+        notificationService.AddNotificationAsync(
+            NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
+        
         await transactionService.DecreaseUserAsync(transaction, userChild!.Id, user!.Id);
     }
 
@@ -609,7 +615,23 @@ public class TelegramService(
 
     public async Task<List<MarzbanVpnTemplateDto>> SendTemplatesGroupingByDays(long chatId, long vpnId, int days)
     {
-        List<MarzbanVpnTemplateDto> template = await GetMarzbanVpnTemplatesByVpnIdAsync(vpnId,chatId);
+        List<MarzbanVpnTemplateDto> template = await GetMarzbanVpnTemplatesByVpnIdAsync(vpnId, chatId);
         return template.Where(x => x.Days == days).ToList();
+    }
+
+    public async Task AddAgentAsync(long chatId, long id)
+    {
+        User? parentUser = await GetUserByChatIdAsync(chatId);
+        AgentDto? parentAgent = await agentService.GetAgentByAdminIdAsync(parentUser!.Id);
+        User? user = await GetUserByChatIdAsync(id);
+        AddAgentDto agent = new()
+        {
+            AgentAdminId = user.Id,
+            BrandName = "",
+            PersianBrandName = "",
+            BrandAddress = "",
+        };
+
+        await agentService.AddAgentAsync(agent, parentUser.Id);
     }
 }

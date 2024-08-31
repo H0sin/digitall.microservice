@@ -440,9 +440,6 @@ public class AgentService(
             await userRepository.SaveChanges(userId);
         }
 
-        if (await agentRepository.GetQuery().AnyAsync(x => x.AgentAdminId == agent.AgentAdminId))
-            return AddAgentResult.AgentAdminExists;
-
         Domain.Entities.Agent.Agent newAgent = new Domain.Entities.Agent.Agent
         {
             AgentAdminId = agent.AgentAdminId,

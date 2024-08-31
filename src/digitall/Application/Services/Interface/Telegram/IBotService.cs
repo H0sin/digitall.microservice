@@ -634,4 +634,14 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendMessageForUserAsync(ITelegramBotClient? botClient,Message message,CancellationToken cancellationToken);
+
+    /// <summary>
+    /// added agent async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 }

@@ -3,6 +3,7 @@ using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
+using Domain.DTOs.Transaction;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
@@ -243,6 +244,29 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
             FileAddress = filaAddress,
+        };
+    }
+
+    public static AddNotificationDto SendTransactionNotification(AddTransactionDto transaction, long userId)
+    {
+        string message = transaction.TransactionType == TransactionType.Increase
+            ? $"""
+               مبلغ {transaction.Price:N0}
+                به صورت دستی توسط نماینده به
+                موجودی شما اضافه شد
+                توضیحات {transaction.Description}
+               """
+            : $"""
+               مبلغ {transaction.Price:N0}
+               به صورت دستی توسط نماینده از
+               موجودی شما کم شد
+               توضیحات {transaction.Description}
+               """;
+        return new()
+        {
+            Message = message,
+            UserId = userId,
+            ForAllMember = false,
         };
     }
 }
