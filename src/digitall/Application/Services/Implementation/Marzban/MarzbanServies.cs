@@ -287,6 +287,7 @@ public class MarzbanServies(
             List<CalculatorUserIncome> incomes = new();
 
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpn.MarzbanVpnId);
+
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
@@ -497,11 +498,15 @@ public class MarzbanServies(
             // get user
             User? user = await userRepository.GetEntityById(userId);
 
-            // get marzban server by id
-            MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
+            if (user?.FinalCountTestMarzbanAccount > 2)
+                throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
+            // get marzban server by id
+            user.FinalCountTestMarzbanAccount += 1;
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
+
+            MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
 
             List<AddMarzbanUserDto> users = new();
 
@@ -620,13 +625,25 @@ public class MarzbanServies(
 
         CountingVpnPrice countingVpnPrice = new();
 
-        vpn.DayPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.DayPrice);
-        vpn.GbPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.GbPrice);
 
         return vpn switch
         {
             null => null,
-            _ => new MarzbanVpnDto(vpn)
+            _ => new MarzbanVpnDto
+            {
+                GbMax = vpn.GbMax,
+                GbMin = vpn.GbMin,
+                GbPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.GbPrice),
+                DayMax = vpn.DayMax,
+                DayMin = vpn.DayMin,
+                DayPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, vpn.DayPrice),
+                MarzbanServerId = vpn.MarzbanServerId,
+                Name = vpn.Name,
+                Id = vpn.Id,
+                Test_Active = vpn.Test_Active,
+                Test_Days = vpn.Test_Days,
+                Test_TotalGb = vpn.Test_TotalMg
+            },
         };
     }
 
@@ -681,7 +698,7 @@ public class MarzbanServies(
 
         if (user == null) throw new NotFoundException("کاربری با این شناسه یافت نشد");
         CountingVpnPrice countingVpnPrice = new();
-        
+
         List<MarzbanVpnTemplateDto>? templates = await marzbanVpnTemplatesRepository
             .GetQuery()
             .Where(x => x.MarzbanVpnId == vpnId)

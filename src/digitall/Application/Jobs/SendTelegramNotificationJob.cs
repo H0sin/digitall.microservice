@@ -38,7 +38,9 @@ public class SendTelegramNotificationJob : IJob
                 {
                     TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
 
-                    var options = new TelegramBotClientOptions(bot.Token!);
+                    if (bot.Token != null)
+                    {
+                         var options = new TelegramBotClientOptions(bot.Token!);
 
                     var botClient = new TelegramBotClient(options);
 
@@ -116,6 +118,7 @@ public class SendTelegramNotificationJob : IJob
                     await notificationService.UpdateSendNotification(notification.Id);
 
                     Thread.Sleep(500);
+                    }
                 }
             }
         }
