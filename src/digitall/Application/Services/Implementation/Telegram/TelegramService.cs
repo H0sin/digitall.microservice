@@ -506,7 +506,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
         
-        notificationService.AddNotificationAsync(
+        await notificationService.AddNotificationAsync(
             NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
         
         await transactionService.IncreaseUserAsync(transaction, userChild!.Id, user!.Id);
@@ -517,7 +517,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
         
-        notificationService.AddNotificationAsync(
+        await  notificationService.AddNotificationAsync(
             NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
         
         await transactionService.DecreaseUserAsync(transaction, userChild!.Id, user!.Id);
