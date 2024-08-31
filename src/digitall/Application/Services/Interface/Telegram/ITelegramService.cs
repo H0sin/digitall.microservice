@@ -396,4 +396,12 @@ public interface ITelegramService
     /// <param name="days"></param>
     /// <returns></returns>
     Task<List<MarzbanVpnTemplateDto>>  SendTemplatesGroupingByDays(long chatId, long vpnId, int days);
+
+    /// <summary>
+    /// add agent async
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task AddAgentAsync(long chatId, long id);
 }

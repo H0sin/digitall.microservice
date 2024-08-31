@@ -888,6 +888,9 @@ public class BotHookController(
             case "sendvpntemplate":
                 await botService.SendMarzbanVpnTemplatesGbAsync(_botClient, callbackQuery, cancellationToken);
                 break;
+            case "added_agent":
+                await botService.AddAgentAsync(_botClient, callbackQuery, cancellationToken);
+                break;
             case "send_message_user":
                 long userChatId = 0;
                 string callbackData2 = callbackQuery.Data;
