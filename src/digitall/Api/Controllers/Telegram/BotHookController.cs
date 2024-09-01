@@ -40,8 +40,8 @@ public class BotHookController(
 
             _token = token;
 
-            _botClient = new TelegramBotClient(token);
-
+            _botClient = new TelegramBotClient(token!);
+            
             await HandleUpdateAsync(update, new CancellationToken());
             await Task.CompletedTask;
         }
@@ -62,6 +62,7 @@ public class BotHookController(
         CancellationToken cancellationToken)
 
     {
+        await Task.Delay(TimeSpan.FromMilliseconds(400.100));
         var handler = update switch
         {
             { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
