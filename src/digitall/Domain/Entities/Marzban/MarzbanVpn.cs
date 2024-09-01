@@ -38,7 +38,7 @@ public class MarzbanVpn : BaseEntity
 
     [Display(Name = "نام هلدر بات")]
     [MaxLength(300)]
-    public string? HolderBotInbound { get; set; } = null;
+    public string? ExpireDetailInbound { get; set; } = null;
 
     [Display(Name = "وضعیت حجم و زمان دلخواه")]
     public bool Desired { get; set; }   
