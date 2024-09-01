@@ -32,19 +32,26 @@ public class BotHookController(
         CancellationToken cancellationToken)
 
     {
-        string? token = await telegramService.GetTelegramBotAsyncByName(botName);
-
-        if (token == null)
+        try
         {
-            return NotFound();
+            string? token = await telegramService.GetTelegramBotAsyncByName(botName);
+
+            if (token == null)
+            {
+                return NotFound();
+            }
+
+            _token = token;
+
+            _botClient = new TelegramBotClient(token);
+
+            await HandleUpdateAsync(update, new CancellationToken());
         }
-
-        _token = token;
-
-        _botClient = new TelegramBotClient(token);
-
-        await HandleUpdateAsync(update, new CancellationToken());
-
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         return Ok();
     }
 
@@ -54,8 +61,7 @@ public class BotHookController(
     {
         KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
             .SingleOrDefault(x => x.Key == update?.Message?.Chat.Id);
-
-
+        
         if (user.Value.Value is null)
             BotSessions
                 .users_Sessions?
@@ -70,7 +76,8 @@ public class BotHookController(
             { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
             { EditedMessage: { } message } => BotOnMessageReceived(message, cancellationToken),
             { CallbackQuery: { } callbackQuery } => BotOnCallbackQueryReceived(callbackQuery,
-                cancellationToken)
+                cancellationToken),
+            _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
         await handler;
