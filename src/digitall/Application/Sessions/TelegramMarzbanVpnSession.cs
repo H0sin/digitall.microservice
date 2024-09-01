@@ -6,7 +6,7 @@ public class TelegramMarzbanVpnSession
 {
     public int? Gb { get; set; } = null;
     public int? Date { get; set; } = null;
-    public TelegramMarzbanVpnSessionState State { get; set; }
+    public TelegramMarzbanVpnSessionState State { get; set; } = TelegramMarzbanVpnSessionState.None;
     public long? VpnId { get; set; }
     public int Price { get; set; }
     public string? CardNumber { get; set; }
@@ -27,6 +27,11 @@ public class TelegramMarzbanVpnSession
     public long MinimalAmountForUser { get; set; }
     public long ChildAgentId { get; set; }
     public string? Message { get; set; }
+
+    public TelegramMarzbanVpnSession()
+    {
+        
+    }
     
     public TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState state, int? gb = null, int? date = null,
         long? vpnId = null, long? UserSubscribeId = null, string? cardNumber = null, string? cardHolderName = null)
