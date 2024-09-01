@@ -28,15 +28,15 @@ public class BotHookController(
     private ITelegramBotClient? _botClient;
     private string? _token;
 
-    [HttpPost("{botName}")]
-    public async Task Post(string botName,
+    [HttpPost("{token}")]
+    public async Task Post(string token,
         [FromBody] Update update,
         CancellationToken cancellationToken)
 
     {
         try
         {
-            string? token = await telegramService.GetTelegramBotAsyncByName(botName);
+            // string? token = await telegramService.GetTelegramBotAsyncByName(botName);
 
             _token = token;
 
