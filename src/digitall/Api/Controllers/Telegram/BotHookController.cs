@@ -47,7 +47,7 @@ public class BotHookController(
             else
             {
                 _botClient = new TelegramBotClient(token!);
-                memoryCache.Set(token, _botClient);
+                memoryCache.Set(token, _botClient,TimeSpan.FromMinutes(10));
             }
             
             await HandleUpdateAsync(update, new CancellationToken());
