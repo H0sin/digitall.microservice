@@ -29,6 +29,7 @@ using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Application.Services.Implementation.Telegram;
 
@@ -39,6 +40,7 @@ public class TelegramService(
     IMarzbanService marzbanService,
     ITransactionService transactionService,
     IOrderService orderService,
+    IMemoryCache memoryCache,
     INotificationService notificationService) : ITelegramService
 {
     public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
@@ -63,9 +65,24 @@ public class TelegramService(
 
     public async Task<string?> GetTelegramBotAsyncByName(string name)
     {
-        TelegramBot? bot = await telegramBotRepository.GetQuery().SingleOrDefaultAsync(x => x.Name == name);
+        string cacheKey = $"telegramBot_{name}";
+        
+        if (memoryCache.TryGetValue(cacheKey, out string? cachedToken))
+        {
+            return cachedToken;
+        }
+        
+        TelegramBot? bot = await telegramBotRepository
+            .GetQuery()
+            .SingleOrDefaultAsync(x => x.Name == name);
 
-        return bot?.Token ?? null;
+        if (bot != null)
+        {
+            cachedToken = bot.Token;
+            memoryCache.Set(cacheKey, cachedToken, TimeSpan.FromMinutes(30));
+        }
+
+        return cachedToken;
     }
 
     public async Task<AgentDto?> GetAgentByTelegramToken(string token)
