@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Web;
 using Api.Filters;
@@ -67,8 +66,7 @@ public class BotHookController(
         {
             { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
             { EditedMessage: { } message } => BotOnMessageReceived(message, cancellationToken),
-            { CallbackQuery: { } callbackQuery } => BotOnCallbackQueryReceived(callbackQuery,
-                cancellationToken),
+            { CallbackQuery: { } callbackQuery } => BotOnCallbackQueryReceived(callbackQuery, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
@@ -88,7 +86,7 @@ public class BotHookController(
             }
             else
             {
-                memoryCache.Set(message.Chat.Id,new TelegramMarzbanVpnSession(),TimeSpan.FromMinutes(10));
+                memoryCache.Set(message.Chat.Id, new TelegramMarzbanVpnSession(), TimeSpan.FromMinutes(10));
                 user = memoryCache.Get(message.Chat.Id) as TelegramMarzbanVpnSession;
             }
 
@@ -608,7 +606,7 @@ public class BotHookController(
                         user.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
                         user.CardNumber = message.Text;
                         await botService.EditeAgentCardHolderNameInformationAsync(_botClient, message,
-                            cancellationToken,user);
+                            cancellationToken, user);
                         BotSessions
                             .users_Sessions?
                             .AddOrUpdate(message.Chat.Id,
@@ -616,7 +614,7 @@ public class BotHookController(
                         break;
 
                     case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest:
-                        await botService.RequestForAgentAsync(_botClient, message, cancellationToken,user);
+                        await botService.RequestForAgentAsync(_botClient, message, cancellationToken, user);
                         user.State = TelegramMarzbanVpnSessionState.None;
                         user.RequestDescription = message!.Text;
                         BotSessions
@@ -629,7 +627,7 @@ public class BotHookController(
                         int day = 0;
                         Int32.TryParse(message?.Text, out day);
                         user.Date = day;
-                        await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken,user);
+                        await botService.SendFactorAppendDaysAsync(_botClient, message, cancellationToken, user);
                         user.State = TelegramMarzbanVpnSessionState.None;
                         BotSessions
                             .users_Sessions?
@@ -641,7 +639,7 @@ public class BotHookController(
                         int gig = 0;
                         Int32.TryParse(message?.Text, out gig);
                         user.Gb = gig;
-                        await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken,user);
+                        await botService.SendFactorAppendGbAsync(_botClient, message, cancellationToken, user);
                         user.State = TelegramMarzbanVpnSessionState.None;
                         BotSessions
                             .users_Sessions?
@@ -657,7 +655,7 @@ public class BotHookController(
                             .users_Sessions?
                             .AddOrUpdate(message.Chat.Id,
                                 user, (key, old) => old = user);
-                        await botService.SendDaysPriceAsync(_botClient, message, cancellationToken,user);
+                        await botService.SendDaysPriceAsync(_botClient, message, cancellationToken, user);
                         break;
 
                     case TelegramMarzbanVpnSessionState.AwaitingDate:
@@ -669,7 +667,7 @@ public class BotHookController(
                             .AddOrUpdate(message.Chat.Id,
                                 user, (key, old) => old = user);
 
-                        await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken,user);
+                        await botService.SendCustomFactorVpnAsync(_botClient, message, cancellationToken, user);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendPrice:
                         int price = 0;
@@ -681,10 +679,10 @@ public class BotHookController(
                             .AddOrUpdate(message.Chat.Id,
                                 user, (key, old) => old = user);
 
-                        await botService.SendCardNumberAndDetailAsync(_botClient, message, cancellationToken,user);
+                        await botService.SendCardNumberAndDetailAsync(_botClient, message, cancellationToken, user);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage:
-                        await botService.AddTransactionAsync(_botClient, message, cancellationToken,user);
+                        await botService.AddTransactionAsync(_botClient, message, cancellationToken, user);
                         break;
                 }
             }
@@ -696,7 +694,7 @@ public class BotHookController(
             {
                 action = message?.Text?.Split(" ")[0] switch
                 {
-                    "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken,user),
+                    "/start" => await botService.StartLinkAsync(_botClient, message, cancellationToken, user),
                 };
             }
             else
@@ -706,13 +704,13 @@ public class BotHookController(
                     "ثبت | تغییر نام نمایندگی \ud83d\udc65" => await botService.UpdateAgentPersionBrandNameAsync(
                         _botClient,
                         message,
-                        cancellationToken,user),
+                        cancellationToken, user),
                     "تغییر درصد نماینده" => await botService.UpdateAgentPercentAsync(_botClient,
                         message,
-                        cancellationToken,user),
+                        cancellationToken, user),
                     "تغییر درصد کاربر" => await botService.UpdateUserPercentAsync(_botClient,
                         message,
-                        cancellationToken,user),
+                        cancellationToken, user),
                     "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
                         message,
                         cancellationToken),
@@ -720,19 +718,19 @@ public class BotHookController(
                         message,
                         cancellationToken),
                     "\ud83c\udfe0 بازگشت به منو اصلی" => await botService.SendMainMenuAsync(_botClient, message,
-                        cancellationToken,user),
+                        cancellationToken, user),
                     "ثبت | تغییر شماره کارت \ud83d\udcb3" => await botService.EditeAgentCardNumberInformationAsync(
                         _botClient,
-                        message, cancellationToken,user),
+                        message, cancellationToken, user),
                     "مشاهده اطلاعات پرداخت \ud83d\udcb0" => await botService.SendAgentTransactionPaymentDetailAsync(
                         _botClient,
                         message, cancellationToken),
                     "جستجو کاربر \ud83d\udd0d" => await botService.SearchUserByChatAsync(_botClient,
-                        message, cancellationToken,user),
+                        message, cancellationToken, user),
                     "\ud83d\udd22 پرداخت نمایندگی" => await botService.ChangeAgentPaymentOptionAsync(_botClient,
-                        message, cancellationToken,user),
+                        message, cancellationToken, user),
                     "\ud83d\udd22 پرداخت کاربری" => await botService.ChangeUserPaymentOptionAsync(_botClient,
-                        message, cancellationToken,user),
+                        message, cancellationToken, user),
                     "مدیریت نماینده ها \ud83d\udc65" => await botService.SendListAgentsAsync(_botClient,
                         message, cancellationToken),
                     _ => new Message()
@@ -751,16 +749,18 @@ public class BotHookController(
         CancellationToken cancellationToken)
     {
         string data = callbackQuery.Data.Split('?')[0];
-        
+
         if (memoryCache.TryGetValue(callbackQuery.Message.Chat.Id, out TelegramMarzbanVpnSession? user))
         {
         }
         else
         {
-            memoryCache.Set(callbackQuery.Message.Chat.Id,new TelegramMarzbanVpnSession(),TimeSpan.FromMinutes(10));
+            memoryCache.Set(callbackQuery.Message.Chat.Id, new TelegramMarzbanVpnSession(), TimeSpan.FromMinutes(10));
             user = memoryCache.Get(callbackQuery.Message.Chat.Id) as TelegramMarzbanVpnSession;
         }
-
+        
+        await Task.CompletedTask;
+        
         switch (data)
         {
             case "subscribe":
@@ -770,25 +770,25 @@ public class BotHookController(
                 await botService.SendListVpnsHaveTestAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "back_to_main":
-                await botService.SendMainMenuAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendMainMenuAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "vpn_template":
                 await botService.SendListVpnsTemplateAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "factor_subscribe":
-                await botService.SendFactorVpnAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendFactorVpnAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "buy_subscribe":
-                await botService.SendSubscriptionAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendSubscriptionAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "custom_subscribe":
-                await botService.SendGbPriceAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendGbPriceAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "my_services":
                 await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "subscribe_info":
-                await botService.SendSubscribeInformationAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendSubscribeInformationAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "createtestsub":
                 await botService.SendTestSubscibeAsync(_botClient, callbackQuery, cancellationToken);
@@ -803,34 +803,34 @@ public class BotHookController(
                 await botService.SendUserInformationAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "inventory_increase":
-                await botService.SendTransactionDetailsAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendTransactionDetailsAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "send_transaction_image":
-                await botService.AwaitingForTransactionImageAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.AwaitingForTransactionImageAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "web_information":
                 await botService.SendUserForLoginToWebAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "accept_gb":
-                await botService.AcceptAppendGbAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.AcceptAppendGbAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "accept_date":
-                await botService.AcceptAppendDaysAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.AcceptAppendDaysAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "append_date":
-                await botService.SendDaysPriceForAppendDaysAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendDaysPriceForAppendDaysAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "active_service":
-                await botService.ActiveMarzbanUserAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.ActiveMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "disabled_service":
-                await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "delete_service":
-                await botService.DeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.DeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "revoke_sub":
-                await botService.RevokeSubscribeAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.RevokeSubscribeAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "invitation_link":
                 await botService.SendTelegramInviteLinkAsync(_botClient, callbackQuery, cancellationToken);
@@ -866,10 +866,10 @@ public class BotHookController(
                     cancellationToken: cancellationToken);
                 break;
             case "increase_by_agent":
-                await botService.IncreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.IncreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "decrease_by_agent":
-                await botService.DecreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken,user);
+                await botService.DecreaseUserByAgentAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "update_trans":
                 await botService.UpdateTransactionStatusAsync(_botClient, callbackQuery, cancellationToken);
@@ -887,7 +887,7 @@ public class BotHookController(
                 await botService.SendChildAgentInformation(_botClient, callbackQuery, cancellationToken);
                 break;
             case "change_agent_percent":
-                await botService.SendMessageForUpdateSpecialPercent(_botClient, callbackQuery, cancellationToken,user);
+                await botService.SendMessageForUpdateSpecialPercent(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "send_message":
                 await botService.SendTicketMenuAsync(_botClient, callbackQuery, cancellationToken);
@@ -922,7 +922,7 @@ public class BotHookController(
                 break;
 
             case "send_message_agent":
-                
+
                 user!.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;
 
                 await _botClient!.SendTextMessageAsync(
@@ -951,8 +951,6 @@ public class BotHookController(
                         cancellationToken: cancellationToken);
                 }
 
-                break;
-            default:
                 break;
         }
     }
