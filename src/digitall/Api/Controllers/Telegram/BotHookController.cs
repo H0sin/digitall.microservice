@@ -28,19 +28,27 @@ public class BotHookController(
     private ITelegramBotClient? _botClient;
     private string? _token;
 
-    [HttpPost("{botName}")]
-    public async Task Post(string botName,
+    [HttpPost("{token}")]
+    public async Task Post(string token,
         [FromBody] Update update,
         CancellationToken cancellationToken)
 
     {
         try
         {
-            string? token = await telegramService.GetTelegramBotAsyncByName(botName);
+            // string? token = await telegramService.GetTelegramBotAsyncByName(botName);
 
             _token = token;
 
-            _botClient = new TelegramBotClient(token!);
+            if (memoryCache.TryGetValue(token, out _botClient))
+            {
+                
+            }
+            else
+            {
+                _botClient = new TelegramBotClient(token!);
+                memoryCache.Set(token, _botClient,TimeSpan.FromMinutes(10));
+            }
             
             await HandleUpdateAsync(update, new CancellationToken());
             await Task.CompletedTask;
@@ -760,8 +768,6 @@ public class BotHookController(
             user = memoryCache.Get(callbackQuery.Message.Chat.Id) as TelegramMarzbanVpnSession;
         }
         
-        await Task.CompletedTask;
-        
         switch (data)
         {
             case "subscribe":
@@ -772,6 +778,7 @@ public class BotHookController(
                 break;
             case "back_to_main":
                 await botService.SendMainMenuAsync(_botClient, callbackQuery, cancellationToken, user);
+                await Task.CompletedTask;
                 break;
             case "vpn_template":
                 await botService.SendListVpnsTemplateAsync(_botClient, callbackQuery, cancellationToken);
