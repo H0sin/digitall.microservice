@@ -109,7 +109,9 @@ public static class DependencyContainer
         #endregion
 
         #region services
-
+        
+        services.AddMemoryCache();
+        
         services.AddScoped(typeof(ISendNotificationService<>), typeof(SendSmsService<>));
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAgentService, AgentService>();
@@ -131,7 +133,7 @@ public static class DependencyContainer
         services.AddScoped<INotificationService, NotificationService>();
 
         #endregion
-
+        
         return services;
     }
 }
