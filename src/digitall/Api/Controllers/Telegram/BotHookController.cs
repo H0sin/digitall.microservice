@@ -36,8 +36,6 @@ public class BotHookController(
     {
         try
         {
-            // string? token = await telegramService.GetTelegramBotAsyncByName(botName);
-
             _token = token;
 
             if (memoryCache.TryGetValue(token, out _botClient))
