@@ -7,7 +7,7 @@ services:
       - "443:443"
     volumes:
       - ./src/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /application/certificate/fullchain.pem:/application/certificatefullchain.pem
+      - /application/certificate/fullchain.pem:/application/certificate/fullchain.pem
       - /application/certificate/privkey.pem:/application/certificate/privkey.pem
     restart: unless-stopped
     depends_on:
