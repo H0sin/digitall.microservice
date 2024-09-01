@@ -402,6 +402,7 @@ public interface ITelegramService
     /// </summary>
     /// <param name="chatId"></param>
     /// <param name="id"></param>
+    /// 
     /// <returns></returns>
     Task AddAgentAsync(long chatId, long id);
     
@@ -411,4 +412,12 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<List<TransactionDto>> GetTransactionsAsync(long chatId);
+
+    /// <summary>
+    /// update message id
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="messageId"></param>
+    /// <returns></returns>
+    Task UpdateUserMessageId(long chatId,int messageId);
 }

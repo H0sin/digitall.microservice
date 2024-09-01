@@ -1074,6 +1074,39 @@ public class MarzbanServies(
         }
     }
 
+    public async Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId)
+    {
+        MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(marzbanVpnId);
+        MarzbanServer? marzbanServer = await marzbanServerRepository.GetEntityById(marzbanVpnId);
+
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer ?? throw new AppException("سرور در دست رس نیست"));
+
+        string token = await marzbanApiRequest.LoginAsync();
+
+        if (string.IsNullOrEmpty(token))
+            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+        List<string> serverUser =
+            await marzbanApiRequest.CallApiAsync<List<string>>(
+                MarzbanPaths.UsersExpire,
+                HttpMethod.Get);
+
+        List<MarzbanUser> marzbanUsers = await marzbanUserRepository
+            .GetQuery()
+            .Where(x => x.Username.Contains(serverUser.ToString()))
+            .ToListAsync();
+
+        return marzbanUsers;
+    }
+
+    // public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)
+    // {
+    //     foreach (var marzbanUser in marzbanUsers)
+    //     { 
+    //         
+    //     }
+    // }
+
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);

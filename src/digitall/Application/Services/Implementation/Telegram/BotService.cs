@@ -99,6 +99,8 @@ public class BotService(
                 TelegramUsername = message.From.Username
             });
 
+            bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(message.Chat.Id);
+
             IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
             keys.Add(new List<InlineKeyboardButton>()
@@ -126,13 +128,29 @@ public class BotService(
                     "web_information")
             });
 
-            keys.Add(new()
+
+            if (isAgent)
             {
-                InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                    "invitation_link"),
-                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8",
-                    $"transactions?id={message.Chat.Id}"),
-            });
+                await SendAgentMenuForAdmin(botClient, message.Chat.Id, cancellationToken);
+                await telegramService.UpdateUserMessageId(message.Chat.Id, message.MessageId);
+                keys.Add(new()
+                {
+                    InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                        "invitation_link"),
+                    InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8",
+                        $"transactions?id={message.Chat.Id}"),
+                });
+            }
+            else
+            {
+                await DeleteMenu(botClient, message.Chat.Id, cancellationToken);
+
+                keys.Add(new()
+                {
+                    InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8",
+                        $"transactions?id={message.Chat.Id}"),
+                });
+            }
 
             InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(keys);
 
@@ -157,11 +175,6 @@ public class BotService(
         long chatId = callbackQuery!.Message!.Chat.Id;
 
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
-
-        if (isAgent)
-            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
-        else
-            await DeleteMenu(botClient, callbackQuery.Message, cancellationToken);
 
         BotSessions
             .users_Sessions?
@@ -197,17 +210,24 @@ public class BotService(
         });
 
         if (isAgent)
+        {
+            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
+            await telegramService.UpdateUserMessageId(chatId, callbackQuery.Message.MessageId);
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
                     "invitation_link"),
                 InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
             });
+        }
         else
+        {
+            await DeleteMenu(botClient, chatId, cancellationToken);
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
             });
+        }
 
         if (callbackQuery.Message.MessageId != 0)
         {
@@ -230,11 +250,6 @@ public class BotService(
         long chatId = message.Chat.Id;
 
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
-
-        if (isAgent)
-            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
-        else
-            await DeleteMenu(botClient, message, cancellationToken);
 
         BotSessions
             .users_Sessions?
@@ -267,11 +282,25 @@ public class BotService(
                 "web_information")
         });
 
-        keys.Add(new()
+        if (isAgent)
         {
-            InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
-                "invitation_link")
-        });
+            await SendAgentMenuForAdmin(botClient, chatId, cancellationToken);
+            await telegramService.UpdateUserMessageId(chatId, message.MessageId);
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("همکاری در فروش 🤝",
+                    "invitation_link"),
+                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
+            });
+        }
+        else
+        {
+            await DeleteMenu(botClient, chatId, cancellationToken);
+            keys.Add(new()
+            {
+                InlineKeyboardButton.WithCallbackData("لیست تراکنش ها \ud83d\udcb8", $"transactions?id={chatId}"),
+            });
+        }
 
         if (message.MessageId != 0)
         {
@@ -3110,14 +3139,22 @@ public class BotService(
         }
     }
 
-    private async Task DeleteMenu(ITelegramBotClient? botClient, Message message,
+    private async Task DeleteMenu(ITelegramBotClient? botClient, long chatId,
         CancellationToken cancellationToken)
     {
-        await botClient!.EditMessageReplyMarkupAsync(
-            chatId: message.Chat.Id,
-            messageId: message.MessageId,
-            replyMarkup: null, // حذف تمام دکمه‌ها
-            cancellationToken: cancellationToken
-        );
+        try
+        {
+            User? user = await telegramService.GetUserByChatIdAsync(chatId);
+            if (user?.MessageId != null && user.MessageId != 0)
+                await botClient!.DeleteMessageAsync(
+                    chatId: chatId,
+                    messageId: user.MessageId ?? 0,
+                    cancellationToken: cancellationToken
+                );
+        }
+        catch
+        {
+            return;
+        }
     }
 }

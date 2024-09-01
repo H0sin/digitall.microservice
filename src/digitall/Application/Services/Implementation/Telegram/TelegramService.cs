@@ -641,4 +641,19 @@ public class TelegramService(
         return await transactionService
             .GetAllTransactionByUserIdAsync(user!.Id);
     }
+
+    public async Task<int?> GetMessageIdAsync(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        return user?.MessageId;
+    }
+
+    public async Task UpdateUserMessageId(long chatId, int messageId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        user!.MessageId = messageId;
+
+        await userRepository.UpdateEntity(user);
+        await userRepository.SaveChanges(user.Id);
+    }
 }

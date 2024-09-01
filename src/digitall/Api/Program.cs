@@ -169,41 +169,41 @@ builder.Services.AddAuthentication(opt =>
 
 #region jobs
 
-builder.Services.AddQuartz(q =>
-{
-    q.UseMicrosoftDependencyInjectionJobFactory();
-
-    var jobSettings = builder.Configuration.GetSection("Quartz:Jobs").Get<List<JobSettings>>();
-
-    if (jobSettings != null)
-        foreach (var settings in jobSettings)
-        {
-            var jobType = Type.GetType(settings.JobType);
-            if (jobType == null)
-            {
-                throw new InvalidOperationException($"Job type '{settings.JobType}' could not be found.");
-            }
-
-            var jobKey = new JobKey(settings.JobName, settings.JobGroup);
-
-            switch (settings.JobName)
-            {
-                case "DeleteExpiredNotificationsJob":
-                    q.AddJob<DeleteExpiredNotificationsJob>(opts => opts.WithIdentity(jobKey));
-                    break;
-                case "SendTelegramNotificationJob":
-                    q.AddJob<SendTelegramNotificationJob>(opts => opts.WithIdentity(jobKey));
-                    break;
-            }
-
-            q.AddTrigger(opts => opts
-                .ForJob(jobKey)
-                .WithIdentity(settings.TriggerName, settings.TriggerGroup)
-                .WithCronSchedule(settings.CronSchedule));
-        }
-});
-
-builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+// builder.Services.AddQuartz(q =>
+// {
+//     q.UseMicrosoftDependencyInjectionJobFactory();
+//
+//     var jobSettings = builder.Configuration.GetSection("Quartz:Jobs").Get<List<JobSettings>>();
+//
+//     if (jobSettings != null)
+//         foreach (var settings in jobSettings)
+//         {
+//             var jobType = Type.GetType(settings.JobType);
+//             if (jobType == null)
+//             {
+//                 throw new InvalidOperationException($"Job type '{settings.JobType}' could not be found.");
+//             }
+//
+//             var jobKey = new JobKey(settings.JobName, settings.JobGroup);
+//
+//             switch (settings.JobName)
+//             {
+//                 case "DeleteExpiredNotificationsJob":
+//                     q.AddJob<DeleteExpiredNotificationsJob>(opts => opts.WithIdentity(jobKey));
+//                     break;
+//                 case "SendTelegramNotificationJob":
+//                     q.AddJob<SendTelegramNotificationJob>(opts => opts.WithIdentity(jobKey));
+//                     break;
+//             }
+//
+//             q.AddTrigger(opts => opts
+//                 .ForJob(jobKey)
+//                 .WithIdentity(settings.TriggerName, settings.TriggerGroup)
+//                 .WithCronSchedule(settings.CronSchedule));
+//         }
+// });
+//
+// builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 #endregion
 

@@ -299,4 +299,18 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns>subscribe</returns>
     Task<string> RevokeMarzbanUserAsync(long marzbanUserId,long userId);
+
+    /// <summary>
+    /// get list marzban vpn Id
+    /// </summary>
+    /// <param name="marzbanVpnId"></param>
+    /// <returns></returns>
+    Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="marzbanUsers"></param>
+    /// <returns></returns>
+    // Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers);
 }
