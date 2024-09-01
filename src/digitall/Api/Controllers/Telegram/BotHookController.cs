@@ -27,7 +27,7 @@ public class BotHookController(
     private string? _token;
 
     [HttpPost("{botName}")]
-    public async Task<IActionResult> Post(string botName,
+    public async Task Post(string botName,
         [FromBody] Update update,
         CancellationToken cancellationToken)
 
@@ -35,41 +35,31 @@ public class BotHookController(
         try
         {
             string? token = await telegramService.GetTelegramBotAsyncByName(botName);
-
-            if (token == null)
-            {
-                return NotFound();
-            }
-
+            
             _token = token;
 
             _botClient = new TelegramBotClient(token);
 
             await HandleUpdateAsync(update, new CancellationToken());
+            await Task.CompletedTask;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
-        return Ok();
     }
 
+    /// <summary>
+    /// update
+    /// </summary>
+    /// <param name="update"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public async Task HandleUpdateAsync(Update update,
         CancellationToken cancellationToken)
 
     {
-        KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
-            .SingleOrDefault(x => x.Key == update?.Message?.Chat.Id);
-        
-        if (user.Value.Value is null)
-            BotSessions
-                .users_Sessions?
-                .AddOrUpdate(update?.Message?.Chat.Id ?? 0,
-                    new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
-                    (key, old)
-                        => old = new TelegramMarzbanVpnSession(
-                            TelegramMarzbanVpnSessionState.None));
 
         var handler = update switch
         {
@@ -93,7 +83,16 @@ public class BotHookController(
 
             KeyValuePair<long, TelegramMarzbanVpnSession>? user = BotSessions.users_Sessions!
                 .SingleOrDefault(x => x.Key == message.Chat.Id);
-
+        
+            if (user.Value.Value is null)
+                BotSessions
+                    .users_Sessions?
+                    .AddOrUpdate(message?.Chat.Id ?? 0,
+                        new TelegramMarzbanVpnSession(TelegramMarzbanVpnSessionState.None),
+                        (key, old)
+                            => old = new TelegramMarzbanVpnSession(
+                                TelegramMarzbanVpnSessionState.None));
+            
             if (user.Value.Value is not null)
             {
                 switch (user.Value.Value.State)
