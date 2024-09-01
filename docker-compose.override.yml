@@ -8,7 +8,7 @@ services:
     volumes:
       - ./src/nginx/nginx.conf:/etc/nginx/nginx.conf
       - /application/certificate/test.samanii.com.cer:/application/certificate/test.samanii.com.cer
-      - /application/certificate/test.samanii.com.key:/application/certificate/test.samanii.com.key
+      - /application/certificate/test.samanii.com.cer.key:/application/certificate/test.samanii.com.cer.key
     restart: unless-stopped
     depends_on:
       - api
