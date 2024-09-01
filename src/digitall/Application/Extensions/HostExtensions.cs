@@ -34,7 +34,7 @@ public static class HostExtensions
                 if (retryForAvailability < 50)
                 {
                     retryForAvailability++;
-                    Thread.Sleep(2000);
+                    Thread.Sleep(2000); 
                     MigrateDatabase(host, seeder, retryForAvailability);
                 }
 
