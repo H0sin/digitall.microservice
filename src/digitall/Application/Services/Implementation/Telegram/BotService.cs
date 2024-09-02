@@ -664,15 +664,26 @@ public class BotService(
             user.State = TelegramMarzbanVpnSessionState.None;
 
 
-            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, new TelegramMarzbanVpnSession());
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, user);
         }
         catch (Exception e)
         {
+            IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
+            
+            User? current_user = await telegramService.GetUserByChatIdAsync(chatId);
+            
+            List<InlineKeyboardButton> increase = new()
+            {
+                InlineKeyboardButton.WithCallbackData("افزایش موجودی \u2795", $"increase_by_agent?id={current_user?.Id}"),
+            };
+
+            user.State = TelegramMarzbanVpnSessionState.None;
             await botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: e.Message,
+                replyMarkup: new InlineKeyboardMarkup(increase),
                 cancellationToken: cancellationToken);
-            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, new TelegramMarzbanVpnSession());
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, user);
         }
     }
 

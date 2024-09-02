@@ -20,14 +20,15 @@ public class AgentDto
         AgentPath = agent!.AgentPath;
         Id = agent!.Id;
         SpecialPercent = agent.SpecialPercent ?? 0;
+        AllowNegative = agent.AllowNegative;
+        AmountWithNegative = agent.AmountWithNegative;
     }
 
     public AgentDto()
     {
-        
     }
-    
-    public AgentDto(Entities.Agent.Agent? agent,User admin)
+
+    public AgentDto(Entities.Agent.Agent? agent, User admin)
     {
         TransactionDetailId = agent?.TransactionDetail?.Id ?? 0;
         BrandName = agent!.BrandName;
@@ -41,9 +42,11 @@ public class AgentDto
         Id = agent!.Id;
         SpecialPercent = agent.SpecialPercent ?? 0;
         User = new UserDto(admin);
+        AllowNegative = agent.AllowNegative;
+        AmountWithNegative = agent.AmountWithNegative;
     }
 
-    
+
     public HierarchyId? AgentPath { get; set; }
     public long Id { get; set; }
     public string? BrandName { get; set; }
@@ -57,4 +60,6 @@ public class AgentDto
     public long UserPercent { get; set; }
     public long SpecialPercent { get; set; } = 0;
     public UserDto? User { get; set; }
+    public bool AllowNegative { get; set; } = false;
+    public long AmountWithNegative { get; set; } = 0;
 }

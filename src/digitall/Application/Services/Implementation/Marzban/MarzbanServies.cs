@@ -335,7 +335,16 @@ public class MarzbanServies(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
-            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
+            if (isAgent == null && user?.Balance < totalPrice)
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
+            if (!(isAgent != null &&
+                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
 
             foreach (var i in incomes)
             {
@@ -493,17 +502,17 @@ public class MarzbanServies(
         {
             //get vpn
 
-            
+
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
             // get user
             User? user = await userRepository.GetEntityById(userId);
-            
+
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
-            
+
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
-            
+
             if (user?.FinalCountTestMarzbanAccount > 2)
                 throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
@@ -761,7 +770,7 @@ public class MarzbanServies(
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
-        
+
         if (marzbanUser.UserId != userId) marzbanUser = null;
 
         response.MarzbanServerId = marzbanUser.MarzbanServerId;
@@ -881,7 +890,17 @@ public class MarzbanServies(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
-            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
+            if (isAgent == null && user?.Balance < totalPrice)
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
+            if (!(isAgent != null &&
+                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
 
             foreach (var i in incomes)
             {
