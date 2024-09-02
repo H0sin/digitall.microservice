@@ -44,16 +44,34 @@ public class SubescribeStatus
             return $"{pc.GetYear(dt)}/{pc.GetMonth(dt):00}/{pc.GetDayOfMonth(dt):00}";
         }
 
-
+        private string FormatVolume(long? volume)
+        {
+            if (volume == null)
+            {
+                return "اطلاعات موجود نیست";
+            }
+        
+            // مقدار کمتر از یک گیگابایت را به مگابایت تبدیل می‌کند
+            if (volume.Value < 1024 * 1024 * 1024)
+            {
+                return $"{volume.Value / (1024 * 1024)} مگابایت";
+            }
+            // مقدار برابر یا بیشتر از یک گیگابایت را به گیگابایت تبدیل می‌کند
+            else
+            {
+                return $"{volume.Value / (1024 * 1024 * 1024)} گیگابایت";
+            }
+        }
+        
         public string GetInfo()
         {
             return $"وضعیت سرویس: {Status}\n" +
                    $"👤 نام سرویس: {Username}\n" +
                    $"🌍 لوکیشن سرویس: {Location}\n" +
                    $"🖇 کد سرویس: {ServiceCode}\n" +
-                   $"🔋 حجم سرویس: {TotalVolume / (1024 * 1024 * 1024)} گیگابایت\n" +
-                   $"📥 حجم مصرفی: {UsedVolume / (1024 * 1024 * 1024)} گیگابایت\n" +
-                   $"💢 حجم باقی مانده: {RemainingVolume / (1024 * 1024 * 1024)} گیگابایت\n" +
+                   $"🔋 حجم سرویس: {FormatVolume(TotalVolume)} \n" +
+                   $"📥 حجم مصرفی: {FormatVolume(UsedVolume)} \n" +
+                   $"💢 حجم باقی مانده: {FormatVolume(RemainingVolume)} \n" +
                    $"📅 فعال تا تاریخ: {GetPersianDateFromUnix(ActiveUntil)}\n" +
                    $"📶 آخرین زمان اتصال: {GetPersianDate(LastConnection)}\n" +
                    $"آخرین زمان تغییر لینک: {GetPersianDate(LastLinkGeneration)}";

@@ -753,7 +753,7 @@ public class MarzbanServies(
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
-
+        
         if (marzbanUser.UserId != userId) marzbanUser = null;
 
         response.MarzbanServerId = marzbanUser.MarzbanServerId;
@@ -764,7 +764,7 @@ public class MarzbanServies(
         return marzbanUser switch
         {
             null => null,
-            _ => response
+            _ => await UpdateMarzbanUserAsync(response, userId),
         };
     }
 
