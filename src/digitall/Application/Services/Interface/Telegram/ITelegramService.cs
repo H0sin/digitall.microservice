@@ -362,14 +362,14 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task<FilterAgentDto> FilterAgentsAsync(long chatId);
-    
+
     /// <summary>
     /// return agent by information Id
     /// </summary>
     /// <param name="chatId"></param>
     /// <param name="agentId"></param>
     /// <returns></returns>
-    Task<AgentInformationDto> GetAgentInformationByIdAsync(long chatId,long agentId);
+    Task<AgentInformationDto> GetAgentInformationByIdAsync(long chatId, long agentId);
 
     /// <summary>
     /// update agent percent
@@ -378,7 +378,7 @@ public interface ITelegramService
     /// <param name="childAgentId"></param>
     /// <param name="specialPercent"></param>
     /// <returns></returns>
-    Task UpdateAgentSpecialPercent(long chatId,long childAgentId, long specialPercent);
+    Task UpdateAgentSpecialPercent(long chatId, long childAgentId, long specialPercent);
 
 
     /// <summary>
@@ -395,7 +395,7 @@ public interface ITelegramService
     /// <param name="vpnId"></param>
     /// <param name="days"></param>
     /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>>  SendTemplatesGroupingByDays(long chatId, long vpnId, int days);
+    Task<List<MarzbanVpnTemplateDto>> SendTemplatesGroupingByDays(long chatId, long vpnId, int days);
 
     /// <summary>
     /// add agent async
@@ -405,7 +405,7 @@ public interface ITelegramService
     /// 
     /// <returns></returns>
     Task AddAgentAsync(long chatId, long id);
-    
+
     /// <summary>
     /// send list transactions
     /// </summary>
@@ -419,9 +419,9 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <param name="messageId"></param>
     /// <returns></returns>
-    Task UpdateUserMessageId(long chatId,int messageId);
+    Task UpdateUserMessageId(long chatId, int messageId);
 
-    
+
     /// <summary>
     /// send message for member
     /// </summary>
@@ -429,4 +429,12 @@ public interface ITelegramService
     /// <param name="text"></param>
     /// <returns></returns>
     Task SendMessageForAgentMembers(long chatId, string text);
+
+    /// <summary>
+    /// send  get marzban user by user name
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="username"></param>
+    /// <returns></returns>
+    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByUserName(long chatId, string username);
 }

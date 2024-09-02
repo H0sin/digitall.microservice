@@ -335,7 +335,16 @@ public class MarzbanServies(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
-            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
+            if (isAgent == null && user?.Balance < totalPrice)
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
+            if (!(isAgent != null &&
+                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
 
             foreach (var i in incomes)
             {
@@ -493,17 +502,17 @@ public class MarzbanServies(
         {
             //get vpn
 
-            
+
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
             // get user
             User? user = await userRepository.GetEntityById(userId);
-            
+
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
-            
+
             AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
-            
+
             if (user?.FinalCountTestMarzbanAccount > 2)
                 throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
@@ -730,11 +739,15 @@ public class MarzbanServies(
 
     public async Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter)
     {
-        IQueryable<MarzbanUser> query = marzbanUserRepository.GetQuery();
+        IQueryable<MarzbanUser> query = marzbanUserRepository
+            .GetQuery();
 
         if ((filter.UserId ?? 0) != 0)
             query = query.Where(i => i.UserId == filter.UserId);
-
+        
+        if (!string.IsNullOrEmpty(filter.Username))
+            query = query.Where(x => EF.Functions.Like(x.Username, $"%{filter.Username}%"));
+        
         IQueryable<MarzbanUserDto> users = query.Select(x => new MarzbanUserDto(x));
 
         await filter.Paging(users);
@@ -761,7 +774,7 @@ public class MarzbanServies(
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
-        
+
         if (marzbanUser.UserId != userId) marzbanUser = null;
 
         response.MarzbanServerId = marzbanUser.MarzbanServerId;
@@ -881,7 +894,17 @@ public class MarzbanServies(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
-            if (user?.Balance < totalPrice & isAgent is null) throw new BadRequestException("موجودی شما کافی نیست");
+            if (isAgent == null && user?.Balance < totalPrice)
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
+            if (!(isAgent != null &&
+                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+            {
+                throw new BadRequestException("موجودی شما کافی نیست");
+            }
+
 
             foreach (var i in incomes)
             {
@@ -1105,6 +1128,32 @@ public class MarzbanServies(
             .ToListAsync();
 
         return marzbanUsers;
+    }
+
+    public async Task<MarzbanUserDto?> GetMarzbanUserByUsernameAsync(string username, long userId)
+    {
+        MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
+            .SingleOrDefaultAsync(x => EF.Functions.Like(x.Username, $"%{username}%") & x.UserId == userId);
+
+        MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+        MarzbanUserDto response =
+            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                HttpMethod.Get);
+
+        if (marzbanUser.UserId != userId) marzbanUser = null;
+
+        response.MarzbanServerId = marzbanUser.MarzbanServerId;
+        response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
+        response.Id = marzbanUser.Id;
+        response.UserId = marzbanUser.UserId;
+
+        return marzbanUser switch
+        {
+            null => null,
+            _ => await UpdateMarzbanUserAsync(response, userId),
+        };
     }
 
     // public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)

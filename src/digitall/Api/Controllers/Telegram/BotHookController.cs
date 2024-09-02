@@ -40,14 +40,13 @@ public class BotHookController(
 
             if (memoryCache.TryGetValue(token, out _botClient))
             {
-                
             }
             else
             {
                 _botClient = new TelegramBotClient(token!);
-                memoryCache.Set(token, _botClient,TimeSpan.FromMinutes(10));
+                memoryCache.Set(token, _botClient, TimeSpan.FromMinutes(10));
             }
-            
+
             await HandleUpdateAsync(update, new CancellationToken());
             await Task.CompletedTask;
         }
@@ -102,8 +101,19 @@ public class BotHookController(
             {
                 switch (user.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendServiceName:
+                        CallbackQuery callbackQuery = new CallbackQuery()
+                        {
+                            Message = message,
+                            From = await _botClient.GetMeAsync(),
+                            Data = "my_services",
+                        };
+                        await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken,
+                            message.Text);
+                        user.State = TelegramMarzbanVpnSessionState.None;
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendMessageForAllUser:
-                        await botService.SendMessageForMembers(_botClient, message, cancellationToken);
+                        await botService.SendMessageForMembersAsync(_botClient, message, cancellationToken);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser:
                         await botService.SendMessageForUserAsync(_botClient, message, cancellationToken);
@@ -771,7 +781,7 @@ public class BotHookController(
             memoryCache.Set(callbackQuery.Message.Chat.Id, new TelegramMarzbanVpnSession(), TimeSpan.FromMinutes(10));
             user = memoryCache.Get(callbackQuery.Message.Chat.Id) as TelegramMarzbanVpnSession;
         }
-        
+
         switch (data)
         {
             case "subscribe":
@@ -797,7 +807,7 @@ public class BotHookController(
                 await botService.SendGbPriceAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "my_services":
-                await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken);
+                await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken, null);
                 break;
             case "subscribe_info":
                 await botService.SendSubscribeInformationAsync(_botClient, callbackQuery, cancellationToken, user);
@@ -932,9 +942,14 @@ public class BotHookController(
                     "لطفا پیغام خود را ارسال کنید!",
                     cancellationToken: cancellationToken);
                 break;
-
+            case "search_list_service":
+                user!.State = TelegramMarzbanVpnSessionState.AwaitingSendServiceName;
+                await _botClient!.SendTextMessageAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    text: "لطفا اسم سرویس خود را ارسال کنید",
+                    cancellationToken: cancellationToken);
+                break;
             case "send_message_agent":
-
                 user!.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;
 
                 await _botClient!.SendTextMessageAsync(

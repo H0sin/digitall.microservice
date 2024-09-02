@@ -87,10 +87,15 @@ public class AgentService(
         AgentDto? agent = await GetAgentByAdminIdAsync(userId);
 
         if (agent is not null)
+        {
+            throw new ExistsException("شما نماینده هستید");
+        }
+
+        if (await agentRequestRepository
+                .GetQuery()
+                .SingleOrDefaultAsync(x => x.CreateBy == userId) is not null)
             throw new ExistsException("شما نماینده هستید");
 
-        if (await agentRequestRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentId == agent.Id) is not null)
-            throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
 
