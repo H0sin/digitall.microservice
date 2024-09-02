@@ -42,9 +42,18 @@ public class SubescribeStatus
 
         public string GetPersianDateFromUnix(long? timestamp)
         {
+            if (timestamp is null)
+                return "شروع نشده";
+
             DateTime dt = DateTimeOffset.FromUnixTimeSeconds(timestamp.Value).DateTime;
             PersianCalendar pc = new PersianCalendar();
-            return $"{pc.GetYear(dt)}/{pc.GetMonth(dt):00}/{pc.GetDayOfMonth(dt):00}";
+            
+            int remainingDays = (dt.Date - DateTime.Now.Date).Days;
+            
+            string persianDate = $"{pc.GetYear(dt)}/{pc.GetMonth(dt):00}/{pc.GetDayOfMonth(dt):00}";
+            string daysLeft = remainingDays > 0 ? $" (باقی‌مانده: {remainingDays} روز)" : $" (گذشته: {-remainingDays} روز)";
+
+            return persianDate + daysLeft;
         }
 
         private string FormatVolume(long? volume)
@@ -82,7 +91,16 @@ public class SubescribeStatus
 
         public ServiceStatus(MarzbanUserDto? marzbanUser)
         {
-            Status = marzbanUser.Status == "active" ? "فعال" : "غیر فعال";
+            Status = marzbanUser.Status switch
+            {
+                "active" => "فعال \u2705",
+                "disabled"  => "غیر فعال \u274c",
+                "limited" => "اتمام حجم \ud83e\udeab",
+                "on_hold" => "شروع نشده \u267b\ufe0f",
+                "expired" => "اتمام زمان \u23f0",
+                _=> "نامشخص \u274c"
+            };
+            
             Username = marzbanUser.Username;
             TotalVolume = marzbanUser.Data_Limit;
             UsedVolume = marzbanUser.Used_Traffic;

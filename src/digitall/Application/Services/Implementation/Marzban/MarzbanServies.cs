@@ -332,20 +332,24 @@ public class MarzbanServies(
                 incomes = await countingVpnPrice.CalculateUserIncomes(agentService, userId, template.Price, vpn.TotalGb,
                     vpn.TotalDay, marzbanVpn.GbPrice, marzbanVpn.DayPrice, template?.Price ?? 0, vpn.Count);
             }
-
+            
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
-
-            if (isAgent == null && user?.Balance < totalPrice)
+            
+            if (user.Balance < totalPrice)
             {
-                throw new BadRequestException("موجودی شما کافی نیست");
-            }
+                if (isAgent == null && user?.Balance < totalPrice)
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
 
-            if (!(isAgent != null &&
-                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
-            {
-                throw new BadRequestException("موجودی شما کافی نیست");
-            }
+                if (!(isAgent != null &&
+                      (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
 
+            }
+            
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
@@ -1137,7 +1141,7 @@ public class MarzbanServies(
 
         MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
-
+        
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
