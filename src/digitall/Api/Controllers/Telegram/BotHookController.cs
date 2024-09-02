@@ -102,6 +102,9 @@ public class BotHookController(
             {
                 switch (user.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendMessageForAllUser:
+                        await botService.SendMessageForMembers(_botClient, message, cancellationToken);
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser:
                         await botService.SendMessageForUserAsync(_botClient, message, cancellationToken);
                         break;
@@ -708,6 +711,9 @@ public class BotHookController(
             {
                 action = message?.Text switch
                 {
+                    "ارسال پیام \u2709\ufe0f" => await botService.SendMessageBeforSendMessageForMember(_botClient,
+                        message,
+                        cancellationToken, user),
                     "ثبت | تغییر نام نمایندگی \ud83d\udc65" => await botService.UpdateAgentPersionBrandNameAsync(
                         _botClient,
                         message,
