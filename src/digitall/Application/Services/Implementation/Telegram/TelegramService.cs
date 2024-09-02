@@ -150,9 +150,7 @@ public class TelegramService(
     public async Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-
-        var agentIds = await agentService.GetAgentRoot(user.AgentId);
-
+        
         SubscribeFactorBotDto factor = new();
 
         factor.Title = buy.Title ?? "خرید سرویس کاهش پینگ";

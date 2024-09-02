@@ -89,7 +89,7 @@ public class BotService(
             }
 
             user.State = TelegramMarzbanVpnSessionState.None;
-
+            user.UserSubscribeId = null;
             AgentOptionDto? agentOptions = await telegramService.StartTelegramBotAsync(new StartTelegramBotDto()
             {
                 AgentCode = agentId,
@@ -180,7 +180,8 @@ public class BotService(
         //sesstion
 
         user.State = TelegramMarzbanVpnSessionState.None;
-
+        user.UserSubscribeId = null;
+        
         IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
         keys.Add(new List<InlineKeyboardButton>()
@@ -251,7 +252,7 @@ public class BotService(
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(chatId);
 
         user.State = TelegramMarzbanVpnSessionState.None;
-
+        user.UserSubscribeId = null;
         IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>();
 
         keys.Add(new List<InlineKeyboardButton>()
@@ -633,7 +634,8 @@ public class BotService(
 
             if (templateId != 0)
                 template = await telegramService.GetMarzbanTemplateByIdAsync(templateId);
-
+            
+            
             List<MarzbanUser> marzbanUsers = await telegramService.BuySubscribeAsync(buy, chatId);
 
             foreach (MarzbanUser marzbanUser in marzbanUsers)
@@ -644,18 +646,29 @@ public class BotService(
                 string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
 
-👤 نام کاربری سرویس: {marzbanUser.Username.TrimEnd()}
+👤 نام کاربری سرویس: `\{marzbanUser.Username.TrimEnd()}`\
 🌿 نام سرویس: {template?.Title ?? "خرید اشتراک"}
 ⏳ مدت زمان: {template?.Days ?? days} روز
 👥 حجم سرویس: {((template?.Gb ?? gb) > 200 ? "نامحدود" : (template?.Gb ?? gb) + "گیگ")}
 لینک اتصال:
-{marzbanUser.Subscription_Url.TrimEnd()}
+`\{marzbanUser.Subscription_Url.TrimEnd()}`\
 ";
+                IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>(new []
+                {
+                    new List<InlineKeyboardButton>()
+                    {
+                        InlineKeyboardButton.WithUrl("مشاهده اموزش 📖", 
+                            marzbanUser.Subscription_Url.TrimEnd())
+                    }
+                });
+                
                 using (var Qr = new MemoryStream(QrImage))
                 {
                     await botClient.SendPhotoAsync(
                         chatId: callbackQuery.Message.Chat.Id,
                         photo: new InputFileStream(Qr, marzbanUser.Subscription_Url),
+                        parseMode: ParseMode.MarkdownV2,
+                        replyMarkup: new InlineKeyboardMarkup(keys),
                         caption: caption,
                         cancellationToken: cancellationToken);
                 }
@@ -692,8 +705,7 @@ public class BotService(
         CancellationToken cancellationToken,string? username = null)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-
+        
         int page = 1;
         string callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData.IndexOf('?');
@@ -790,7 +802,7 @@ public class BotService(
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("دریافت ترافیک 🌍", $"get_traffic?id={id}"),
+                // InlineKeyboardButton.WithCallbackData("دریافت کانفیگ ها 🌍", $"get_traffic?id={id}"),
                 InlineKeyboardButton.WithCallbackData("لینک اشتراک 🔗", $"subscription_link?id={id}")
             },
             new[]
@@ -799,13 +811,13 @@ public class BotService(
                                                                         $"?id={vpnId}&" +
                                                                         $"subscribeId={id}"),
             },
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("خرید حجم اضافه ➕",
-                    $"custom_subscribe?vpnId={vpnId}&appendGb=true"),
-                InlineKeyboardButton.WithCallbackData("خرید زمان اضافه ⌛️",
-                    $"append_date?vpnId={vpnId}&subscribeId={id}"),
-            },
+            // new[]
+            // {
+            //     InlineKeyboardButton.WithCallbackData("خرید حجم اضافه ➕",
+            //         $"custom_subscribe?vpnId={vpnId}&appendGb=true"),
+            //     InlineKeyboardButton.WithCallbackData("خرید زمان اضافه ⌛️",
+            //         $"append_date?vpnId={vpnId}&subscribeId={id}"),
+            // },
             new[]
             {
                 InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", $"delete_service")
