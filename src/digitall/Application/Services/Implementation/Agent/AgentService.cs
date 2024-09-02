@@ -84,7 +84,12 @@ public class AgentService(
 
     public async Task AddAgentRequestAsync(AddRequestAgentDto request, long userId)
     {
-        if (await GetAgentByAdminIdAsync(userId) is not null)
+        AgentDto? agent = await GetAgentByAdminIdAsync(userId);
+
+        if (agent is not null)
+            throw new ExistsException("شما نماینده هستید");
+
+        if (await agentRequestRepository.GetQuery().SingleOrDefaultAsync(x => x.AgentId == agent.Id) is not null)
             throw new ExistsException("شما نماینده هستید");
 
         AgentDto? parent = await GetAgentByUserIdAsync(userId);
@@ -110,7 +115,8 @@ public class AgentService(
         #endregion
 
         await notificationService.AddNotificationAsync(
-            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0, user!.TelegramUsername ?? "NOUSERNAME",
+            NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0,
+                user!.TelegramUsername ?? "NOUSERNAME",
                 request.Phone,
                 request.Description ?? "", user!.TelegramUsername ?? "",
                 buttonJsons), userId);
@@ -394,7 +400,7 @@ public class AgentService(
         Domain.Entities.Agent.Agent? parent = await
             agentRepository
                 .GetQuery()
-                .Include(c=> c.Users)
+                .Include(c => c.Users)
                 .SingleOrDefaultAsync(x => x.AgentAdminId == filter.AdminId);
 
         IQueryable<Domain.Entities.Agent.Agent> queryable = agentRepository
@@ -406,15 +412,15 @@ public class AgentService(
 
         var agents = queryable
             .Select(x => new AgentDto(x));
-        
+
         await filter.Paging(agents);
-        
-        foreach (AgentDto agent  in filter.Entities)
+
+        foreach (AgentDto agent in filter.Entities)
         {
             User? user = await userRepository.GetEntityById(agent.AgentAdminId);
             agent.User = new UserDto(user);
         }
-        
+
         return filter;
     }
 
