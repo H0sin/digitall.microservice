@@ -66,12 +66,12 @@ public class TelegramService(
     public async Task<string?> GetTelegramBotAsyncByName(string name)
     {
         string cacheKey = $"telegramBot_{name}";
-        
+
         if (memoryCache.TryGetValue(cacheKey, out string? cachedToken))
         {
             return cachedToken;
         }
-        
+
         TelegramBot? bot = await telegramBotRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Name == name);
@@ -522,10 +522,10 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
-        
+
         await notificationService.AddNotificationAsync(
             NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
-        
+
         await transactionService.IncreaseUserAsync(transaction, userChild!.Id, user!.Id);
     }
 
@@ -533,10 +533,10 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         User? userChild = await GetUserByChatIdAsync(valueUserChatId);
-        
-        await  notificationService.AddNotificationAsync(
+
+        await notificationService.AddNotificationAsync(
             NotificationTemplate.SendTransactionNotification(transaction, userChild.Id), user.Id);
-        
+
         await transactionService.DecreaseUserAsync(transaction, userChild!.Id, user!.Id);
     }
 
@@ -672,5 +672,18 @@ public class TelegramService(
 
         await userRepository.UpdateEntity(user);
         await userRepository.SaveChanges(user.Id);
+    }
+
+    public async Task SendMessageForAgentMembers(long chatId, string text)
+    {
+        AgentDto? agent = await GetAgentByAdminChatIdAsync(chatId);
+        if (agent == null) throw new AppException("شما به ای بخش دسترسی ندارید");
+
+        List<UserDto>? users = await agentService.GetAgentUserAsync(agent.Id);
+
+        await notificationService.AddNotificationsAsync(
+            NotificationTemplate.SendMessageForUsers(users.Select(x => x.Id).ToList(),
+                DateTime.Now, text),
+            agent.AgentAdminId);
     }
 }

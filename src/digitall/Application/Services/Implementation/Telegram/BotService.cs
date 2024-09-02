@@ -1666,7 +1666,8 @@ public class BotService(
         var keyboard = new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { "مدیریت پنل نمایندگی \u270f\ufe0f", "آمار نمایندگی \ud83d\udcca" },
-            new KeyboardButton[] { "جستجو کاربر \ud83d\udd0d", "ارسال پیام ✉️" },
+            new KeyboardButton[] { "جستجو کاربر \ud83d\udd0d", "ارسال پیام \u2709\ufe0f" },
+            new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
         })
         {
             ResizeKeyboard = true // تنظیم اندازه کیبورد
@@ -2134,7 +2135,7 @@ public class BotService(
 
         await Task.CompletedTask;
     }
-    
+
     public async Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramMarzbanVpnSession user)
     {
@@ -2864,6 +2865,46 @@ public class BotService(
         catch (Exception e)
         {
             await botClient!.SendTextMessageAsync(chatId, e.Message,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task<Message> SendMessageBeforSendMessageForMember(ITelegramBotClient? botClient,
+        Message message,
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user)
+    {
+        user.State = TelegramMarzbanVpnSessionState.AwaitingSendMessageForAllUser;
+
+        return await botClient.SendTextMessageAsync(
+            message.Chat.Id,
+            "لطفا پیغام خود را ارسال کنید",
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendMessageForMembers(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken)
+    {
+        long chatId = message.Chat.Id;
+        string? text = message.Text;
+        try
+        {
+            if (string.IsNullOrEmpty(text) || text.Length < 5 || text.Length > 700)
+                throw new AppException("""
+                                       نمیتواند متن ارسالی بیشتر از 700 و کمتر از 5 کاراکتر باشد
+                                       لطفا فرمت درست را ارسال کنید
+                                       """);
+            await telegramService.SendMessageForAgentMembers(chatId, text);
+
+            await botClient.SendTextMessageAsync(
+                chatId,
+                "پیغام با موفقیت ارسال شد.",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId,
+                e.Message,
                 cancellationToken: cancellationToken);
         }
     }

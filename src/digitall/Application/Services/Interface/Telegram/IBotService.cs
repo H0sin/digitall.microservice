@@ -25,7 +25,7 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Message> StartLinkAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// send main menu for users
@@ -35,7 +35,7 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendMainMenuAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user, string? title = null);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user, string? title = null);
 
     /// <summary>
     /// send main menu for users
@@ -46,7 +46,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task<Message> SendMainMenuAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user, string? title = null);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user, string? title = null);
 
     /// <summary>
     /// send list exist vpn
@@ -231,7 +231,7 @@ public interface IBotService
     /// after added image complate transaction
     /// </summary>
     /// <returns></returns>
-    Task AddTransactionAsync(ITelegramBotClient? botClient, Message? message, 
+    Task AddTransactionAsync(ITelegramBotClient? botClient, Message? message,
         CancellationToken cancellationToken,
         TelegramMarzbanVpnSession user);
 
@@ -244,7 +244,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task SendFactorAppendGbAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
 
     /// <summary>
@@ -256,7 +256,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task SendFactorAppendDaysAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
 
     /// <summary>
@@ -268,7 +268,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task AcceptAppendGbAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// accept after show factor for buy days append
@@ -279,7 +279,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task AcceptAppendDaysAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// send days price
@@ -500,7 +500,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// decrease user by agent 
@@ -511,7 +511,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// send user management by chat id
@@ -522,8 +522,8 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task<Message> SearchUserByChatAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
-    
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
+
     /// <summary>
     /// update transaction status
     /// </summary>
@@ -563,7 +563,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task<Message> ChangeAgentPaymentOptionAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// change user payment
@@ -573,7 +573,7 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Message> ChangeUserPaymentOptionAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// send list agent by filter
@@ -604,7 +604,7 @@ public interface IBotService
     /// <param name="user"></param>
     /// <returns></returns>
     Task SendMessageForUpdateSpecialPercent(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
 
     /// <summary>
@@ -637,7 +637,7 @@ public interface IBotService
     /// <returns></returns>
     Task SendTicketGroupingAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send ticket for agent async
     /// </summary>
@@ -665,7 +665,7 @@ public interface IBotService
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SendMessageForUserAsync(ITelegramBotClient? botClient,Message message,CancellationToken cancellationToken);
+    Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
 
     /// <summary>
     /// added agent async
@@ -676,7 +676,7 @@ public interface IBotService
     /// <returns></returns>
     Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// send list transactions
     /// </summary>
@@ -685,5 +685,26 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SendTransactionsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send message before
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    Task<Message> SendMessageBeforSendMessageForMember(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
+    
+    /// <summary>
+    /// send message
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMessageForMembers(ITelegramBotClient? botClient, Message message,
         CancellationToken cancellationToken);
 }

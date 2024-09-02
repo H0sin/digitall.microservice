@@ -7,6 +7,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
+using Telegram.Bot.Types;
 
 namespace Application.Static.Template;
 
@@ -268,5 +269,31 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
         };
+    }
+
+    public static List<AddNotificationDto> SendMessageForUsers(List<long> userIds,
+        DateTime createServiceTime, string text)
+    {
+        List<AddNotificationDto> notifications = new();
+        string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
+        foreach (var userId in userIds)
+        {
+            string message = $"""
+                              پیغام دریافتی از نماینده:
+                              ساعت ارسال :{persianTime}
+                              متن پیغام :
+                              {text}
+                              """;
+
+            notifications.Add(new AddNotificationDto()
+            {
+                Message = message,
+                NotificationType = NotificationType.Alter,
+                UserId = userId,
+                ForAllMember = false,
+            });
+        }
+
+        return notifications;
     }
 }

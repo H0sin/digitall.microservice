@@ -420,4 +420,13 @@ public interface ITelegramService
     /// <param name="messageId"></param>
     /// <returns></returns>
     Task UpdateUserMessageId(long chatId,int messageId);
+
+    
+    /// <summary>
+    /// send message for member
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    Task SendMessageForAgentMembers(long chatId, string text);
 }
