@@ -279,10 +279,10 @@ public static class NotificationTemplate
         foreach (var userId in userIds)
         {
             string message = $"""
-                              پیغام دریافتی از نماینده:
-                              ساعت ارسال :{persianTime}
+                              پیغام ارسالی از پشتیبانی:
                               متن پیغام :
                               {text}
+                              ساعت ارسال :{persianTime}
                               """;
 
             notifications.Add(new AddNotificationDto()
