@@ -492,12 +492,18 @@ public class MarzbanServies(
         try
         {
             //get vpn
+
+            
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
             // get user
             User? user = await userRepository.GetEntityById(userId);
-
+            
+            AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
+            
+            AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
+            
             if (user?.FinalCountTestMarzbanAccount > 2)
                 throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
@@ -537,7 +543,9 @@ public class MarzbanServies(
 
             users.Add(new()
             {
-                Username = new Random().Next(1, 123456789).ToString() + marzbanServer.Users + "Test",
+                Username = isAgent != null
+                    ? isAgent.BrandName + "_" + (marzbanServer.Users + 1) + "_" + new Random().Next(10, 99)
+                    : agent.BrandName + "_" + (marzbanServer.Users + 1) + "_" + new Random().Next(10, 99),
                 Expire = unixTimestamp.ToString(),
                 Data_Limit_Reset_Strategy = "no_reset",
                 Inbounds = inbounds,
