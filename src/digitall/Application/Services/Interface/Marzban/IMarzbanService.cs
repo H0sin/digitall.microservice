@@ -307,6 +307,15 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId);
 
+    
+    /// <summary>
+    /// send marzban user by username
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<MarzbanUserDto?> GetMarzbanUserByUsernameAsync(string username, long userId);
+
     /// <summary>
     /// 
     /// </summary>

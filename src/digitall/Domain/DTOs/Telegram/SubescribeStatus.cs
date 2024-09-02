@@ -28,6 +28,9 @@ public class SubescribeStatus
 
         [JsonProperty("last_link_generation")] public DateTime? LastLinkGeneration { get; set; }
 
+        public long MarzbanUserId { get; set; }
+        public long VpnId { get; set; }
+        
         public string GetPersianDate(DateTime? dateTime)
         {
             if (dateTime is null)
@@ -87,6 +90,8 @@ public class SubescribeStatus
             ActiveUntil = marzbanUser.Expire;
             LastConnection = marzbanUser.Sub_Updated_At;
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
+            MarzbanUserId = marzbanUser.Id ;
+            VpnId = marzbanUser.MarzbanVpnId;
         }
 
         public ServiceStatus()

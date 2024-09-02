@@ -27,7 +27,8 @@ public class TelegramMarzbanVpnSession
     public long MinimalAmountForUser { get; set; }
     public long ChildAgentId { get; set; }
     public string? Message { get; set; }
-
+    public string ServiceName { get; set; }
+    
     public TelegramMarzbanVpnSession()
     {
         
@@ -75,7 +76,8 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendSpecialPercent,
     AwaitingSendTicketMessage,
     AwaitingSendMessageForUser,
-    AwaitingSendMessageForAllUser
+    AwaitingSendMessageForAllUser,
+    AwaitingSendServiceName
 }
 
 public static class BotSessions

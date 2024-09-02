@@ -739,11 +739,15 @@ public class MarzbanServies(
 
     public async Task<FilterMarzbanUser> FilterMarzbanUsersAsync(FilterMarzbanUser filter)
     {
-        IQueryable<MarzbanUser> query = marzbanUserRepository.GetQuery();
+        IQueryable<MarzbanUser> query = marzbanUserRepository
+            .GetQuery();
 
         if ((filter.UserId ?? 0) != 0)
             query = query.Where(i => i.UserId == filter.UserId);
-
+        
+        if (!string.IsNullOrEmpty(filter.Username))
+            query = query.Where(x => EF.Functions.Like(x.Username, $"%{filter.Username}%"));
+        
         IQueryable<MarzbanUserDto> users = query.Select(x => new MarzbanUserDto(x));
 
         await filter.Paging(users);
@@ -1124,6 +1128,32 @@ public class MarzbanServies(
             .ToListAsync();
 
         return marzbanUsers;
+    }
+
+    public async Task<MarzbanUserDto?> GetMarzbanUserByUsernameAsync(string username, long userId)
+    {
+        MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
+            .SingleOrDefaultAsync(x => EF.Functions.Like(x.Username, $"%{username}%") & x.UserId == userId);
+
+        MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+        MarzbanUserDto response =
+            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                HttpMethod.Get);
+
+        if (marzbanUser.UserId != userId) marzbanUser = null;
+
+        response.MarzbanServerId = marzbanUser.MarzbanServerId;
+        response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
+        response.Id = marzbanUser.Id;
+        response.UserId = marzbanUser.UserId;
+
+        return marzbanUser switch
+        {
+            null => null,
+            _ => await UpdateMarzbanUserAsync(response, userId),
+        };
     }
 
     // public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)

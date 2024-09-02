@@ -6,4 +6,5 @@ namespace Domain.DTOs.Marzban;
 public class FilterMarzbanUser : BasePaging<MarzbanUserDto>
 {
     public long? UserId { get; set; }
+    public string? Username { get; set; }
 }

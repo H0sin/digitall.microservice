@@ -686,4 +686,13 @@ public class TelegramService(
                 DateTime.Now, text),
             agent.AgentAdminId);
     }
+
+    public async Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByUserName(long chatId, string username)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUsernameAsync(username, user?.Id ?? 0);
+        if (marzbanUser is null) throw new AppException("سرویس وجود نداشت");
+        SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
+        return subescribeStatus;
+    }
 }
