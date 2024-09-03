@@ -401,7 +401,7 @@ public class MarzbanServies(
                     Username = isAgent != null
                         ? isAgent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99)
                         : agent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99),
-                    Expire = unixTimestamp.ToString(),
+                    // Expire = unixTimestamp.ToString(),
                     Data_Limit_Reset_Strategy = "no_reset",
                     Inbounds = inbounds,
                     Note = "",
