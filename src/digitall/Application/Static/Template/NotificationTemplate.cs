@@ -1,9 +1,11 @@
 ﻿using Application.Helper;
 using Data.Migrations;
 using Domain.DTOs.Account;
+using Domain.DTOs.Marzban;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.Entities.Marzban;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
@@ -13,6 +15,33 @@ namespace Application.Static.Template;
 
 public static class NotificationTemplate
 {
+    public static AddNotificationDto DecreaseForDeleteService(long userId, string srvicename, long profit) =>
+        new()
+        {
+            Message = $"""
+                       سرویس {srvicename} حذف شد
+                       مبلغ سود شما از فروش سرویس
+                       از مجودی شما کم شد
+                       مبلغ :{profit:N0}
+                       """,
+            UserId = userId,
+        };
+
+
+    public static AddNotificationDto
+        SendDeleteMarzbanUserNotificationForAgent(long userId, string message, long serviceId) =>
+        new()
+        {
+            Message = message,
+            UserId = userId,
+            Buttons = new()
+            {
+                new("عدم تایید حذف سرویس", $"not_deleted_service?id={serviceId}"),
+                new("حذف سرویس", $"deleted_service?id={serviceId}")
+            }
+        };
+
+
     public static AddNotificationDto Welcome(long? userId = 0, string message = "خوش آمدید")
     {
         return new AddNotificationDto()

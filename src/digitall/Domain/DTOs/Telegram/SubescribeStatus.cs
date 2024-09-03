@@ -112,6 +112,32 @@ public class SubescribeStatus
             VpnId = marzbanUser.MarzbanVpnId;
         }
 
+        public string GenerateServiceDeletionRequestMessage(string telegramUsername,long chatId,string message)
+        {
+            string lastConnection = LastConnection == null ? "متصل نشده" : GetPersianDate(LastConnection);
+            string formattedTotalVolume = FormatVolume(TotalVolume);
+            string formattedUsedVolume = FormatVolume(UsedVolume);
+            string formattedRemainingVolume = FormatVolume(RemainingVolume);
+            string activeUntilDate = ActiveUntil == null ? "نامحدود (نامحدود)" : GetPersianDateFromUnix(ActiveUntil);
+
+            return $"سلام ادمین 👋\n" +
+                   $"📌 یک درخواست حذف سرویس توسط کاربر برای شما ارسال شده است. لطفا بررسی کرده و در صورت درست بودن و موافقت تایید کنید.\n\n" +
+                   $"📊 اطلاعات سرویس کاربر:\n" +
+                   $"آیدی عددی کاربر : {chatId}\n" +
+                   $"نام کاربری کاربر : @{telegramUsername}\n" +
+                   $"نام کاربری کانفیگ : {Username}\n" +
+                   $"وضعیت سرویس : {Status}\n" +
+                   $"لوکیشن : {Location}\n" +
+                   $"کد سرویس : {ServiceCode}\n\n" +
+                   $"🟢 آخرین زمان اتصال شما : {lastConnection}\n\n" +
+                   $"📥 حجم مصرفی : {formattedUsedVolume}\n" +
+                   $"♾ حجم سرویس : {formattedTotalVolume}\n" +
+                   $"🪫 حجم باقی مانده : {formattedRemainingVolume}\n" +
+                   $"📅 فعال تا تاریخ : {activeUntilDate}\n\n" +
+                   $"دلیل حذف سرویس : {message}";
+        }
+
+        
         public ServiceStatus()
         {
             

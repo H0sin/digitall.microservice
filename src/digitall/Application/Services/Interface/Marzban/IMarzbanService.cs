@@ -293,6 +293,15 @@ public interface IMarzbanService
     Task DeleteMarzbanUserAsync(long marzbanUserId,long userId);
 
     /// <summary>
+    /// delete marzban user and back cash
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task MainDeleteMarzbanUserAsync(long marzbanUserId,long userId);
+
+    
+    /// <summary>
     /// revoke marzban user
     /// </summary>
     /// <param name="marzbanUserId"></param>
@@ -322,4 +331,12 @@ public interface IMarzbanService
     /// <param name="marzbanUsers"></param>
     /// <returns></returns>
     // Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers);
+    
+    /// <summary>
+    /// not delete marzban user
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task NotDeleteMarzbanUserAsync(long id, long userId);
 }

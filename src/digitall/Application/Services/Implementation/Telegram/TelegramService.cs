@@ -342,6 +342,12 @@ public class TelegramService(
         await marzbanService.DeleteMarzbanUserAsync(marzbanUserId, user.Id);
     }
 
+    public async Task MainDeleteMarzbanUserAsync(long marzbanUserId, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        await marzbanService.MainDeleteMarzbanUserAsync(marzbanUserId, user.Id);
+    }
+
     public async Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
@@ -692,5 +698,18 @@ public class TelegramService(
         if (marzbanUser is null) throw new AppException("سرویس وجود نداشت");
         SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
         return subescribeStatus;
+    }
+
+    public async Task<bool> DeleteServiceInQue(long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(user.Id);
+        return marzbanUsers.Any(x => x.IsDelete == true);
+    }
+
+    public async Task MainNotDeleteMarzbanUserAsync(long id, long chatId)
+    {
+        User? user = await GetUserByChatIdAsync(chatId);
+        await marzbanService.NotDeleteMarzbanUserAsync(id, user.Id);
     }
 }

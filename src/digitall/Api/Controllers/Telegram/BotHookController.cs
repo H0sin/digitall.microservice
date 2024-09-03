@@ -38,13 +38,11 @@ public class BotHookController(
         {
             _token = token;
 
-            if (memoryCache.TryGetValue(token, out _botClient))
-            {
-            }
+            if (memoryCache.TryGetValue(token, out _botClient)){}
             else
             {
                 _botClient = new TelegramBotClient(token!);
-                memoryCache.Set(token, _botClient, TimeSpan.FromMinutes(10));
+                memoryCache.Set(token, _botClient, TimeSpan.FromMinutes(45));
             }
 
             await HandleUpdateAsync(update, new CancellationToken());
@@ -101,6 +99,9 @@ public class BotHookController(
             {
                 switch (user.State)
                 {
+                    case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteMarzbanUser:
+                        await botService.DeleteMarzbanUserAsync(_botClient, message, cancellationToken, user);
+                        break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendServiceName:
                         CallbackQuery callbackQuery = new CallbackQuery()
                         {
@@ -849,7 +850,7 @@ public class BotHookController(
                 await botService.DisabledMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "delete_service":
-                await botService.DeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
+                await botService.SendTextDeleteMarzbanUserAsync(_botClient, callbackQuery, cancellationToken, user);
                 break;
             case "revoke_sub":
                 await botService.RevokeSubscribeAsync(_botClient, callbackQuery, cancellationToken, user);
@@ -948,6 +949,12 @@ public class BotHookController(
                     chatId: callbackQuery.Message.Chat.Id,
                     text: "لطفا اسم سرویس خود را ارسال کنید",
                     cancellationToken: cancellationToken);
+                break;
+            case "deleted_service":
+                await botService.DeletedMarzbanUserServiceByAgentAsync(_botClient, callbackQuery, cancellationToken);
+                break;
+            case "not_deleted_service":
+                await botService.NotDeleteMarzbanUserServiceByAgentAsync(_botClient, callbackQuery, cancellationToken);
                 break;
             case "send_message_agent":
                 user!.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;

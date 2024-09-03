@@ -15,6 +15,7 @@ using Data.Repositories.Marzban;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
@@ -27,10 +28,12 @@ using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Marzban;
 using Domain.IRepositories.Order;
+using Domain.IRepositories.Transaction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Newtonsoft.Json;
+using Telegram.Bot;
 
 namespace Application.Services.Implementation.Marzban;
 
@@ -41,7 +44,9 @@ public class MarzbanServies(
     IMarzbanUserRepository marzbanUserRepository,
     IMarzbanVpnTemplatesRepository marzbanVpnTemplatesRepository,
     IOrderRepository orderRepository,
+    IOrderDetailRepository orderDetailRepository,
     INotificationService notificationService,
+    IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     IAgentService agentService) : IMarzbanService
 {
     public async Task AddMarzbanServerAsync(AddMarzbanServerDto marzban, long userId)
@@ -332,9 +337,9 @@ public class MarzbanServies(
                 incomes = await countingVpnPrice.CalculateUserIncomes(agentService, userId, template.Price, vpn.TotalGb,
                     vpn.TotalDay, marzbanVpn.GbPrice, marzbanVpn.DayPrice, template?.Price ?? 0, vpn.Count);
             }
-            
+
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
-            
+
             if (user.Balance < totalPrice)
             {
                 if (isAgent == null && user?.Balance < totalPrice)
@@ -347,9 +352,8 @@ public class MarzbanServies(
                 {
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
-
             }
-            
+
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
@@ -748,10 +752,10 @@ public class MarzbanServies(
 
         if ((filter.UserId ?? 0) != 0)
             query = query.Where(i => i.UserId == filter.UserId);
-        
+
         if (!string.IsNullOrEmpty(filter.Username))
             query = query.Where(x => EF.Functions.Like(x.Username, $"%{filter.Username}%"));
-        
+
         IQueryable<MarzbanUserDto> users = query.Select(x => new MarzbanUserDto(x));
 
         await filter.Paging(users);
@@ -1022,8 +1026,52 @@ public class MarzbanServies(
         using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
-            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
+            MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
+                .SingleOrDefaultAsync(x => x.Id == marzbanUserId && x.UserId == userId);
+
             MarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
+            MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+            string token = await marzbanApiRequest.LoginAsync();
+
+            if (string.IsNullOrEmpty(token))
+                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+
+            MarzbanUserDto? serverUser =
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                    HttpMethod.Get);
+            if (serverUser is null)
+                throw new AppException("سرویس یافت نشد");
+
+            marzbanUser.IsDelete = true;
+            await marzbanUserRepository.UpdateEntity(marzbanUser);
+            await marzbanUserRepository.SaveChanges(userId);
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task MainDeleteMarzbanUserAsync(long marzbanUserId, long userId)
+    {
+        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
+            
+            AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
+            List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
+
+            if (!users.Any(x => x.Id == marzbanUser.UserId))
+                throw new AppException("شما مجاز به حدف نیستید");
+
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
@@ -1042,29 +1090,58 @@ public class MarzbanServies(
             double mg = (remaining_data / byteSize);
             long gb = (long)Math.Ceiling(mg);
 
-            if (marzbanUser.Expire == null)
-                throw new BadRequestException();
-
             DateTime expire = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire ?? 0).DateTime;
 
             TimeSpan difference = expire - DateTime.Now;
 
-            long days = (long)Math.Ceiling(difference.TotalDays);
 
-            long price = (marzbanVpn.DayPrice * days) + (marzbanVpn.GbPrice * gb);
+            OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDetailId);
+
+            List<AgentsIncomesDetail> agentsIncomesDetail = await agentsIncomesDetailRepository
+                .GetQuery().Where(x => x.OrderDetailId == orderDetail.Id)
+                .ToListAsync();
+
+            foreach (var agentIncomeDetail in agentsIncomesDetail)
+            {
+                User? userBalance = await userRepository.GetEntityById(agentIncomeDetail.UserId);
+                userBalance.Balance -= agentIncomeDetail.Profit;
+                await userRepository.UpdateEntity(userBalance);
+                await userRepository.SaveChanges(userId);
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.DecreaseForDeleteService(userBalance.Id, marzbanUser.Username,
+                        agentIncomeDetail.Profit), userId);
+            }
+
+            await orderRepository.DeleteEntity(orderDetail.OrderId);
+            await orderRepository.SaveChanges(userId);
+
+            long price = orderDetail.ProductPrice;
 
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;
+
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
 
-            await marzbanUserRepository.DeleteEntity(marzbanUserId);
-            await marzbanUserRepository.SaveChanges(userId);
 
             MarzbanUserDto userDelete =
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                     MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
                     HttpMethod.Delete);
+
+            await notificationService.AddNotificationAsync(new()
+            {
+                Message = $"""
+                           سرویس {marzbanUser.Username}
+                           با موفقیت حذف شد
+                            و مبلغ {price:N0}
+                            به موجودی شما اضافه شد
+                           """,
+                UserId = marzbanUser.UserId,
+            }, userId);
+
+            await marzbanUserRepository.DeleteEntity(marzbanUserId);
+            await marzbanUserRepository.SaveChanges(userId);
 
             await transaction.CommitAsync();
         }
@@ -1141,7 +1218,7 @@ public class MarzbanServies(
 
         MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
-        
+
         MarzbanUserDto response =
             await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                 HttpMethod.Get);
@@ -1160,14 +1237,41 @@ public class MarzbanServies(
         };
     }
 
-    // public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)
-    // {
-    //     foreach (var marzbanUser in marzbanUsers)
-    //     { 
-    //         
-    //     }
-    // }
+    public async Task NotDeleteMarzbanUserAsync(long id, long userId)
+    {
+        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        try
+        {
+            MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
 
+            AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
+            List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
+
+            if (!users.Any(x => x.Id == marzbanUser.UserId))
+                throw new AppException("شما مجاز به عدم حدف نیستید");
+
+            marzbanUser.IsDelete = false;
+
+            await marzbanUserRepository.UpdateEntity(marzbanUser);
+            await marzbanUserRepository.SaveChanges(userId);
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+// public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)
+// {
+//     foreach (var marzbanUser in marzbanUsers)
+//     { 
+//         
+//     }
+// }
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
