@@ -85,7 +85,7 @@ public class User : BaseEntity
 
     public int? MessageId { get; set; }
 
-    // public bool IsSupperAdmin { get; set; }
+    public bool IsSupperAdmin { get; set; }
 
     #endregion
 

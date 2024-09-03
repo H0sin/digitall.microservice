@@ -752,4 +752,23 @@ public interface IBotService
     Task NotDeleteMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
     
+    /// <summary>
+    /// bot admin management
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    Task<Message> SendBotManagementBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
+
+    /// <summary>
+    /// send message in bot
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    Task<Message> SendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
 }

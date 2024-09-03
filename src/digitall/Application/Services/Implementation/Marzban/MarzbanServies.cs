@@ -348,7 +348,7 @@ public class MarzbanServies(
                 }
 
                 if (!(isAgent != null &&
-                      (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+                      (isAgent.AllowNegative || isAgent.AmountWithNegative < totalPrice + user?.Balance)))
                 {
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
@@ -407,7 +407,8 @@ public class MarzbanServies(
                     Note = "",
                     Proxies = proxies,
                     Status = "on_hold",
-                    On_Hold_Expire_Duration = template?.Days * 24 * 3600 ?? 0,
+                    On_Hold_Expire_Duration =
+                        template?.Days != null ? template.Days * 24 * 3600 : vpn.TotalDay * 24 * 3600,
                     On_Hold_Timeout = null,
                     Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
                 });
@@ -838,7 +839,7 @@ public class MarzbanServies(
         mu.Status = user.Status;
         mu.Online_At = user.Online_At;
         mu.Used_Traffic = user.Used_Traffic;
-        mu.OnHoldExpireDuration = user.OnHoldExpireDuration;
+        mu.OnHoldExpireDuration = user.On_Hold_Expire_Duration;
         mu.Sub_Last_User_Agent = user.Sub_Last_User_Agent;
         mu.Data_Limit = user.Data_Limit;
         mu.Sub_Updated_At = user.Sub_Updated_At;
@@ -911,11 +912,10 @@ public class MarzbanServies(
             }
 
             if (!(isAgent != null &&
-                  (isAgent.AllowNegative && isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+                  (isAgent.AllowNegative | isAgent.AmountWithNegative < totalPrice + user?.Balance)))
             {
                 throw new BadRequestException("موجودی شما کافی نیست");
             }
-
 
             foreach (var i in incomes)
             {
@@ -932,10 +932,16 @@ public class MarzbanServies(
             MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(vpn.MarzbanUserId ?? 0, userId);
 
             long byteSize = 1073741824;
+
             DateTime dt = DateTimeOffset.FromUnixTimeSeconds(marzbanUser?.Expire ?? 0).DateTime;
             DateTime futureDate = dt.AddDays(template?.Days ?? vpn.TotalDay);
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
-
+            
+            DateTimeOffset currentTime = DateTimeOffset.UtcNow;
+            long? totalDays = (marzbanUser.On_Hold_Expire_Duration / 86400);
+            DateTimeOffset newTieme = currentTime.AddDays((template?.Days ?? vpn.TotalDay ) + (totalDays ?? 0));
+            long unixTimeSeconds = newTieme.ToUnixTimeSeconds();
+            
             List<Domain.Entities.Order.Order> orders = new()
             {
                 new Domain.Entities.Order.Order()
@@ -962,7 +968,6 @@ public class MarzbanServies(
 
             long orderDetailId = orders.First().OrderDetails.First().Id;
 
-
             await agentService.AddAgentsIncomesDetail(incomes.Select(x => new AgentsIncomesDetail()
             {
                 OrderDetailId = orderDetailId,
@@ -971,17 +976,17 @@ public class MarzbanServies(
                 UserId = x.UserId,
                 Percent = x.Percent
             }).ToList(), userId);
-            
+
             await notificationService.AddNotificationsAsync(NotificationTemplate
                 .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
-                    DateTime.Now,true,marzbanUser.Username), userId);
+                    DateTime.Now, true, marzbanUser.Username), userId);
 
             MarzbanUserDto newMarzbanUser = new()
             {
-                Expire = unixTimestamp,
+                Expire = marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds,
                 Data_Limit_Reset_Strategy = "no_reset",
-                Note = "",
-                Status = "active",
+                Note = "", 
+                Status = "active",        
                 Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0,
             };
 
@@ -1069,7 +1074,7 @@ public class MarzbanServies(
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
-            
+
             AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
             List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
 
@@ -1268,7 +1273,7 @@ public class MarzbanServies(
             throw;
         }
     }
-    
+
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
@@ -1295,7 +1300,7 @@ public class MarzbanServies(
         mu.Status = response.Status;
         mu.Online_At = response.Online_At;
         mu.Used_Traffic = response.Used_Traffic;
-        mu.OnHoldExpireDuration = response.OnHoldExpireDuration;
+        mu.OnHoldExpireDuration = response.On_Hold_Expire_Duration;
         mu.Sub_Last_User_Agent = response.Sub_Last_User_Agent;
         mu.Data_Limit = response.Data_Limit;
         mu.Sub_Updated_At = response.Sub_Updated_At;

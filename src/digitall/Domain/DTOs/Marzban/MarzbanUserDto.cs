@@ -22,7 +22,7 @@ public class MarzbanUserDto
     [JsonProperty("online_at")] public DateTime? Online_At { get; set; }
 
     [JsonProperty("on_hold_expire_duration")]
-    public string? OnHoldExpireDuration { get; set; }
+    public long? On_Hold_Expire_Duration { get; set; }
 
     [JsonProperty("on_hold_timeout")] public string? OnHoldTimeout { get; set; }
 
@@ -59,7 +59,7 @@ public class MarzbanUserDto
         Sub_Updated_At = marzbanUser.Sub_Updated_At;
         Sub_Last_User_Agent = marzbanUser.Sub_Last_User_Agent;
         Online_At = marzbanUser.Online_At;
-        OnHoldExpireDuration = marzbanUser.OnHoldExpireDuration;
+        On_Hold_Expire_Duration = marzbanUser.OnHoldExpireDuration;
         OnHoldTimeout = marzbanUser.OnHoldTimeout;
         Username = marzbanUser.Username;
         Status = marzbanUser.Status;

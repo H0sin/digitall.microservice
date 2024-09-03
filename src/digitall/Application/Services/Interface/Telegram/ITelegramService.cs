@@ -468,4 +468,6 @@ public interface ITelegramService
     /// <param name="agentId"></param>
     /// <returns></returns>
     Task<List<AgentsIncomesDetail>> GetAgentIncomesDetails(long agentId);
+    
+    // Task<>
 }
