@@ -407,6 +407,7 @@ public class MarzbanServies(
                     Note = "",
                     Proxies = proxies,
                     Status = "on_hold",
+                    On_Hold_Expire_Duration = template?.Days != null ? template.Days + 1 : vpn.TotalDay,
                     Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
                 });
             }
@@ -978,7 +979,7 @@ public class MarzbanServies(
                 Data_Limit_Reset_Strategy = "no_reset",
                 Note = "",
                 Status = "active",
-                Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0
+                Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0,
             };
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
