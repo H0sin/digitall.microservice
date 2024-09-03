@@ -12,7 +12,7 @@ namespace Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<long>(
-                name: "On_Hold_Expire_Duration",
+                name: "OnHoldExpireDuration",
                 table: "MarzbanUsers",
                 type: "bigint",
                 nullable: true,
@@ -214,7 +214,7 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "On_Hold_Expire_Duration",
+                name: "OnHoldExpireDuration",
                 table: "MarzbanUsers",
                 type: "nvarchar(max)",
                 nullable: true,
