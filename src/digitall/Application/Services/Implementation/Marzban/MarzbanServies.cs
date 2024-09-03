@@ -407,7 +407,8 @@ public class MarzbanServies(
                     Note = "",
                     Proxies = proxies,
                     Status = "on_hold",
-                    On_Hold_Expire_Duration = template?.Days != null ? template.Days + 1 : vpn.TotalDay,
+                    On_Hold_Expire_Duration = template?.Days * 24 * 3600 ?? 0,
+                    On_Hold_Timeout = null,
                     Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
                 });
             }
@@ -445,7 +446,8 @@ public class MarzbanServies(
                     OrderDetailId = orderDetailId,
                     Profit = x.Balance,
                     AgentId = x.AgentId,
-                    UserId = x.UserId
+                    UserId = x.UserId,
+                    Percent = x.Percent
                 }).ToList(), userId);
 
             List<MarzbanUser> marzbanUsers = await AddMarzbanUserAsync(users, marzbanServer.Id);
@@ -966,7 +968,8 @@ public class MarzbanServies(
                 OrderDetailId = orderDetailId,
                 Profit = x.Balance,
                 AgentId = x.AgentId,
-                UserId = x.UserId
+                UserId = x.UserId,
+                Percent = x.Percent
             }).ToList(), userId);
             
             await notificationService.AddNotificationsAsync(NotificationTemplate

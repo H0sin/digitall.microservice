@@ -84,7 +84,9 @@ public class User : BaseEntity
     public bool CardToCardPayment { get; set; } = false;
 
     public int? MessageId { get; set; }
-    
+
+    // public bool IsSupperAdmin { get; set; }
+
     #endregion
 
     #region relations

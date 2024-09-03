@@ -18,8 +18,8 @@ public class AddMarzbanUserDto
 
     [JsonProperty("status")] public string Status { get; set; }
     [JsonProperty("note")] public string Note { get; set; }
-    [JsonProperty("on_hold_timeout")] public string On_Hold_Timeout { get; set; }
+    [JsonProperty("on_hold_timeout")] public string? On_Hold_Timeout { get; set; }
 
     [JsonProperty("on_hold_expire_duration")]
-    public int On_Hold_Expire_Duration { get; set; }
+    public long On_Hold_Expire_Duration { get; set; }
 }

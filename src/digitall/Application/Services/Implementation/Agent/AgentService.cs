@@ -31,6 +31,9 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    public async Task<List<AgentsIncomesDetail>> ListAgentIncomeDetailsByAgentId(long agentId)
+        => await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agentId).ToListAsync();
+
     public async Task<List<UserDto>?> GetAgentUserAsync(long agentId)
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository

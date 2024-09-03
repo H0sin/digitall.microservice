@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Account;
 using Domain.Entities.Account;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Microsoft.EntityFrameworkCore;
 

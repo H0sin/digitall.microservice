@@ -13,6 +13,13 @@ namespace Application.Services.Interface.Agent;
 public interface IAgentService
 {
     /// <summary>
+    /// send list agent
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<List<AgentsIncomesDetail>> ListAgentIncomeDetailsByAgentId(long agentId);
+    
+    /// <summary>
     /// get users  by agent Id
     /// </summary>
     /// <param name="agentId"></param>

@@ -19,6 +19,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
@@ -2149,7 +2150,7 @@ public class BotService(
         UserInformationDto information = await telegramService.GetUserInformationAsync(chatId, userId);
 
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(information.ChatId ?? 0);
-
+        
 
         keys.Add(new()
         {
@@ -2178,6 +2179,9 @@ public class BotService(
         if (isAgent)
         {
             AgentDto? admin = await telegramService.GetAgentByAdminChatIdAsync(information.ChatId ?? 0);
+            List<AgentsIncomesDetail> incomes = await telegramService.GetAgentIncomesDetails(admin.Id);
+            information.SumAgentIncomes = incomes.Sum(x => x.Profit);
+            
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("تغییر در صد نماینده  \u2699\ufe0f",
