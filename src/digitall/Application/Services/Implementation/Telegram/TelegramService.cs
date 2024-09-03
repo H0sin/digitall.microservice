@@ -24,6 +24,7 @@ using Domain.DTOs.Marzban;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 using Domain.Enums.Transaction;
@@ -150,7 +151,7 @@ public class TelegramService(
     public async Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId)
     {
         User? user = await GetUserByChatIdAsync(chatId);
-        
+
         SubscribeFactorBotDto factor = new();
 
         factor.Title = buy.Title ?? "خرید سرویس کاهش پینگ";
@@ -498,12 +499,14 @@ public class TelegramService(
         if (current_user is null) throw new AppException("کاربر وجود نداشت");
 
         UserInformationDto information = new UserInformationDto();
+
         List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(current_user.Id);
 
         List<TransactionDto> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(current_user.Id);
 
-        information.TotalPurchaseAmount = await orderService.GetAllUserOrderPriceAsync(current_user.Id);
+        information.TotalPurchaseAmount = await orderService
+            .GetAllUserOrderPriceAsync(current_user.Id);
         information.CountMarzbanUser = marzbanUsers.Count;
         information.FirstName = current_user.FirstName;
         information.LastName = current_user.LastName;
@@ -711,5 +714,10 @@ public class TelegramService(
     {
         User? user = await GetUserByChatIdAsync(chatId);
         await marzbanService.NotDeleteMarzbanUserAsync(id, user.Id);
+    }
+
+    public async Task<List<AgentsIncomesDetail>> GetAgentIncomesDetails(long agentId)
+    {
+        return await agentService.ListAgentIncomeDetailsByAgentId(agentId);
     }
 }

@@ -44,7 +44,8 @@ public class CountingVpnPrice
                     {
                         percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
                     }
-                    if(admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
+
+                    if (admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
                         percent = admin?.SpecialPercent == 0 ? 1 : admin?.SpecialPercent ?? 1;
                 }
                 else
@@ -105,10 +106,10 @@ public class CountingVpnPrice
                 {
                     percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
                 }
-                
-                if(admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
+
+                if (admin?.SpecialPercent != 0 && admin?.SpecialPercent != null && i == 0)
                     percent = admin?.SpecialPercent == 0 ? 1 : admin?.SpecialPercent ?? 1;
-                
+
                 double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;
 
                 long totalProfit = 0;
@@ -129,7 +130,8 @@ public class CountingVpnPrice
                     totalProfit = gbProfit + dayProfit;
                 }
 
-                users.Add(new CalculatorUserIncome(agentByPath.AgentAdminId, totalProfit, agentByPath.Id));
+                users.Add(new CalculatorUserIncome(agentByPath.AgentAdminId, totalProfit, agentByPath.Id,
+                    (int)multiplier));
             }
         }
 
@@ -150,63 +152,5 @@ public class CountingVpnPrice
         }
     }
 
-
-    public async Task<List<CalculatorUserIncome>> CalculateUserIncomesAsync(
-        IAgentService agentService,
-        long finalPrice,
-        long userId,
-        int numberOfAgents = 1)
-    {
-        // دریافت نماینده اصلی و نماینده فعلی
-        AgentDto? admin = await agentService.GetAgentByAdminIdAsync(userId);
-        AgentDto? agent = await agentService.GetAgentByUserIdAsync(userId);
-
-        if (agent == null)
-            throw new NotFoundException("نمایندگی شما غیر فعال شده است");
-
-        // لیست برای ذخیره درآمدهای نمایندگان
-        List<CalculatorUserIncome> users = new();
-        Dictionary<long, long> userIncomes = new(); // برای ذخیره درآمد هر کاربر
-
-        // شروع با قیمت نهایی
-        long currentPrice = finalPrice;
-
-        // محاسبه سود از داخلی‌ترین سطح به بالاترین سطح
-        for (int i = 0; i <= numberOfAgents; i++)
-        {
-            HierarchyId ancestorPath = agent.AgentPath.GetAncestor(i);
-            Domain.Entities.Agent.Agent? agentByPath = await agentService.GetAgentByPathAsync(ancestorPath);
-
-            if (agentByPath != null)
-            {
-                // دریافت درصد سود نماینده
-                double percent = GetAgentPercent(agentByPath, admin, i);
-                double multiplier = percent / 100.0;
-
-                // محاسبه سود بر اساس درصد سود
-                long profit = Convert.ToInt64(currentPrice * multiplier);
-
-                // ذخیره سود در دیکشنری
-                if (userIncomes.ContainsKey(agentByPath.AgentAdminId))
-                {
-                    userIncomes[agentByPath.AgentAdminId] += profit;
-                }
-                else
-                {
-                    userIncomes[agentByPath.AgentAdminId] = profit;
-                }
-
-                // به روز رسانی قیمت برای نمایندگان بالاتر
-                currentPrice -= profit; // کاهش قیمت به مقدار سود نماینده فعلی
-            }
-        }
-
-        // ایجاد لیست نهایی
-        foreach (var entry in userIncomes)
-        {
-            users.Add(new CalculatorUserIncome(entry.Key, entry.Value, entry.Key));
-        }
-
-        return users;
-    }
+    
 }

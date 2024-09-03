@@ -7,6 +7,7 @@ using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
 using Domain.Entities.Marzban;
+using Domain.Entities.Transaction;
 using Domain.Enums.Agent;
 using Domain.Enums.Marzban;
 
@@ -460,4 +461,11 @@ public interface ITelegramService
     /// <param name="chatId"></param>
     /// <returns></returns>
     Task MainNotDeleteMarzbanUserAsync(long id, long chatId);
+
+    /// <summary>
+    /// send sum agent income
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<List<AgentsIncomesDetail>> GetAgentIncomesDetails(long agentId);
 }
