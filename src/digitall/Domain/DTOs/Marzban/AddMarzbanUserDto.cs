@@ -21,5 +21,5 @@ public class AddMarzbanUserDto
     [JsonProperty("on_hold_timeout")] public string On_Hold_Timeout { get; set; }
 
     [JsonProperty("on_hold_expire_duration")]
-    public string On_Hold_Expire_Duration { get; set; }
+    public int On_Hold_Expire_Duration { get; set; }
 }
