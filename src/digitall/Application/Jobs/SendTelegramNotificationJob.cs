@@ -39,6 +39,7 @@ public class SendTelegramNotificationJob : IJob
 
             for (int x = 0; x < index; x++)
             {
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 NotificationDto notification = notifications[x];
 
                 if (notification.ChatId is not null && notification.BotId is not null)

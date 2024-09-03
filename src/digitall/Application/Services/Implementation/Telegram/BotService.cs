@@ -675,11 +675,26 @@ public class BotService(
                         cancellationToken: cancellationToken);
                 }
             }
-
-            await botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken: cancellationToken);
+            
+            
+            if (subscribeId > 0 && marzbanUsers.Count == 0)
+            {
+                await botClient.SendTextMessageAsync(chatId,"""
+                                                            🙏 با تشکر از تمدید سرویس خود.
+                                                            ✅ تمدید شما با موفقیت انجام شد.
+                                                            ⬅️ برای بازگشت به لیست سرویس‌های خود یا مشاهده اطلاعات، روی دکمه‌های زیر کلیک کنید.
+                                                            """,
+                    replyMarkup:new InlineKeyboardMarkup(new []
+                    {
+                        InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_services"),
+                        InlineKeyboardButton.WithCallbackData("بازگشت به سرویس 🏠",$"subscribe_info?id={subscribeId}&vpnId={marzbanvpnid}"),
+                    })
+                    ,cancellationToken:cancellationToken);
+            }
+            
             user.State = TelegramMarzbanVpnSessionState.None;
 
-
+            await botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken: cancellationToken);
             await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, user);
         }
         catch (Exception e)
@@ -1739,8 +1754,11 @@ public class BotService(
     public async Task SendAgentMenuForAdmin(ITelegramBotClient botClient, long chatId,
         CancellationToken cancellationToken)
     {
+        User? user = await telegramService.GetUserByChatIdAsync(chatId);
+
         var keyboard = new ReplyKeyboardMarkup(new[]
         {
+            (user!.IsSupperAdmin ? new KeyboardButton[] { "مدیرت ربات \u2699\ufe0f" } : new KeyboardButton[] { }),
             new KeyboardButton[] { "مدیریت پنل نمایندگی \u270f\ufe0f", "آمار نمایندگی \ud83d\udcca" },
             new KeyboardButton[] { "جستجو کاربر \ud83d\udd0d", "ارسال پیام \u2709\ufe0f" },
             new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
@@ -2150,7 +2168,7 @@ public class BotService(
         UserInformationDto information = await telegramService.GetUserInformationAsync(chatId, userId);
 
         bool isAgent = await telegramService.IsAgentAsyncByChatIdAsync(information.ChatId ?? 0);
-        
+
 
         keys.Add(new()
         {
@@ -2181,7 +2199,7 @@ public class BotService(
             AgentDto? admin = await telegramService.GetAgentByAdminChatIdAsync(information.ChatId ?? 0);
             List<AgentsIncomesDetail> incomes = await telegramService.GetAgentIncomesDetails(admin.Id);
             information.SumAgentIncomes = incomes.Sum(x => x.Profit);
-            
+
             keys.Add(new()
             {
                 InlineKeyboardButton.WithCallbackData("تغییر در صد نماینده  \u2699\ufe0f",
@@ -3133,6 +3151,49 @@ public class BotService(
                 cancellationToken: cancellationToken);
         }
     }
+
+    public async Task<Message> SendBotManagementBotAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken,
+        TelegramMarzbanVpnSession? value)
+    {
+        long chatId = message!.Chat.Id;
+
+        try
+        {
+            User? user = await telegramService.GetUserByChatIdAsync(chatId);
+
+            var keyboard = new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton[] { "آمار ربات \u2699\ufe0f", "غیر فعال سازی ربات \u274c" },
+                new KeyboardButton[] { "ارسال پیام داخلی \u2709\ufe0f" },
+                new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
+            })
+            {
+                ResizeKeyboard = true // تنظیم اندازه کیبورد
+            };
+
+            return await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: "لطفاً یک گزینه را انتخاب کنید:",
+                replyMarkup: keyboard,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            return await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public Task<Message> SendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+        TelegramMarzbanVpnSession? value)
+    {
+        throw new NotImplementedException();
+    }
+
 
     private async Task DeleteMenu(ITelegramBotClient? botClient, long chatId,
         CancellationToken cancellationToken)

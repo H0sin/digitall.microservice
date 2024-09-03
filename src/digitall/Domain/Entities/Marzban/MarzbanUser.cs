@@ -24,7 +24,7 @@ public class MarzbanUser : BaseEntity
     public string? Sub_Last_User_Agent { get; set; }
     public DateTime? Online_At { get; set; }
     public string? Subscription_Url { get; set; } = "";
-    public string? OnHoldExpireDuration { get; set; }
+    public long? OnHoldExpireDuration { get; set; }
     public string? OnHoldTimeout { get; set; }
     public string? Status { get; set; } 
     public long? Used_Traffic { get; set; }
