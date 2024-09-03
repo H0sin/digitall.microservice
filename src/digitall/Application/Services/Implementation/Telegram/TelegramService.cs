@@ -306,7 +306,7 @@ public class TelegramService(
         }
 
         if (user?.BotId != start.BotId && telegramBot?.Agent?.AgentAdminId != user?.Id)
-            throw new ApplicationException("شما در ربات دیگری عضو شدید");
+            throw new ApplicationException("شما مجاز به استفاده نیستید!");
 
         return await agentService.GetAgentOptionByAgentIdAsync(agent?.AgentAdminId ?? telegramBot!.Agent!.Id);
     }

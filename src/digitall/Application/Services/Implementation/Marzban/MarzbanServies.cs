@@ -406,7 +406,7 @@ public class MarzbanServies(
                     Inbounds = inbounds,
                     Note = "",
                     Proxies = proxies,
-                    Status = "active",
+                    Status = "on_hold",
                     Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
                 });
             }
@@ -967,6 +967,10 @@ public class MarzbanServies(
                 AgentId = x.AgentId,
                 UserId = x.UserId
             }).ToList(), userId);
+            
+            await notificationService.AddNotificationsAsync(NotificationTemplate
+                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
+                    DateTime.Now,true,marzbanUser.Username), userId);
 
             MarzbanUserDto newMarzbanUser = new()
             {
@@ -974,7 +978,7 @@ public class MarzbanServies(
                 Data_Limit_Reset_Strategy = "no_reset",
                 Note = "",
                 Status = "active",
-                Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)) + marzbanUser?.Data_Limit ?? 0,
+                Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0
             };
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
@@ -988,10 +992,6 @@ public class MarzbanServies(
             MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
-
-            await notificationService.AddNotificationsAsync(NotificationTemplate
-                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
-                    DateTime.Now), userId);
 
             await UpdateMarzbanUserAsync(marzbanUser, userId);
 
@@ -1264,14 +1264,7 @@ public class MarzbanServies(
             throw;
         }
     }
-
-// public async Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers)
-// {
-//     foreach (var marzbanUser in marzbanUsers)
-//     { 
-//         
-//     }
-// }
+    
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);

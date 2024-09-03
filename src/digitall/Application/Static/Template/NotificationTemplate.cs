@@ -206,7 +206,7 @@ public static class NotificationTemplate
         string? userName,
         long chatId,
         long price,
-        DateTime createServiceTime)
+        DateTime createServiceTime,bool renewal=false,string marzbanUsername=null)
     {
         List<AddNotificationDto> notifications = new();
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
@@ -214,15 +214,34 @@ public static class NotificationTemplate
         {
             string? price_No = $"{price:N0}";
             string? balance_No = $"{income.Balance:N0}";
-            string message = $"""
-                              🛍 خرید جدید
-                              کاربری با شناسه :`\{chatId}`\
-                              نام کاربری :@{userName}
-                              سفارسی ثبت کرد
-                              سود شما از خرید:{balance_No} تومان
-                              مبلغ کسر شده از موجودی کاربر:{price_No} تومان
-                              تاریخ خرید سرویس:{persianTime}
-                              """;
+            string message = ""; 
+            
+            if (renewal)
+            {
+                message = $"""
+                           🛍 تمدید جدید
+                           کاربری با شناسه :`\{chatId}`\
+                           نام کاربری :@{userName}
+                           سرویسی را تمدید کرد
+                           نام سرویس:{marzbanUsername}
+                           سود شما از خرید:{balance_No} تومان
+                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                           تاریخ خرید سرویس:{persianTime}
+                           """;
+            }
+            else
+            {
+                message = $"""
+                           🛍 خرید جدید
+                           کاربری با شناسه :`\{chatId}`\
+                           نام کاربری :@{userName}
+                           سفارسی ثبت کرد
+                           سود شما از خرید:{balance_No} تومان
+                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                           تاریخ خرید سرویس:{persianTime}
+                           """;
+            }
+
 
             notifications.Add(new AddNotificationDto()
             {
