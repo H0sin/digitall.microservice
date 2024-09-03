@@ -13,8 +13,8 @@ using Microsoft.SqlServer.Types;
 namespace Data.Migrations
 {
     [DbContext(typeof(DigitallDbContext))]
-    [Migration("20240903185149_ali")]
-    partial class ali
+    [Migration("20240903190129_ali2")]
+    partial class ali2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -149,9 +149,9 @@ namespace Data.Migrations
                             CardToCardPayment = false,
                             ChatId = 1246211305L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 193, DateTimeKind.Local).AddTicks(1056),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 186, DateTimeKind.Local).AddTicks(4953),
                             Email = "h.faraji8079@gmail.com",
-                            EmailActiveCode = "29bb70aa822f446eb68067907a61ec7d",
+                            EmailActiveCode = "410457c8bbc549a38a35205cf5538df0",
                             FinalCountTestMarzbanAccount = 0L,
                             FirstName = "حسین",
                             IsBlocked = false,
@@ -161,8 +161,8 @@ namespace Data.Migrations
                             IsSupperAdmin = false,
                             LastName = "فرجی",
                             Mobile = "09913737962",
-                            MobileActiveCode = "822267",
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 193, DateTimeKind.Local).AddTicks(1073),
+                            MobileActiveCode = "258618",
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 186, DateTimeKind.Local).AddTicks(4967),
                             ModifyBy = 1L,
                             Password = "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59",
                             TelegramUsername = "lll_hosin_lll",
@@ -239,16 +239,16 @@ namespace Data.Migrations
                         {
                             Id = 100001L,
                             AgentAdminId = 1L,
-                            AgentCode = 900274L,
+                            AgentCode = 198249L,
                             AgentPath = Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"),
                             AgentPercent = 0L,
                             AllowNegative = false,
                             AmountWithNegative = 0L,
                             BrandName = "Samani",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 187, DateTimeKind.Local).AddTicks(3320),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 182, DateTimeKind.Local).AddTicks(3354),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 187, DateTimeKind.Local).AddTicks(3664),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 182, DateTimeKind.Local).AddTicks(3543),
                             ModifyBy = 1L,
                             PersianBrandName = "سامانی",
                             UserPercent = 0L
@@ -422,9 +422,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 199, DateTimeKind.Local).AddTicks(3505),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 190, DateTimeKind.Local).AddTicks(553),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 199, DateTimeKind.Local).AddTicks(3520),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 190, DateTimeKind.Local).AddTicks(564),
                             ModifyBy = 1L,
                             SystemName = "FilterUsers",
                             Title = "لیست کاربران"
@@ -468,9 +468,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4486),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4550),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4562),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4570),
                             ModifyBy = 1L,
                             Title = "مدیر"
                         },
@@ -478,9 +478,9 @@ namespace Data.Migrations
                         {
                             Id = 2L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4615),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4582),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4619),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4583),
                             ModifyBy = 1L,
                             Title = "همکار"
                         },
@@ -488,9 +488,9 @@ namespace Data.Migrations
                         {
                             Id = 3L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4620),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4584),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 195, DateTimeKind.Local).AddTicks(4622),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(4585),
                             ModifyBy = 1L,
                             Title = "کاربر"
                         });
@@ -538,10 +538,10 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(7640),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7066),
                             IsDelete = false,
                             MenuId = 1L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(7657),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7076),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -549,10 +549,10 @@ namespace Data.Migrations
                         {
                             Id = 2L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8316),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7813),
                             IsDelete = false,
                             MenuId = 2L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8320),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7815),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -560,10 +560,10 @@ namespace Data.Migrations
                         {
                             Id = 3L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8322),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7817),
                             IsDelete = false,
                             MenuId = 3L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8323),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7817),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -571,10 +571,10 @@ namespace Data.Migrations
                         {
                             Id = 4L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8325),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7819),
                             IsDelete = false,
                             MenuId = 4L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8325),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7819),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -582,10 +582,10 @@ namespace Data.Migrations
                         {
                             Id = 5L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8335),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7821),
                             IsDelete = false,
                             MenuId = 5L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8335),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7821),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -593,10 +593,10 @@ namespace Data.Migrations
                         {
                             Id = 6L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8363),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7832),
                             IsDelete = false,
                             MenuId = 6L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8363),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7832),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -604,10 +604,10 @@ namespace Data.Migrations
                         {
                             Id = 7L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8365),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7834),
                             IsDelete = false,
                             MenuId = 1L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8365),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7834),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -615,10 +615,10 @@ namespace Data.Migrations
                         {
                             Id = 8L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8371),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7835),
                             IsDelete = false,
                             MenuId = 2L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8371),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7836),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -626,10 +626,10 @@ namespace Data.Migrations
                         {
                             Id = 9L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8373),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7837),
                             IsDelete = false,
                             MenuId = 3L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8373),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7837),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -637,10 +637,10 @@ namespace Data.Migrations
                         {
                             Id = 10L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8378),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7840),
                             IsDelete = false,
                             MenuId = 4L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8378),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7840),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -648,10 +648,10 @@ namespace Data.Migrations
                         {
                             Id = 11L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8382),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7845),
                             IsDelete = false,
                             MenuId = 5L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 198, DateTimeKind.Local).AddTicks(8382),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(7846),
                             ModifyBy = 1L,
                             RoleId = 2L
                         });
@@ -699,9 +699,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 199, DateTimeKind.Local).AddTicks(8719),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 190, DateTimeKind.Local).AddTicks(5073),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 199, DateTimeKind.Local).AddTicks(8732),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 190, DateTimeKind.Local).AddTicks(5082),
                             ModifyBy = 1L,
                             PermissionId = 1L,
                             RoleId = 1L
@@ -750,9 +750,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 197, DateTimeKind.Local).AddTicks(5496),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(2427),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 197, DateTimeKind.Local).AddTicks(5502),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(2430),
                             ModifyBy = 1L,
                             RoleId = 1L,
                             UserId = 1L
@@ -1167,9 +1167,9 @@ namespace Data.Migrations
                             Id = 1L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(6367),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(9267),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(6334),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(9262),
                             ModifyBy = 1L,
                             Sorted = 1,
                             Title = "اصلی"
@@ -1182,11 +1182,11 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Home",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(7084),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(9628),
                             Icon = "box",
                             IsDelete = false,
                             Link = "/",
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(7080),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 188, DateTimeKind.Local).AddTicks(9627),
                             ModifyBy = 1L,
                             ParentId = 1L,
                             Sorted = 2,
@@ -1197,9 +1197,9 @@ namespace Data.Migrations
                             Id = 3L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8877),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(439),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8874),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(437),
                             ModifyBy = 1L,
                             Sorted = 3,
                             Title = "عملیات"
@@ -1209,10 +1209,10 @@ namespace Data.Migrations
                             Id = 4L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8880),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(441),
                             Icon = "list",
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8880),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(440),
                             ModifyBy = 1L,
                             ParentId = 3L,
                             Sorted = 4,
@@ -1226,10 +1226,10 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Account",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8884),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(444),
                             IsDelete = false,
                             Link = "Account/Users",
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8883),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(443),
                             ModifyBy = 1L,
                             ParentId = 4L,
                             Sorted = 5,
@@ -1243,10 +1243,10 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Account",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8901),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(462),
                             IsDelete = false,
                             Link = "Account/AllUsers",
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 196, DateTimeKind.Local).AddTicks(8900),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 189, DateTimeKind.Local).AddTicks(461),
                             ModifyBy = 1L,
                             ParentId = 4L,
                             Sorted = 6,
@@ -1798,12 +1798,12 @@ namespace Data.Migrations
                             AgentId = 100001L,
                             BotId = 7419690675L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 201, DateTimeKind.Local).AddTicks(1010),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 191, DateTimeKind.Local).AddTicks(2823),
                             Description = "ربات مستر ما",
                             HostAddress = "https://test.samanii.com",
                             IsDelete = false,
                             Link = "https://t.me/master_digitall_vpn_bot",
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 201, DateTimeKind.Local).AddTicks(3053),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 191, DateTimeKind.Local).AddTicks(3821),
                             ModifyBy = 1L,
                             Name = "master_digitall_vpn_bot",
                             PersionName = "ربات اصلی مستر",
@@ -1996,14 +1996,14 @@ namespace Data.Migrations
                             CardHolderName = "حسین فرجی",
                             CardNumber = "6037691610791079",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 3, 22, 21, 48, 200, DateTimeKind.Local).AddTicks(6486),
+                            CreateDate = new DateTime(2024, 9, 3, 22, 31, 28, 191, DateTimeKind.Local).AddTicks(82),
                             Description = "توضیحات",
                             IsDelete = false,
                             MaximumAmountForAgent = 2000000L,
                             MaximumAmountForUser = 2000000L,
                             MinimalAmountForAgent = 100000L,
                             MinimalAmountForUser = 10000L,
-                            ModifiedDate = new DateTime(2024, 9, 3, 22, 21, 48, 200, DateTimeKind.Local).AddTicks(6495),
+                            ModifiedDate = new DateTime(2024, 9, 3, 22, 31, 28, 191, DateTimeKind.Local).AddTicks(86),
                             ModifyBy = 1L
                         });
                 });
