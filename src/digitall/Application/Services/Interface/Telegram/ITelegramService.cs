@@ -196,6 +196,14 @@ public interface ITelegramService
     Task DeleteMarzbanUserAsync(long marzbanUserId, long chatId);
 
     /// <summary>
+    /// delete marzban user
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task MainDeleteMarzbanUserAsync(long marzbanUserId, long chatId);
+
+    /// <summary>
     /// revoke marzban user async
     /// </summary>
     /// <param name="marzbanUserId"></param>
@@ -437,4 +445,19 @@ public interface ITelegramService
     /// <param name="username"></param>
     /// <returns></returns>
     Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByUserName(long chatId, string username);
+
+    /// <summary>
+    /// delete service in que
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<bool> DeleteServiceInQue(long chatId);
+
+    /// <summary>
+    /// not delete service by agent
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task MainNotDeleteMarzbanUserAsync(long id, long chatId);
 }

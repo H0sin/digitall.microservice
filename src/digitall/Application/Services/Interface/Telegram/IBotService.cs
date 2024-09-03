@@ -333,9 +333,21 @@ public interface IBotService
     /// <param name="cancellationToken"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+    Task SendTextDeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
 
+
+    /// <summary>
+    /// delete service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user);
+    
     /// <summary>
     /// when change link subscrive
     /// </summary>
@@ -719,4 +731,25 @@ public interface IBotService
     /// <returns></returns>
     Task GetServiceByUserNameAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
         TelegramMarzbanVpnSession user);
+
+    /// <summary>
+    /// delete service by agent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task DeletedMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// not delete service by agent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task NotDeleteMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+    
 }

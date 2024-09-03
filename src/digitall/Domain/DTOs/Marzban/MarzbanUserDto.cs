@@ -40,7 +40,8 @@ public class MarzbanUserDto
     [JsonProperty("links")] public List<string?> Links { get; set; } = new();
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
-    
+
+    public bool IsDelete { get; set; }
     public long MarzbanVpnId { get; set; }
     public long MarzbanServerId { get; set; }
     public long UserId { get; set; }
@@ -70,5 +71,6 @@ public class MarzbanUserDto
         MarzbanVpnId = marzbanUser.MarzbanVpnId;
         MarzbanServerId = marzbanUser.MarzbanServerId;
         UserId = marzbanUser.UserId;
+        IsDelete = marzbanUser.IsDelete;
     }
 }
