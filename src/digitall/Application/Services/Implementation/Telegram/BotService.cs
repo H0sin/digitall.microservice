@@ -675,23 +675,24 @@ public class BotService(
                         cancellationToken: cancellationToken);
                 }
             }
-            
-            
+
+
             if (subscribeId > 0 && marzbanUsers.Count == 0)
             {
-                await botClient.SendTextMessageAsync(chatId,"""
-                                                            🙏 با تشکر از تمدید سرویس خود.
-                                                            ✅ تمدید شما با موفقیت انجام شد.
-                                                            ⬅️ برای بازگشت به لیست سرویس‌های خود یا مشاهده اطلاعات، روی دکمه‌های زیر کلیک کنید.
-                                                            """,
-                    replyMarkup:new InlineKeyboardMarkup(new []
+                await botClient.SendTextMessageAsync(chatId, """
+                                                             🙏 با تشکر از تمدید سرویس خود.
+                                                             ✅ تمدید شما با موفقیت انجام شد.
+                                                             ⬅️ برای بازگشت به لیست سرویس‌های خود یا مشاهده اطلاعات، روی دکمه‌های زیر کلیک کنید.
+                                                             """,
+                    replyMarkup: new InlineKeyboardMarkup(new[]
                     {
                         InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_services"),
-                        InlineKeyboardButton.WithCallbackData("بازگشت به سرویس 🏠",$"subscribe_info?id={subscribeId}&vpnId={marzbanvpnid}"),
+                        InlineKeyboardButton.WithCallbackData("بازگشت به سرویس 🏠",
+                            $"subscribe_info?id={subscribeId}&vpnId={marzbanvpnid}"),
                     })
-                    ,cancellationToken:cancellationToken);
+                    , cancellationToken: cancellationToken);
             }
-            
+
             user.State = TelegramMarzbanVpnSessionState.None;
 
             await botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken: cancellationToken);
@@ -1172,10 +1173,10 @@ public class BotService(
 
             if (isAgent)
                 information =
-                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForAgent} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent} تومان می باشد";
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForAgent:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent:N0} تومان می باشد";
             else
                 information =
-                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser} حداکثر مبلغ {transactionDetail.MaximumAmountForUser} تومان می باشد";
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForUser:N0} تومان می باشد";
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
@@ -1235,7 +1236,7 @@ public class BotService(
         });
 
         string text =
-            $@"برای افزایش موجودی، مبلغ {user.Price:No}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
+            $@"برای افزایش موجودی، مبلغ {user.Price:N0}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
         
         ==================== 
         {transactionDetail.CardNumber}
@@ -1275,6 +1276,8 @@ public class BotService(
             throw new AppException(text);
         }
 
+        user.State = TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage;
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: text,
@@ -1300,6 +1303,9 @@ public class BotService(
         });
 
         string text = "🖼 تصویر رسید خود را ارسال نمایید";
+        if (callbackQuery.Message.MessageId != null)
+            await botClient.DeleteMessageAsync(chatId, callbackQuery.Message.MessageId,
+                cancellationToken: cancellationToken);
 
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
@@ -2782,7 +2788,7 @@ public class BotService(
     }
 
     public async Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken,TelegramMarzbanVpnSession user)
+        CancellationToken cancellationToken, TelegramMarzbanVpnSession user)
     {
         long chatId = message!.Chat.Id;
         try
@@ -3184,7 +3190,8 @@ public class BotService(
         }
     }
 
-    public async Task<Message> MenuForSendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+    public async Task<Message> MenuForSendMessageForBotAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken,
         TelegramMarzbanVpnSession? value)
     {
         long chatId = message!.Chat.Id;
@@ -3195,12 +3202,14 @@ public class BotService(
 
             if (!user.IsSupperAdmin)
                 return new Message();
-            
+
             var keyboard = new ReplyKeyboardMarkup(new[]
             {
-                new KeyboardButton[] { "ارسال پیام برای نمایندگان \ud83d\udc64" ,"ارسال پیام برای کاربران \ud83d\udcac"},
-                new KeyboardButton[]{"ارسال پیام برای ههمه"},
-                new KeyboardButton[] { "فروارد پیام برای نمایندگان \ud83d\udc64" ,"فروارد پیام برای کاربران \ud83d\udcac"},
+                new KeyboardButton[]
+                    { "ارسال پیام برای نمایندگان \ud83d\udc64", "ارسال پیام برای کاربران \ud83d\udcac" },
+                new KeyboardButton[] { "ارسال پیام برای ههمه" },
+                new KeyboardButton[]
+                    { "فروارد پیام برای نمایندگان \ud83d\udc64", "فروارد پیام برای کاربران \ud83d\udcac" },
                 new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
             })
             {
@@ -3223,7 +3232,8 @@ public class BotService(
         }
     }
 
-    public async Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+    public async Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken,
         TelegramMarzbanVpnSession? value)
     {
         long chatId = message!.Chat.Id;

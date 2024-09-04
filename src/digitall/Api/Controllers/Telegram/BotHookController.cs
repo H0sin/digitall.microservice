@@ -700,7 +700,6 @@ public class BotHookController(
                         int price = 0;
                         Int32.TryParse(message?.Text, out price);
                         user.Price = price;
-
                         BotSessions
                             .users_Sessions?
                             .AddOrUpdate(message.Chat.Id,
