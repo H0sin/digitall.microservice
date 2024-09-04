@@ -4,9 +4,11 @@ using Application.Services.Interface.Telegram;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Telegram;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -20,7 +22,8 @@ public class SendTelegramNotificationJob : IJob
     private readonly IMemoryCache _memoryCache;
     private readonly TelegramBotClientFactory _botClientFactory;
 
-    public SendTelegramNotificationJob(IServiceScopeFactory serviceScopeFactory, IMemoryCache memoryCache,TelegramBotClientFactory botClientFactory)
+    public SendTelegramNotificationJob(IServiceScopeFactory serviceScopeFactory, IMemoryCache memoryCache,
+        TelegramBotClientFactory botClientFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _memoryCache = memoryCache;
@@ -36,14 +39,16 @@ public class SendTelegramNotificationJob : IJob
             var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-            List<NotificationDto> notifications = await notificationService.GetNotificationsAsync();
+            List<NotificationDto> notifications = 
+                await notificationService
+                .GetQueryableNotifications()
+                .Take(5)
+                .ToListAsync();
 
-            int? index = notifications.Count > 5 ? 5 : notifications.Count;
 
-            for (int x = 0; x < index; x++)
+            foreach (NotificationDto notification in notifications)
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                NotificationDto notification = notifications[x];
+                await Task.Delay(TimeSpan.FromSeconds(.5));
 
                 if (notification.ChatId is not null && notification.BotId is not null)
                 {
@@ -129,16 +134,13 @@ public class SendTelegramNotificationJob : IJob
                         );
 
                         await notificationService.UpdateSendNotification(notification.Id);
-
-                        Thread.Sleep(500);
                     }
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            Log.Error("Created {@Obj} on {@Created}", e.Message, DateTime.Now);
         }
     }
 }

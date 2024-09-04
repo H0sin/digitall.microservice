@@ -68,6 +68,15 @@ public class NotificationService(INotificationRepository notificationRepository)
         return notifications;
     }
 
+    public IQueryable<NotificationDto> GetQueryableNotifications()
+    {
+        return notificationRepository
+            .GetQuery()
+            .Where(x => x.Send == false)
+            .Include(x => x.User)
+            .Select(x => new NotificationDto(x));
+    }
+
     public async Task UpdateSendNotification(long notificationId)
     {
         Domain.Entities.Notification.Notification? notification =

@@ -16,7 +16,7 @@ public interface IBotService
     /// <returns></returns>
     Task SendUserForLoginToWebAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken);
-
+    
     /// <summary>
     /// start bot
     /// </summary>
