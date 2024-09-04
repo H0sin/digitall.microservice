@@ -932,6 +932,12 @@ public class MarzbanServies(
             long byteSize = 1073741824;
 
             DateTime dt = DateTimeOffset.FromUnixTimeSeconds(marzbanUser?.Expire ?? 0).DateTime;
+           
+            if (dt < DateTime.Now)
+            {
+                dt = DateTime.Now;
+            }
+            
             DateTime futureDate = dt.AddDays(template?.Days ?? vpn.TotalDay);
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
             
