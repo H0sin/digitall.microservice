@@ -11,7 +11,8 @@ public class TelegramBotClientFactory
 
     public ITelegramBotClient GetOrAdd(string token)
     {
-        TelegramBotClient? botClient = _botClients.SingleOrDefault(x => x.Key == token).Value;
+        TelegramBotClient? botClient = _botClients
+            .SingleOrDefault(x => x.Key == token).Value;
 
         if (botClient is not null)
             return botClient;

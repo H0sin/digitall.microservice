@@ -3203,6 +3203,7 @@ public class BotService(
             var keyboard = new ReplyKeyboardMarkup(new[]
             {
                 new KeyboardButton[] { "ارسال پیام برای نمایندگان \ud83d\udc64" ,"ارسال پیام برای کاربران \ud83d\udcac"},
+                new KeyboardButton[]{"ارسال پیام کلی"},
                 new KeyboardButton[] { "فروارد پیام برای نمایندگان \ud83d\udc64" ,"فروارد پیام برای کاربران \ud83d\udcac"},
                 new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
             })
@@ -3224,6 +3225,12 @@ public class BotService(
                 text: e.Message,
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+        TelegramMarzbanVpnSession? value)
+    {
+        throw new NotImplementedException();
     }
 
 
