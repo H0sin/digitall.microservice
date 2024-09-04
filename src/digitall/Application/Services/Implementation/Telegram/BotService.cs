@@ -428,11 +428,22 @@ public class BotService(
 لینک اتصال:
 {user.Subscription_Url.TrimEnd()}
 ";
+            IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>(new[]
+            {
+                new List<InlineKeyboardButton>()
+                {
+                    InlineKeyboardButton.WithUrl("مشاهده اموزش 📖",
+                        user.Subscription_Url.TrimEnd())
+                }
+            });
+            
             using (var Qr = new MemoryStream(QrImage))
             {
                 await botClient.SendPhotoAsync(
                     chatId: callbackQuery.Message.Chat.Id,
-                    photo: new InputFileStream(Qr, user.Username),
+                    photo: new InputFileStream(Qr, user.Subscription_Url),
+                    parseMode: ParseMode.MarkdownV2,
+                    replyMarkup: new InlineKeyboardMarkup(keys),
                     caption: caption,
                     cancellationToken: cancellationToken);
             }
