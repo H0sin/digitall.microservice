@@ -398,7 +398,10 @@ public class BotService(
         try
         {
             long id = 0;
-
+            
+            Message message = await
+                botClient.SendTextMessageAsync(chatId, "در حال ساخت سرویس شما 🙏", cancellationToken: cancellationToken);
+            
             string callbackData = callbackQuery.Data;
             int questionMarkIndex = callbackData.IndexOf('?');
             if (questionMarkIndex >= 0)
@@ -420,13 +423,12 @@ public class BotService(
 
             string caption = $@"
 ✅ سرویس با موفقیت ایجاد شد
-
-👤 نام کاربری سرویس: {user.Username.TrimEnd()}
+👤 نام کاربری سرویس: `\{user.Username.TrimEnd()}`\
 🌿 نام سرویس: {vpn.Name.TrimEnd()}
 ⏳ مدت زمان: {vpn.Test_Days} روز
 🗜 حجم سرویس: {vpn.Test_TotalGb} مگابایت
 لینک اتصال:
-{user.Subscription_Url.TrimEnd()}
+`\{user.Subscription_Url.TrimEnd()}`\
 ";
             IList<List<InlineKeyboardButton>> keys = new List<List<InlineKeyboardButton>>(new[]
             {
@@ -447,6 +449,8 @@ public class BotService(
                     caption: caption,
                     cancellationToken: cancellationToken);
             }
+            
+            await botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
