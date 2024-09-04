@@ -25,6 +25,7 @@ public static class NotificationTemplate
                        مبلغ :{profit:N0}
                        """,
             UserId = userId,
+            Expire = DateTime.Now.AddHours(2),
         };
 
 
@@ -38,7 +39,8 @@ public static class NotificationTemplate
             {
                 new("عدم تایید حذف سرویس", $"not_deleted_service?id={serviceId}"),
                 new("حذف سرویس", $"deleted_service?id={serviceId}")
-            }
+            },
+            Expire = DateTime.Now.AddHours(2),
         };
 
 
@@ -198,7 +200,8 @@ public static class NotificationTemplate
             ForAllMember = false,
             FileAddress = newTransactionAvatarTransaction,
             FileCaption = fileCaption,
-            Buttons = buttons
+            Buttons = buttons,
+            Expire = DateTime.Now.AddHours(2),
         };
     }
 
@@ -206,7 +209,9 @@ public static class NotificationTemplate
         string? userName,
         long chatId,
         long price,
-        DateTime createServiceTime,bool renewal=false,string marzbanUsername=null)
+        DateTime createServiceTime,
+        bool renewal=false,
+        string marzbanUsername=null)
     {
         List<AddNotificationDto> notifications = new();
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
@@ -218,16 +223,16 @@ public static class NotificationTemplate
             
             if (renewal)
             {
-                message = $"""
-                           🛍 تمدید جدید
-                           کاربری با شناسه :`\{chatId}`\
-                           نام کاربری :@{userName}
-                           سرویسی را تمدید کرد
-                           نام سرویس:{marzbanUsername}
-                           سود شما از خرید:{balance_No} تومان
-                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
-                           تاریخ خرید سرویس:{persianTime}
-                           """;
+                 message = $"""
+                            🛍 تمدید جدید
+                            کاربری با شناسه :`\{chatId}`\
+                            نام کاربری :@{userName}
+                            سرویسی را تمدید کرد
+                            نام سرویس:{marzbanUsername}
+                            سود شما از خرید:{balance_No} تومان
+                            مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                            تاریخ خرید سرویس:{persianTime}
+                            """;
             }
             else
             {
@@ -249,6 +254,7 @@ public static class NotificationTemplate
                 NotificationType = NotificationType.Alter,
                 UserId = income.UserId,
                 ForAllMember = false,
+                Expire = DateTime.Now.AddHours(2),
             });
         }
 
@@ -276,7 +282,8 @@ public static class NotificationTemplate
             UserId = userId,
             ForAllMember = false,
             FileAddress = filaAddress,
-            Buttons = buttons
+            Buttons = buttons,
+            Expire = DateTime.Now.AddHours(2),
         };
     }
 
@@ -339,6 +346,7 @@ public static class NotificationTemplate
                 NotificationType = NotificationType.Alter,
                 UserId = userId,
                 ForAllMember = false,
+                Expire = DateTime.Now.AddHours(2),
             });
         }
 

@@ -373,8 +373,6 @@ public class MarzbanServies(
             DateTime today = DateTime.Today;
             DateTime futureDate = today.AddDays(template?.Days ?? vpn.TotalDay);
 
-            long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
-
             Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>() { };
 
             if (marzbanVpn.Vmess?.Count() >= 1) inbounds.Add("vmess", marzbanVpn.Vmess);
@@ -1003,7 +1001,7 @@ public class MarzbanServies(
                 HttpMethod.Put, newMarzbanUser);
 
             await UpdateMarzbanUserAsync(marzbanUser, userId);
-
+            await transaction.CommitAsync();
             return response;
         }
         catch (Exception e)

@@ -1,11 +1,9 @@
-﻿using Application.Helper;
+﻿
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
-using Api.Factory;
-using Application.Services.Implementation.Telegram;
+using Application.Factory;
 using Application.Services.Interface.Telegram;
 using Domain.DTOs.Telegram;
-using Domain.Exceptions;
 
 namespace Api.Services;
 
@@ -34,9 +32,9 @@ public class BotService(
     {
         try
         {
-            Thread.Sleep(500);  // Optional: برای اینکه به هر بات زمان بدهیم
+            Thread.Sleep(500);
 
-            var botClient = botClientFactory.Create(bot?.Token!); // Create a new instance with the bot's token
+            ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
 
             var webhookAddress = $"{bot?.HostAddress}{bot?.Route}";
             logger.LogInformation("Setting webhook for bot {BotName}: {WebhookAddress}", bot.Name, webhookAddress);
