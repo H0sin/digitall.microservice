@@ -1173,10 +1173,10 @@ public class BotService(
 
             if (isAgent)
                 information =
-                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForAgent} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent} تومان می باشد";
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForAgent:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent:N0} تومان می باشد";
             else
                 information =
-                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser} حداکثر مبلغ {transactionDetail.MaximumAmountForUser} تومان می باشد";
+                    $"\ud83d\udcb8 مبلغ را به تومان وارد کنید:\n\u2705 حداقل مبلغ {transactionDetail.MinimalAmountForUser:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForUser:N0} تومان می باشد";
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
