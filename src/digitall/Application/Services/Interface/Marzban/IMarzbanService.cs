@@ -242,7 +242,7 @@ public interface IMarzbanService
     /// <param name="filter"></param>
     /// <returns></returns>
     Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId);
-    
+
     /// <summary>
     /// get marzban user information
     /// </summary>
@@ -265,7 +265,7 @@ public interface IMarzbanService
     /// <param name="user"></param>
     /// <param name="serverId"></param>
     /// <returns></returns>
-    Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUserDto user,long userId);
+    Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUserDto user, long userId);
 
     /// <summary>
     /// reveval marzban user
@@ -283,14 +283,6 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId);
-    
-    /// <summary>
-    /// delete marzban user and back cash
-    /// </summary>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    Task DeleteMarzbanUserAsync(long marzbanUserId,long userId);
 
     /// <summary>
     /// delete marzban user and back cash
@@ -298,16 +290,24 @@ public interface IMarzbanService
     /// <param name="marzbanUserId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task MainDeleteMarzbanUserAsync(long marzbanUserId,long userId);
+    Task DeleteMarzbanUserAsync(long marzbanUserId, long userId);
 
-    
+    /// <summary>
+    /// delete marzban user and back cash
+    /// </summary>
+    /// <param name="marzbanUserId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task MainDeleteMarzbanUserAsync(long marzbanUserId, long userId);
+
+
     /// <summary>
     /// revoke marzban user
     /// </summary>
     /// <param name="marzbanUserId"></param>
     /// <param name="userId"></param>
     /// <returns>subscribe</returns>
-    Task<string> RevokeMarzbanUserAsync(long marzbanUserId,long userId);
+    Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long userId);
 
     /// <summary>
     /// get list marzban vpn Id
@@ -316,7 +316,7 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId);
 
-    
+
     /// <summary>
     /// send marzban user by username
     /// </summary>
@@ -331,7 +331,7 @@ public interface IMarzbanService
     /// <param name="marzbanUsers"></param>
     /// <returns></returns>
     // Task<bool> UpdateUsersExpire(List<MarzbanUser> marzbanUsers);
-    
+
     /// <summary>
     /// not delete marzban user
     /// </summary>
@@ -339,4 +339,12 @@ public interface IMarzbanService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task NotDeleteMarzbanUserAsync(long id, long userId);
+
+    /// <summary>
+    ///  reset data used 
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="marzbanServer"></param>
+    /// <returns></returns>
+    Task ResetMarzbanUserDataUsedAsync(string username, MarzbanServer marzbanServer);
 }

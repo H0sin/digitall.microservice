@@ -32,6 +32,12 @@ public interface INotificationService
     /// </summary>
     /// <returns></returns>
     Task<List<NotificationDto>> GetNotificationsAsync();
+    
+    /// <summary>
+    /// send notification for telegram
+    /// </summary>
+    /// <returns></returns>
+    IQueryable<NotificationDto> GetQueryableNotifications();
 
     /// <summary>
     /// after send notification update filed is send

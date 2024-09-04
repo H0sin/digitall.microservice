@@ -984,7 +984,7 @@ public class MarzbanServies(
             await notificationService.AddNotificationsAsync(NotificationTemplate
                 .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
                     DateTime.Now, true, marzbanUser.Username), userId);
-
+            
             MarzbanUserDto newMarzbanUser = new()
             {
                 Expire = marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds,
@@ -995,6 +995,9 @@ public class MarzbanServies(
             };
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
+            
+            await ResetMarzbanUserDataUsedAsync(marzbanUser.Username, marzbanServer);
+            
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
             string token = await marzbanApiRequest.LoginAsync();
@@ -1275,6 +1278,23 @@ public class MarzbanServies(
             await transaction.RollbackAsync();
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    public async Task ResetMarzbanUserDataUsedAsync(string username, MarzbanServer marzbanServer)
+    {
+        try
+        {
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+            await marzbanApiRequest.LoginAsync();
+            MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                MarzbanPaths.UsersReset(username  ?? throw new ApplicationException("خطا در برقراری ارتباط")),
+                HttpMethod.Post,hasToken:true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw new MarzbanException(HttpStatusCode.BadRequest,e.Message);
         }
     }
 

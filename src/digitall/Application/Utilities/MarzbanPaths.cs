@@ -26,6 +26,7 @@ public static class MarzbanPaths
     public static string UserUpdate = "/api/user";
     public static string UserDelete = "/api/user";
     public static string UsersExpire = "/api/users/expired";
+    public static string UsersReset(string username) => $"/api/user/{username}/reset";
 
     // inbound
     public static string InboundGet = "/api/inbounds";
