@@ -47,12 +47,11 @@ public class BotHookController(
         try
         {
             _token = token;
-            if (memoryCache.TryGetValue(token, out _botClient))
-            {
-            }
+            if (memoryCache.TryGetValue(token, out _botClient)){}
             else
             {
-                memoryCache.Set(token, new TelegramBotClient(token), TimeSpan.FromMinutes(20));
+                _botClient = new TelegramBotClient(token!);
+                memoryCache.Set(token, _botClient, TimeSpan.FromMinutes(45));
             }
 
             await HandleUpdateAsync(update, new CancellationToken());
@@ -128,7 +127,7 @@ public class BotHookController(
                         await botService.SendMessageForMembersAsync(_botClient, message, cancellationToken);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser:
-                        await botService.SendMessageForUserAsync(_botClient, message, cancellationToken);
+                        await botService.SendMessageForUserAsync(_botClient, message, cancellationToken,user);
                         break;
                     case TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage:
                         await botService.SendTicketAsync(_botClient, message, cancellationToken);
@@ -746,16 +745,16 @@ public class BotHookController(
                         _botClient,
                         message,
                         cancellationToken, user),
-                    // "ارسال پیام کلی" => await botService.SendListTelegramButtons(_botClient, message, cancellationToken,
-                    //     user),
+                    "ارسال پیام برای همه" => await botService.SendListTelegramButtons(_botClient, message, cancellationToken,
+                        user),
                     "تغییر درصد نماینده" => await botService.UpdateAgentPercentAsync(_botClient,
                         message,
                         cancellationToken, user),
                     "تغییر درصد کاربر" => await botService.UpdateUserPercentAsync(_botClient,
                         message,
-                        //     cancellationToken, user),
-                        // "ارسال پیام کلی" => await botService.SendMessageBeforSendMessageForMember(_botClient,
-                        //     message,
+                        cancellationToken, user),
+                    "ارسال پیام کلی" => await botService.SendMessageBeforSendMessageForMember(_botClient,
+                        message,
                         cancellationToken, user),
                     "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
                         message,
