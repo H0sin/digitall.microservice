@@ -1,4 +1,5 @@
-﻿using Application.Services.Interface.Notification;
+﻿using Application.Factory;
+using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
@@ -17,6 +18,7 @@ public class SendTelegramNotificationJob : IJob
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMemoryCache _memoryCache;
+    private readonly TelegramBotClientFactory _botClientFactory;
 
     public SendTelegramNotificationJob(IServiceScopeFactory serviceScopeFactory, IMemoryCache memoryCache)
     {
@@ -44,16 +46,10 @@ public class SendTelegramNotificationJob : IJob
 
                 if (notification.ChatId is not null && notification.BotId is not null)
                 {
-                    TelegramBotDto? bot = await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
+                    TelegramBotDto? bot =
+                        await telegramService.GetTelegramBotByBotIdAsync(notification.BotId ?? 0);
 
-                    if (_memoryCache.TryGetValue(bot.Token, out TelegramBotClient? botClient))
-                    {
-                    }
-                    else
-                    {
-                        TelegramBotClient? _botClient = new TelegramBotClient(bot.Token);
-                        _memoryCache.Set(bot.Token, _botClient, TimeSpan.FromMinutes(45));
-                    }
+                    ITelegramBotClient botClient = _botClientFactory.GetOrAdd(bot.Token);
 
                     if (bot.Token != null)
                     {

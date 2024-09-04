@@ -2782,15 +2782,11 @@ public class BotService(
     }
 
     public async Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,TelegramMarzbanVpnSession user)
     {
         long chatId = message!.Chat.Id;
         try
         {
-            TelegramMarzbanVpnSession? user_value = BotSessions
-                .users_Sessions!
-                .SingleOrDefault(x => x.Key == chatId).Value;
-
             IFormFile? formFile = null;
             File? file = null;
 
@@ -2823,16 +2819,16 @@ public class BotService(
                     PathExtension.TicketAvatarThumbServer(_env));
             }
 
-            User? user = await telegramService.GetUserByChatIdAsync(user_value.UserChatId);
+            User? user_value = await telegramService.GetUserByChatIdAsync(user.UserChatId);
 
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTicketForUserAsync(
-                    user!.Id,
-                    user.ChatId ?? 0,
+                    user_value!.Id,
+                    user_value.ChatId ?? 0,
                     message?.Caption ?? message?.Text,
                     DateTime.Now,
                     file is not null ? PathExtension.TicketAvatarOriginServer(_env) + formFile.FileName : null
-                ), user!.Id);
+                ), user_value!.Id);
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
@@ -3203,7 +3199,7 @@ public class BotService(
             var keyboard = new ReplyKeyboardMarkup(new[]
             {
                 new KeyboardButton[] { "ارسال پیام برای نمایندگان \ud83d\udc64" ,"ارسال پیام برای کاربران \ud83d\udcac"},
-                new KeyboardButton[]{"ارسال پیام کلی"},
+                new KeyboardButton[]{"ارسال پیام برای ههمه"},
                 new KeyboardButton[] { "فروارد پیام برای نمایندگان \ud83d\udc64" ,"فروارد پیام برای کاربران \ud83d\udcac"},
                 new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
             })
@@ -3227,10 +3223,21 @@ public class BotService(
         }
     }
 
-    public Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+    public async Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
         TelegramMarzbanVpnSession? value)
     {
-        throw new NotImplementedException();
+        long chatId = message!.Chat.Id;
+
+        try
+        {
+            // await 
+            throw new NotFoundException("");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
 

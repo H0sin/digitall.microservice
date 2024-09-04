@@ -677,8 +677,9 @@ public interface IBotService
     /// <param name="botClient"></param>
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
     /// <returns></returns>
-    Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken);
+    Task SendMessageForUserAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,TelegramMarzbanVpnSession user);
 
     /// <summary>
     /// added agent async
@@ -771,6 +772,15 @@ public interface IBotService
     /// <param name="value"></param>
     /// <returns></returns>
     Task<Message> MenuForSendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
-
+    
+    
+    /// <summary>
+    /// send message for all user in bot 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
 }
