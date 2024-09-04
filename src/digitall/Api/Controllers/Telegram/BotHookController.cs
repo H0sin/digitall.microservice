@@ -47,8 +47,14 @@ public class BotHookController(
         try
         {
             _token = token;
+            if (memoryCache.TryGetValue(token, out _botClient))
+            {
+            }
+            else
+            {
+                memoryCache.Set(token, new TelegramBotClient(token), TimeSpan.FromMinutes(20));
+            }
 
-            _botClient = botClientFactory.GetOrAdd(token);
             await HandleUpdateAsync(update, new CancellationToken());
             await Task.CompletedTask;
         }
@@ -70,7 +76,7 @@ public class BotHookController(
 
     {
         await Task.Delay(TimeSpan.FromMilliseconds(300.100), cancellationToken);
-        
+
         var handler = update switch
         {
             { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
@@ -740,11 +746,16 @@ public class BotHookController(
                         _botClient,
                         message,
                         cancellationToken, user),
+                    // "ارسال پیام کلی" => await botService.SendListTelegramButtons(_botClient, message, cancellationToken,
+                    //     user),
                     "تغییر درصد نماینده" => await botService.UpdateAgentPercentAsync(_botClient,
                         message,
                         cancellationToken, user),
                     "تغییر درصد کاربر" => await botService.UpdateUserPercentAsync(_botClient,
                         message,
+                        //     cancellationToken, user),
+                        // "ارسال پیام کلی" => await botService.SendMessageBeforSendMessageForMember(_botClient,
+                        //     message,
                         cancellationToken, user),
                     "مدیریت پنل نمایندگی \u270f\ufe0f" => await botService.SendAgentInformationMenuAsync(_botClient,
                         message,

@@ -771,4 +771,6 @@ public interface IBotService
     /// <param name="value"></param>
     /// <returns></returns>
     Task<Message> MenuForSendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
+
+    Task<Message> SendListTelegramButtons(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken, TelegramMarzbanVpnSession? value);
 }
