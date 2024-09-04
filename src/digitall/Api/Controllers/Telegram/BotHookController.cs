@@ -727,7 +727,7 @@ public class BotHookController(
             {
                 action = message?.Text switch
                 {
-                    "ارسال پیام  داخلی\u2709\ufe0f" => await botService.SendMessageForBotAsync(_botClient,
+                    "ارسال پیام داخلی \u2709\ufe0f" => await botService.MenuForSendMessageForBotAsync(_botClient,
                         message,
                         cancellationToken, user),
                     "مدیرت ربات \u2699\ufe0f" => await botService.SendBotManagementBotAsync(_botClient,

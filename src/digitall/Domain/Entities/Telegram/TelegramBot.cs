@@ -42,4 +42,6 @@ public class  TelegramBot : BaseEntity
     public long AgentId { get; set; }
 
     public Agent.Agent? Agent { get; set; }
+
+    public List<TelegramButtons>? TelegramButtons { get; set; }
 }

@@ -3188,10 +3188,42 @@ public class BotService(
         }
     }
 
-    public async Task<Message> SendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+    public async Task<Message> MenuForSendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
         TelegramMarzbanVpnSession? value)
     {
-        throw new NotImplementedException();
+        long chatId = message!.Chat.Id;
+
+        try
+        {
+            User? user = await telegramService.GetUserByChatIdAsync(chatId);
+
+            if (!user.IsSupperAdmin)
+                return new Message();
+            
+            var keyboard = new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton[] { "ارسال پیام برای نمایندگان \ud83d\udc64" ,"ارسال پیام برای کاربران \ud83d\udcac"},
+                new KeyboardButton[] { "فروارد پیام برای نمایندگان \ud83d\udc64" ,"فروارد پیام برای کاربران \ud83d\udcac"},
+                new KeyboardButton[] { "\ud83c\udfe0 بازگشت به منو اصلی" },
+            })
+            {
+                ResizeKeyboard = true // تنظیم اندازه کیبورد
+            };
+
+            return await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: "لطفاً یک گزینه را انتخاب کنید:",
+                replyMarkup: keyboard,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            return await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: e.Message,
+                cancellationToken: cancellationToken);
+        }
     }
 
 
