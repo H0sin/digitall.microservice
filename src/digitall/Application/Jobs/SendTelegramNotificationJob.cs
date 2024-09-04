@@ -20,10 +20,11 @@ public class SendTelegramNotificationJob : IJob
     private readonly IMemoryCache _memoryCache;
     private readonly TelegramBotClientFactory _botClientFactory;
 
-    public SendTelegramNotificationJob(IServiceScopeFactory serviceScopeFactory, IMemoryCache memoryCache)
+    public SendTelegramNotificationJob(IServiceScopeFactory serviceScopeFactory, IMemoryCache memoryCache,TelegramBotClientFactory botClientFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _memoryCache = memoryCache;
+        _botClientFactory = botClientFactory;
     }
 
     public async Task Execute(IJobExecutionContext context)
