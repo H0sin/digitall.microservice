@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Web;
 using Api.Filters;
 using Application.Extensions;
+using Application.Factory;
 using Application.Helper;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
@@ -17,11 +18,20 @@ using User = Domain.Entities.Account.User;
 
 namespace Api.Controllers.Telegram;
 
+/// <summary>
+/// web hock for telegram bot
+/// </summary>
+/// <param name="serviceProvider"></param>
+/// <param name="botService"></param>
+/// <param name="telegramService"></param>
+/// <param name="botClientFactory"></param>
+/// <param name="memoryCache"></param>
 [ServiceFilter(typeof(ExceptionHandler))]
 public class BotHookController(
     IServiceProvider serviceProvider,
     IBotService botService,
     ITelegramService telegramService,
+    TelegramBotClientFactory botClientFactory,
     IMemoryCache memoryCache
 ) : ControllerBase
 {
@@ -38,13 +48,7 @@ public class BotHookController(
         {
             _token = token;
 
-            if (memoryCache.TryGetValue(token, out _botClient)){}
-            else
-            {
-                _botClient = new TelegramBotClient(token!);
-                memoryCache.Set(token, _botClient, TimeSpan.FromMinutes(45));
-            }
-
+            _botClient = botClientFactory.GetOrAdd(token);
             await HandleUpdateAsync(update, new CancellationToken());
             await Task.CompletedTask;
         }
@@ -65,7 +69,8 @@ public class BotHookController(
         CancellationToken cancellationToken)
 
     {
-        await Task.Delay(TimeSpan.FromMilliseconds(400.100));
+        await Task.Delay(TimeSpan.FromMilliseconds(300.100), cancellationToken);
+        
         var handler = update switch
         {
             { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
@@ -106,7 +111,7 @@ public class BotHookController(
                         CallbackQuery callbackQuery = new CallbackQuery()
                         {
                             Message = message,
-                            From = await _botClient.GetMeAsync(),
+                            From = await _botClient!.GetMeAsync(cancellationToken: cancellationToken),
                             Data = "my_services",
                         };
                         await botService.SendListServicesAsync(_botClient, callbackQuery, cancellationToken,

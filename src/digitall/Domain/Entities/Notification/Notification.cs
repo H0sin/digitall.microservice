@@ -15,7 +15,6 @@ public class Notification : BaseEntity
     public bool ForAllMember { get; set; }
 
     [Display(Name = "پیغام")]
-    [MaxLength(8000, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
     public string? Message { get; set; }
 
     [Display(Name = "توضیحات فایل")]

@@ -3188,7 +3188,7 @@ public class BotService(
         }
     }
 
-    public Task<Message> SendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
+    public async Task<Message> SendMessageForBotAsync(ITelegramBotClient? botClient, Message message, CancellationToken cancellationToken,
         TelegramMarzbanVpnSession? value)
     {
         throw new NotImplementedException();
