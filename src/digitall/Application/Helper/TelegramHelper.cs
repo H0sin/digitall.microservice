@@ -239,9 +239,9 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public InlineKeyboardMarkup CreateListGbAndPriceButton(List<MarzbanVpnTemplateDto> templates, long subscribeId = 0)
+    public InlineKeyboardMarkup CreateListGbAndPriceButton(List<MarzbanVpnTemplateDto> templates,long days, long subscribeId = 0)
     {
-        templates = templates.OrderBy(x => x.Gb).ToList();
+        templates = templates.Where(x => x.Days == days).OrderBy(x => x.Gb).ToList();
 
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 

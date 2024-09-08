@@ -298,7 +298,7 @@ public class TelegramService(
             chatId,
             messageId: callbackQuery.Message.MessageId,
             "یکی از آیتم هایه زیر را انتخاب کنید",
-            replyMarkup: telegramHelper.CreateListGbAndPriceButton(templates, subscribeId),
+            replyMarkup: telegramHelper.CreateListGbAndPriceButton(templates,days, subscribeId),
             cancellationToken: cancellationToken);
     }
 
