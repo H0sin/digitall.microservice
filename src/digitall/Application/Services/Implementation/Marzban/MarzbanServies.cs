@@ -10,12 +10,11 @@ using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
 using Application.Static.Template;
 using Application.Utilities;
-using Data.Repositories.Marzban;
-// using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Notification;
+using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
@@ -57,9 +56,11 @@ public class MarzbanServies(
                 .SingleOrDefaultAsync(x => x.ServerIp == marzban.ServerIp) is not null
         ) throw new ExistsException("سرور مرزبانی با این ip وجود دارد");
 
-        if (await MarzbanServerIsSuccess(marzban._CreateMarzban())) throw new NotFoundException("سرور در دست رس نیست");
+        string token = await GetMarzbanServerTokenAsync(marzban._CreateMarzban());
 
-        await marzbanServerRepository.AddEntity(marzban._CreateMarzban());
+        if (string.IsNullOrEmpty(token)) throw new NotFoundException("سرور در دست رس نیست");
+
+        await marzbanServerRepository.AddEntity(marzban._CreateMarzban(token));
         await marzbanServerRepository.SaveChanges(userId);
     }
 
@@ -70,6 +71,22 @@ public class MarzbanServies(
         string token = await marzbanApiRequest.LoginAsync();
 
         return string.IsNullOrEmpty(token);
+    }
+
+    public async Task<string> GetMarzbanServerTokenAsync(MarzbanServer marzbanServer)
+    {
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+        try
+        {
+            string token = await marzbanApiRequest.LoginAsync();
+
+            return token;
+        }
+        catch (Exception e)
+        {
+            return "";
+        }
     }
 
     public async Task ReasetMarzbanServerCore(long serverId)
@@ -170,7 +187,7 @@ public class MarzbanServies(
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
-        string token = await marzbanApiRequest.LoginAsync();
+        string token = marzbanServer.Token ?? await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
             throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
@@ -512,7 +529,6 @@ public class MarzbanServies(
         {
             //get vpn
 
-
             MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(vpnId);
             if (marzbanVpn is null) throw new NotFoundException("چنین vpn در دست رس نیست");
 
@@ -527,6 +543,7 @@ public class MarzbanServies(
                 throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
             // get marzban server by id
+
             user.FinalCountTestMarzbanAccount += 1;
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
@@ -735,7 +752,8 @@ public class MarzbanServies(
                 Title = x.Title,
                 Gb = x.Gb,
                 Price = x.Price,
-                Id = x.Id
+                Id = x.Id,
+                MarzbanVpnId = vpnId,
             }).ToListAsync();
 
         foreach (var template in templates)
@@ -765,10 +783,10 @@ public class MarzbanServies(
         return filter;
     }
 
-    public async Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId)
+    public async Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId, bool? delete = false)
     {
         return await marzbanUserRepository
-            .GetQuery()
+            .GetQuery(delete)
             .Where(x => x.UserId == userId)
             .Select(x => new MarzbanUserDto(x))
             .ToListAsync();
@@ -932,20 +950,20 @@ public class MarzbanServies(
             long byteSize = 1073741824;
 
             DateTime dt = DateTimeOffset.FromUnixTimeSeconds(marzbanUser?.Expire ?? 0).DateTime;
-           
+
             if (dt < DateTime.Now)
             {
                 dt = DateTime.Now;
             }
-            
+
             DateTime futureDate = dt.AddDays(template?.Days ?? vpn.TotalDay);
             long unixTimestamp = ((DateTimeOffset)futureDate).ToUnixTimeSeconds();
-            
+
             DateTimeOffset currentTime = DateTimeOffset.UtcNow;
             long? totalDays = (marzbanUser.On_Hold_Expire_Duration / 86400);
-            DateTimeOffset newTieme = currentTime.AddDays((template?.Days ?? vpn.TotalDay ) + (totalDays ?? 0));
+            DateTimeOffset newTieme = currentTime.AddDays((template?.Days ?? vpn.TotalDay) + (totalDays ?? 0));
             long unixTimeSeconds = newTieme.ToUnixTimeSeconds();
-            
+
             List<Domain.Entities.Order.Order> orders = new()
             {
                 new Domain.Entities.Order.Order()
@@ -984,20 +1002,20 @@ public class MarzbanServies(
             await notificationService.AddNotificationsAsync(NotificationTemplate
                 .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
                     DateTime.Now, true, marzbanUser.Username), userId);
-            
+
             MarzbanUserDto newMarzbanUser = new()
             {
                 Expire = marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds,
                 Data_Limit_Reset_Strategy = "no_reset",
-                Note = "", 
-                Status = "active",        
+                Note = "",
+                Status = "active",
                 Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0,
             };
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
-            
+
             await ResetMarzbanUserDataUsedAsync(marzbanUser.Username, marzbanServer);
-            
+
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
             string token = await marzbanApiRequest.LoginAsync();
@@ -1037,15 +1055,14 @@ public class MarzbanServies(
         return true;
     }
 
-    public async Task DeleteMarzbanUserAsync(long marzbanUserId, long userId)
+    public async Task DeleteMarzbanUserAsync(DeleteMarzbanUserDto delete)
     {
         using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
-                .SingleOrDefaultAsync(x => x.Id == marzbanUserId && x.UserId == userId);
+                .SingleOrDefaultAsync(x => x.Id == delete.MarzbanUserId && x.UserId == delete.UserId);
 
-            MarzbanVpnDto? marzbanVpn = await GetMarzbanVpnByIdAsync(marzbanUser.MarzbanVpnId, userId);
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
@@ -1058,12 +1075,24 @@ public class MarzbanServies(
             MarzbanUserDto? serverUser =
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                     HttpMethod.Get);
+
             if (serverUser is null)
                 throw new AppException("سرویس یافت نشد");
 
             marzbanUser.IsDelete = true;
             await marzbanUserRepository.UpdateEntity(marzbanUser);
-            await marzbanUserRepository.SaveChanges(userId);
+            await marzbanUserRepository.SaveChanges(delete.UserId);
+
+            SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
+
+            await notificationService
+                .AddNotificationAsync(
+                    NotificationTemplate
+                        .SendDeleteMarzbanUserNotificationForAgent(delete.AgentAdminId,
+                            subescribeStatus
+                                .GenerateServiceDeletionRequestMessage
+                                (delete.Username, delete.ChatId,
+                                    delete.Message), marzbanUser.Id), delete.UserId);
 
             await transaction.CommitAsync();
         }
@@ -1081,6 +1110,9 @@ public class MarzbanServies(
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
+
+            if (marzbanUser is null & marzbanUser.IsDelete)
+                throw new AppException("شما قبلا این درخواست را برسی کردید");
 
             AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
             List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
@@ -1139,7 +1171,6 @@ public class MarzbanServies(
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
 
-
             MarzbanUserDto userDelete =
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                     MarzbanPaths.UserDelete + "/" + marzbanUser.Username,
@@ -1148,15 +1179,15 @@ public class MarzbanServies(
             await notificationService.AddNotificationAsync(new()
             {
                 Message = $"""
-                           سرویس {marzbanUser.Username}
-                           با موفقیت حذف شد
-                            و مبلغ {price:N0}
-                            به موجودی شما اضافه شد
+                           سرویس ✅ {marzbanUser.Username}
+                           با موفقیت حذف شد ✅
+                            و مبلغ{price:N0}
+                            به موجودی شما اضافه شد ✅
                            """,
                 UserId = marzbanUser.UserId,
             }, userId);
 
-            await marzbanUserRepository.DeleteEntity(marzbanUserId);
+             marzbanUserRepository.DeletePermanent(marzbanUser);
             await marzbanUserRepository.SaveChanges(userId);
 
             await transaction.CommitAsync();
@@ -1260,6 +1291,10 @@ public class MarzbanServies(
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
 
+            if (marzbanUser is not null & marzbanUser.IsDelete == false)
+                throw new AppException("شما قبلا این درخواست را برسی کردید");
+
+
             AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
             List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
 
@@ -1267,6 +1302,15 @@ public class MarzbanServies(
                 throw new AppException("شما مجاز به عدم حدف نیستید");
 
             marzbanUser.IsDelete = false;
+
+            await notificationService.AddNotificationAsync(new()
+            {
+                Message = $"""
+                           با حذف سرویس :{marzbanUser.Username} ❌
+                            موافت نشد ❌
+                           """,
+                UserId = marzbanUser.UserId,
+            }, userId);
 
             await marzbanUserRepository.UpdateEntity(marzbanUser);
             await marzbanUserRepository.SaveChanges(userId);
@@ -1288,13 +1332,13 @@ public class MarzbanServies(
             MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
             await marzbanApiRequest.LoginAsync();
             MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
-                MarzbanPaths.UsersReset(username  ?? throw new ApplicationException("خطا در برقراری ارتباط")),
-                HttpMethod.Post,hasToken:true);
+                MarzbanPaths.UsersReset(username ?? throw new ApplicationException("خطا در برقراری ارتباط")),
+                HttpMethod.Post, hasToken: true);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw new MarzbanException(HttpStatusCode.BadRequest,e.Message);
+            throw new MarzbanException(HttpStatusCode.BadRequest, e.Message);
         }
     }
 

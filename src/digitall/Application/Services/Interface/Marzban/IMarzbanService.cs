@@ -29,6 +29,13 @@ public interface IMarzbanService
     /// <returns></returns>
     Task<bool> MarzbanServerIsSuccess(MarzbanServer marzbanServer);
 
+    /// <summary>
+    /// get marzban token
+    /// </summary>
+    /// <param name="marzbanServer"></param>
+    /// <returns></returns>
+    Task<string> GetMarzbanServerTokenAsync(MarzbanServer marzbanServer);
+
     // Task AddNodeAsync();
     /// <summary>
     /// reaset core
@@ -239,9 +246,8 @@ public interface IMarzbanService
     /// <summary>
     /// list marzban users
     /// </summary>
-    /// <param name="filter"></param>
     /// <returns></returns>
-    Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId);
+    Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId,bool? delete = false);
 
     /// <summary>
     /// get marzban user information
@@ -287,10 +293,9 @@ public interface IMarzbanService
     /// <summary>
     /// delete marzban user and back cash
     /// </summary>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="userId"></param>
+    /// <param name="delete"></param>
     /// <returns></returns>
-    Task DeleteMarzbanUserAsync(long marzbanUserId, long userId);
+    Task DeleteMarzbanUserAsync(DeleteMarzbanUserDto delete);
 
     /// <summary>
     /// delete marzban user and back cash

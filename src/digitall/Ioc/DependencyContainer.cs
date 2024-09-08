@@ -128,7 +128,6 @@ public static class DependencyContainer
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<IMarzbanService, MarzbanServies>();
         services.AddScoped<ITelegramService, TelegramService>();
-        services.AddScoped<IBotService, BotService>();
         services.AddScoped<IDockerService, DockerService>();
         services.AddScoped<INotificationService, NotificationService>();
 

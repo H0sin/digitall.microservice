@@ -1,7 +1,5 @@
 ﻿using Application.Helper;
-using Data.Migrations;
 using Domain.DTOs.Account;
-using Domain.DTOs.Marzban;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
@@ -125,11 +123,15 @@ public static class NotificationTemplate
     {
         string status = transaction.TransactionStatus == TransactionStatus.Accepted
             ? $"""
-                   ✅ تراکنش شما با کد {transaction.TransactionCode}با موفقیت پذیرفته شد!
+                   ✅ تراکنش شما با کد
+                    {transaction.TransactionCode}
+                    با موفقیت پذیرفته شد!
                    💰 مبلغ {transaction.Price:N0} تومان به موجودی حساب شما افزوده شد.
                """
             : $"""
-                   ❌ متأسفانه تراکنش شما با کد  {transaction.TransactionCode}رد شده است.
+                   ❌ متأسفانه تراکنش شما با کد
+                     {transaction.TransactionCode}
+                     رد شده است.
                    لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید.
                """;
 
@@ -178,8 +180,8 @@ public static class NotificationTemplate
         {
             new("رد پرداخت \u274c", $"update_trans?status=NotAccepted&id={transaction.Id}"),
             new("تایید پرداخت \u2705", $"update_trans?status=Accepted&id={transaction.Id}"),
-            new("بلاک کردن کاربر \u2b55\ufe0f", $"blocked_user?id={chatId}"),
-            new("افزایش دستی موجودی \u2b55\ufe0f", $"increase_by_agent?id={chatId}")
+            new("بلاک کردن کاربر \u2b55\ufe0f", $"blocked_user?id={transaction.CreateBy}"),
+            new("افزایش دستی موجودی \u2b55\ufe0f", $"increase_by_agent?id={transaction.CreateBy}")
         };
 
         userName = userName == null ? "ندارد" : "@" + userName;
@@ -210,8 +212,8 @@ public static class NotificationTemplate
         long chatId,
         long price,
         DateTime createServiceTime,
-        bool renewal=false,
-        string marzbanUsername=null)
+        bool renewal = false,
+        string marzbanUsername = null)
     {
         List<AddNotificationDto> notifications = new();
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
@@ -219,20 +221,20 @@ public static class NotificationTemplate
         {
             string? price_No = $"{price:N0}";
             string? balance_No = $"{income.Balance:N0}";
-            string message = ""; 
-            
+            string message = "";
+
             if (renewal)
             {
-                 message = $"""
-                            🛍 تمدید جدید
-                            کاربری با شناسه :`\{chatId}`\
-                            نام کاربری :@{userName}
-                            سرویسی را تمدید کرد
-                            نام سرویس:{marzbanUsername}
-                            سود شما از خرید:{balance_No} تومان
-                            مبلغ کسر شده از موجودی کاربر:{price_No} تومان
-                            تاریخ خرید سرویس:{persianTime}
-                            """;
+                message = $"""
+                           🛍 تمدید جدید
+                           کاربری با شناسه :`\{chatId}`\
+                           نام کاربری :@{userName}
+                           سرویسی را تمدید کرد
+                           نام سرویس:{marzbanUsername}
+                           سود شما از خرید:{balance_No} تومان
+                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                           تاریخ خرید سرویس:{persianTime}
+                           """;
             }
             else
             {
@@ -305,7 +307,7 @@ public static class NotificationTemplate
 
     public static AddNotificationDto SendTransactionNotification(AddTransactionDto transaction, long userId)
     {
-        string message = transaction.TransactionType == TransactionType.Increase
+        string message = transaction.TransactionType == TransactionType.ManualIncrease
             ? $"""
                مبلغ {transaction.Price:N0}
                 به صورت دستی توسط نماینده به

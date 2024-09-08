@@ -37,6 +37,8 @@ public class AddTelegramBotDto
     public string? Link { get; set; }
 
     public long AgentId { get; set; }
+
+    public long BotId { get; set; }
     
     public TelegramBot _GenerateTelegramBot()
     {
@@ -50,7 +52,8 @@ public class AddTelegramBotDto
             HostAddress= HostAddress,
             SecretToken= SecretToken,
             Link = Link,
-            AgentId = AgentId 
+            AgentId = AgentId,
+            BotId = BotId,
         };
     }
 }

@@ -29,6 +29,10 @@ public class MarzbanServer : BaseEntity
     
     public ICollection<MarzbanVpn>? MarzbanVpns { get; set; }
 
+    [Display(Name = "توکن")]
+    [MaxLength(1000)]
+    public string? Token { get; set; }
+
     [Display(Name = "تعداد کاربر ها سرور")]
     public long Users { get; set; }
 }

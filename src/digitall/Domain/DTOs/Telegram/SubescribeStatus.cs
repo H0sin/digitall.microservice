@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Domain.DTOs.Marzban;
+using Domain.Entities.Marzban;
 using Newtonsoft.Json;
 
 namespace Domain.DTOs.Telegram;
@@ -94,6 +95,29 @@ public class SubescribeStatus
         }
 
         public ServiceStatus(MarzbanUserDto? marzbanUser)
+        {
+            Status = marzbanUser.Status switch
+            {
+                "active" => "فعال \u2705",
+                "disabled" => "غیر فعال \u274c",
+                "limited" => "اتمام حجم \ud83e\udeab",
+                "on_hold" => "شروع نشده \u267b\ufe0f",
+                "expired" => "اتمام زمان \u23f0",
+                _ => "نامشخص \u274c"
+            };
+
+            Username = marzbanUser.Username;
+            TotalVolume = marzbanUser.Data_Limit;
+            UsedVolume = marzbanUser.Used_Traffic;
+            RemainingVolume = TotalVolume - UsedVolume;
+            ActiveUntil = marzbanUser.Expire;
+            LastConnection = marzbanUser.Sub_Updated_At;
+            LastLinkGeneration = marzbanUser.Sub_Updated_At;
+            MarzbanUserId = marzbanUser.Id;
+            VpnId = marzbanUser.MarzbanVpnId;
+        }
+        
+        public ServiceStatus(MarzbanUser? marzbanUser)
         {
             Status = marzbanUser.Status switch
             {

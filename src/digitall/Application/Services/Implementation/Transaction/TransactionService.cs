@@ -81,54 +81,102 @@ public class TransactionService(
         return await transactionRepository
             .GetQuery()
             .Where(x => x.CreateBy == userId)
-            .Select(x=> new TransactionDto(x))
+            .Select(x => new TransactionDto(x))
             .ToListAsync();
     }
 
     public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
     {
-        Domain.Entities.Transaction.Transaction newTransaction = new()
+        await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
+        try
         {
-            Description = transaction.Description,
-            IsDelete = false,
-            Price = transaction.Price,
-            Title = transaction.Title,
-            AccountName = transaction.AccountName,
-            TransactionType = TransactionType.ManualIncrease,
-            TransactionStatus = TransactionStatus.Accepted,
-            BankName = transaction.BankName,
-            TransactionTime = transaction.TransactionTime,
-            CardNumber = transaction.CardNumber,
-        };
+            Domain.Entities.Transaction.Transaction newTransaction = new()
+            {
+                Description = transaction.Description,
+                IsDelete = false,
+                Price = transaction.Price,
+                Title = transaction.Title,
+                AccountName = transaction.AccountName,
+                TransactionType = TransactionType.ManualIncrease,
+                TransactionStatus = TransactionStatus.Accepted,
+                BankName = transaction.BankName,
+                TransactionTime = transaction.TransactionTime,
+                CardNumber = transaction.CardNumber,
+            };
 
-        await transactionRepository.AddEntity(newTransaction);
-        await transactionRepository.SaveChanges(userId);
+            Domain.Entities.Transaction.Transaction newTransactionAgent = new()
+            {
+                Description = transaction.Description,
+                Price = transaction.Price,
+                Title = transaction.Title,
+                TransactionType = TransactionType.Decrease,
+                TransactionStatus = TransactionStatus.Accepted,
+                TransactionTime = transaction.TransactionTime,
+            };
 
-        await userService.UpdateUserBalanceAsync(newTransaction.Price, userId);
-        await userService.UpdateUserBalanceAsync((newTransaction.Price * -1), agentId);
+            await transactionRepository.AddEntity(newTransactionAgent);
+            await transactionRepository.SaveChanges(agentId);
+
+            await transactionRepository.AddEntity(newTransaction);
+            await transactionRepository.SaveChanges(userId);
+
+            await userService.UpdateUserBalanceAsync(newTransaction.Price, userId);
+            await userService.UpdateUserBalanceAsync((newTransaction.Price * -1), agentId);
+
+            await t.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await t.RollbackAsync();
+            throw new AppException("خطا در عملیات");
+        }
     }
 
     public async Task DecreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
     {
-        Domain.Entities.Transaction.Transaction newTransaction = new()
+        await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
+        try
         {
-            Description = transaction.Description,
-            IsDelete = false,
-            Price = transaction.Price,
-            Title = transaction.Title,
-            AccountName = transaction.AccountName,
-            TransactionType = TransactionType.ManualDecrease,
-            TransactionStatus = TransactionStatus.Accepted,
-            BankName = transaction.BankName,
-            TransactionTime = transaction.TransactionTime,
-            CardNumber = transaction.CardNumber,
-        };
+            Domain.Entities.Transaction.Transaction newTransaction = new()
+            {
+                Description = transaction.Description,
+                IsDelete = false,
+                Price = transaction.Price,
+                Title = transaction.Title,
+                AccountName = transaction.AccountName,
+                TransactionType = TransactionType.ManualDecrease,
+                TransactionStatus = TransactionStatus.Accepted,
+                BankName = transaction.BankName,
+                TransactionTime = transaction.TransactionTime,
+                CardNumber = transaction.CardNumber,
+            };
 
-        await transactionRepository.AddEntity(newTransaction);
-        await transactionRepository.SaveChanges(userId);
+            Domain.Entities.Transaction.Transaction newTransactionAgent = new()
+            {
+                Description = transaction.Description,
+                Price = transaction.Price,
+                Title = transaction.Title,
+                TransactionType = TransactionType.Increase,
+                TransactionStatus = TransactionStatus.Accepted,
+                TransactionTime = transaction.TransactionTime,
+            };
 
-        await userService.UpdateUserBalanceAsync(newTransaction.Price * -1, userId);
-        await userService.UpdateUserBalanceAsync((newTransaction.Price), agentId);
+            await transactionRepository.AddEntity(newTransactionAgent);
+            await transactionRepository.SaveChanges(agentId);
+
+            await transactionRepository.AddEntity(newTransaction);
+            await transactionRepository.SaveChanges(userId);
+
+            await userService.UpdateUserBalanceAsync(newTransaction.Price * -1, userId);
+            await userService.UpdateUserBalanceAsync((newTransaction.Price), agentId);
+            
+            await t.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await t.RollbackAsync();
+            throw new AppException("خطا در عملیات");
+        }
     }
 
     public async Task UpdateTransactionStatusAsync(
@@ -154,6 +202,33 @@ public class TransactionService(
             {
                 await userService.UpdateUserBalanceAsync(transe.Price, transe.CreateBy);
                 await userService.UpdateUserBalanceAsync(transe.Price * -1, user!.Id);
+
+                UserDto? child = await userService.GetUserByIdAsync(transe.CreateBy);
+
+                await transactionRepository.AddEntity(new Domain.Entities.Transaction.Transaction()
+                {
+                    Description = $"""
+                                   پذیرفتن  تراکنش کاربر
+                                   شناسه تلگرامی کاربر:@{child.TelegramUsername ?? "NOUSERNAME"}
+                                   ایدی عددی کاربر:{child.ChatId}
+                                   """,
+                    TransactionTime = DateTime.Now,
+                    TransactionType = TransactionType.Decrease,
+                    Price = transe.Price,
+                    Title = "کسر به دلیل قبول تراکنش",
+                    TransactionStatus = TransactionStatus.Accepted,
+                    TransactionDetailId = transe.TransactionDetailId ?? 0,
+                    AccountName = agent.User?.TelegramUsername ?? agent.User?.UserFullName() ?? "",
+                });
+
+                await transactionRepository.SaveChanges(userId);
+            }
+            else if (transaction.TransactionStatus == TransactionStatus.NotAccepted &&
+                     transe.TransactionStatus == TransactionStatus.Waiting)
+            {
+                transe.TransactionStatus = TransactionStatus.NotAccepted;
+                await transactionRepository.UpdateEntity(transe);
+                await transactionRepository.SaveChanges(userId);
             }
             else if (transe.TransactionStatus != TransactionStatus.Waiting)
                 throw new BadRequestException("شما قبلا این تراکنش را برسی کردید!");

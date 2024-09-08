@@ -87,6 +87,8 @@ public class User : BaseEntity
 
     public bool IsSupperAdmin { get; set; }
 
+    public bool IsAgent { get; set; } = false;
+    
     #endregion
 
     #region relations

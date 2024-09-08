@@ -69,6 +69,9 @@ public class DigitallDbContext : DbContext
     public DbSet<AgentRequest> AgentRequest { get; set; }
     public DbSet<AgentsIncomesDetail> AgentsIncomesDetail { get; set; }
     public DbSet<TelegramButtons> TelegramButtons { get; set; }
+    public DbSet<TelegramTopic> TelegramTopics { get; set; }
+    public DbSet<TelegramGroup> TelegramGroups { get; set; }
+    public DbSet<TelegramGroupTopics> TelegramGroupTopics { get; set; }
 
     #endregion
 
@@ -150,6 +153,9 @@ public class DigitallDbContext : DbContext
         modelBuilder.AddData(TransactionDetailItems.TransactionDetails);
         modelBuilder.AddData(TelegramBotItems.TelegramBots);
         modelBuilder.AddData(TelegramButtonItems.TelegramButtons);
+        modelBuilder.AddData(TelegramGroupItems.TelegramGroups);
+        modelBuilder.AddData(TelegramTopicItems.TelegramTopics);
+        modelBuilder.AddData(TelegramGroupTopicItems.TelegramGroupTopics);
 
         #endregion
 

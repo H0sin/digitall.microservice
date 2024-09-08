@@ -1,20 +1,50 @@
 ﻿using Application.Sessions;
-using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
-using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
-using Domain.DTOs.Transaction;
-using Domain.Entities.Account;
-using Domain.Entities.Agent;
-using Domain.Entities.Marzban;
-using Domain.Entities.Transaction;
-using Domain.Enums.Agent;
-using Domain.Enums.Marzban;
+using Domain.Entities.Telegram;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using User = Domain.Entities.Account.User;
+
 
 namespace Application.Services.Interface.Telegram;
 
 public interface ITelegramService
 {
+    /// <summary>
+    /// added user if not exist
+    /// </summary>
+    /// <param name="botId"></param>
+    /// <param name="message"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    Task<AgentDto?> CreateUserAfterStartedBot(long botId, Message message, User? user);
+
+    /// <summary>
+    /// get user by chatId
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    Task<User?> GetUserByChatIdAsync(long chatId);
+
+    /// <summary>
+    /// start bot async
+    /// </summary>
+    /// <returns></returns>
+    Task<Message> StartedTelegramBotAsync(ITelegramBotClient botClient, Message message,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send main menui async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendMainMenuAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
     /// <summary>
     /// add telegram bot summery
     /// </summary>
@@ -27,211 +57,7 @@ public interface ITelegramService
     /// get all bot for started
     /// </summary>
     /// <returns></returns>
-    Task<List<TelegramBotDto>?> GetAllTelegramBotAsync();
-
-    /// <summary>
-    /// get telegram bot by name async
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    Task<string?> GetTelegramBotAsyncByName(string name);
-
-    /// <summary>
-    /// for get agent by telegram token
-    /// </summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    Task<AgentDto?> GetAgentByTelegramToken(string token);
-
-    /// <summary>
-    /// get user by chat id
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<User?> GetUserByChatIdAsync(long chatId);
-
-    /// <summary>
-    /// get list vpn have test account
-    /// </summary>
-    /// <returns></returns>
-    Task<List<MarzbanVpnTestDto>> GetListMarzbanVpnTestAsync();
-
-    /// <summary>
-    /// get list vpn have test account
-    /// </summary>
-    /// <returns>MarzbanUserInformationDto</returns>
-    Task<List<MarzbanVpnBotDto>> GetMarzbanVpnsAsync();
-
-
-    /// <summary>
-    /// generate test file and send 
-    /// </summary>
-    /// <param name="vpnId">for create user in vpn</param>
-    /// <param name="chatId">for get user</param>
-    /// <returns>MarzbanUserInformationDto</returns>
-    Task<MarzbanUserInformationDto> GetMarzbanTestVpnsAsync(long vpnId, long chatId);
-
-    /// <summary>
-    /// get marzban vpm by vpnid
-    /// </summary>
-    /// <param name="vpnId"></param>
-    /// <returns></returns>
-    Task<MarzbanVpnDto?> GetMarzbanVpnInformationByIdAsync(long vpnId, long chatId);
-
-    /// <summary>
-    /// get marzban template by vpn id
-    /// </summary>
-    /// <param name="vpnId"></param>
-    /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>>
-        GetMarzbanVpnTemplatesByVpnIdAsync(long vpnId, long chatId);
-
-    /// <summary>
-    /// buy marzban vpn
-    /// </summary>
-    /// <param name="buy"></param>
-    /// <returns></returns>
-    Task<List<MarzbanUser>> BuySubscribeAsync(BuyMarzbanVpnDto buy, long chatId);
-
-    /// <summary>
-    /// befor buy vpn send pish factor
-    /// </summary>
-    /// <param name="buy"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<SubscribeFactorBotDto> SendFactorSubscribeAsync(BuyMarzbanVpnDto buy, long chatId);
-
-    /// <summary>
-    /// get marzban template by id for information 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    Task<MarzbanVpnTemplateDto?> GetMarzbanTemplateByIdAsync(long id);
-
-    /// <summary>
-    /// get filter marzban users name
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<FilterMarzbanUser> FilterMarzbanUsersList(FilterMarzbanUser filter);
-
-    /// <summary>
-    /// get marzban user dto
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByChatIdAsync(long id, long chatId);
-
-    /// <summary>
-    /// get marzban subscibetion links
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<List<string>> GetMarzbanSubscibtionLiknsAsync(long id, long chatId);
-
-    /// <summary>
-    /// get subscribe
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<string> GetSubscibetionAsync(long id, long chatId);
-
-    /// <summary>
-    /// get transaction deatil
-    /// </summary>
-    /// <returns></returns>
-    Task<TransactionDetailDto?> GetTransactionDetailAsync(long chatId);
-
-    /// <summary>
-    /// for reset user password when get password
-    /// </summary>
-    /// <param name="chatId">get from telegram</param>
-    /// <param name="charter">for len password defualt is 6</param>
-    /// <returns></returns>
-    Task<string> ResetUserPasswordAsync(long chatId, int charter = 6);
-
-    Task UpdateMarzbanUserAsync(MarzbanUserDto user, long serverId);
-
-    Task AddTransactionAsync(AddTransactionDto transaction, long chatId);
-
-    /// <summary>
-    /// started bot async
-    /// </summary>
-    /// <param name="start"></param>
-    /// <returns>welcome message</returns>
-    Task<AgentOptionDto?> StartTelegramBotAsync(StartTelegramBotDto start);
-
-    /// <summary>
-    /// change marzban user status
-    /// </summary>
-    /// <param name="status"></param>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long chatId);
-
-    /// <summary>
-    /// have chat id request for agent 
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<bool> HaveRequestForAgentAsync(long chatId);
-
-    /// <summary>
-    /// for add request agent
-    /// </summary>
-    /// <param name="description"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task AddRequestAgentAsync(string description, string phone, long chatId);
-
-    /// <summary>
-    /// delete marzban user
-    /// </summary>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task DeleteMarzbanUserAsync(long marzbanUserId, long chatId);
-
-    /// <summary>
-    /// delete marzban user
-    /// </summary>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task MainDeleteMarzbanUserAsync(long marzbanUserId, long chatId);
-
-    /// <summary>
-    /// revoke marzban user async
-    /// </summary>
-    /// <param name="marzbanUserId"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<string> RevokeMarzbanUserAsync(long marzbanUserId, long chatId);
-
-    /// <summary>
-    /// get agent by chat id
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<AgentDto?> GetAgentByChatIdAsync(long chatId);
-
-    /// <summary>
-    /// Is Agent By Chat Id
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<bool> IsAgentAsyncByChatIdAsync(long chatId);
-
-    /// <summary>
-    /// send agent bot link
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<TelegramLinkDto?> GetAgentBotLinkAsync(long chatId);
+    Task<List<TelegramBot>?> GetAllTelegramBotAsync();
 
     /// <summary>
     /// get telegramBot by bot Id
@@ -241,233 +67,802 @@ public interface ITelegramService
     Task<TelegramBotDto> GetTelegramBotByBotIdAsync(long botId);
 
     /// <summary>
-    /// update user transaction detial card
+    /// send list vpns hase test
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="session"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> EditeAgentTransactionDetailAsync(long chatId, TelegramMarzbanVpnSession session);
+    Task SendListVpnHaveTestAsync(TelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
 
     /// <summary>
-    /// get agent transaction deatil dto
+    /// send list vpn
     /// </summary>
-    /// <param name="chatId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<TransactionDetailDto?> GetAgentTransactionDetailAsync(long chatId);
+    Task SendListVpnAsync(TelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
-    /// send agent information 
+    /// send list vpn
     /// </summary>
-    /// <param name="chatId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AgentInformationDto> GetAgentInformationAsync(long chatId);
+    Task SendListVpnTemplateAsync(TelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
-    /// update agent percent
+    /// send list vpn gb and price
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="percent"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> UpdateAgentPercentAsync(long chatId, long percent);
+    Task SendVpnGbAndPriceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
-    /// update user percent
+    /// send factor async
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="percent"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
     /// <returns></returns>
-    Task<bool> UpdateUserPercentAsync(long chatId, long percent);
+    Task SendFactorVpnAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser user);
 
     /// <summary>
-    /// update user brand name
+    /// send subscribe test async
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="englishBrandName"></param>
-    /// <param name="persionBrandName"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task<bool> UpdateAgentBrandNames(long chatId, string? persionBrandName, string? englishBrandName);
+    Task SendSubscriptionTestAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
 
     /// <summary>
-    /// change agent request async
+    /// send config after buy
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="i"></param>
-    /// <param name="accept"></param>
-    /// <returns></returns>     
-    Task ChangeAgentRequestAsync(long chatId, UpdateAgentRequestDto status);
-
-    /// <summary>
-    /// active or not active card to card
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="action"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
     /// <returns></returns>
-    Task<bool> ActionForCardToCardAsync(long chatId, long userchatId, bool action);
+    Task SendSubscriptionAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser user);
 
     /// <summary>
-    /// for send management user 
+    /// send list service
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="userchatId"></param>
-    /// <returns></returns>
-    Task<UserInformationDto> GetUserInformationAsync(long chatId, long userchatId);
-
-    /// <summary>
-    /// increase user balanse
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="valueUserChatId"></param>
-    /// <param name="transaction"></param>
-    /// <returns></returns> 
-    Task IncreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
-
-    /// <summary>
-    /// decrease user balanse
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="valueUserChatId"></param>
-    /// <param name="transaction"></param>
-    /// <returns></returns>
-    Task DecreaseUserAsync(long chatId, long valueUserChatId, AddTransactionDto transaction);
-
-    /// <summary>
-    /// update transaction status
-    /// </summary>
-    /// <param name="status"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task UpdateTransactionAsync(UpdateTransactionStatusDto status, long chatId);
-
-    /// <summary>
-    /// block user async
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="userChatId"></param>
-    /// <param name="block"></param>
-    /// <returns></returns>
-    Task BlockUserAsync(long chatId, long userChatId, bool block);
-
-    /// <summary>
-    /// update agent payemnt information 
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="minimalAmountForAgent"></param>
-    /// <param name="maximumAmountForAgent"></param>
-    /// <returns></returns>
-    Task UpdateAgentPaymentAsync(long chatId, long minimalAmountForAgent, long maximumAmountForAgent);
-
-    /// <summary>
-    /// update user payment async
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="minimalAmountForUser"></param>
-    /// <param name="maximumAmountForUser"></param>
-    /// <returns></returns>
-    Task UpdateUserPaymentAsync(long chatId, long minimalAmountForUser, long maximumAmountForUser);
-
-    /// <summary>
-    /// send list agents
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<FilterAgentDto> FilterAgentsAsync(long chatId);
-
-    /// <summary>
-    /// return agent by information Id
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="agentId"></param>
-    /// <returns></returns>
-    Task<AgentInformationDto> GetAgentInformationByIdAsync(long chatId, long agentId);
-
-    /// <summary>
-    /// update agent percent
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="childAgentId"></param>
-    /// <param name="specialPercent"></param>
-    /// <returns></returns>
-    Task UpdateAgentSpecialPercent(long chatId, long childAgentId, long specialPercent);
-
-
-    /// <summary>
-    /// get agent by admin chatId
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<AgentDto?> GetAgentByAdminChatIdAsync(long chatId);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="vpnId"></param>
-    /// <param name="days"></param>
-    /// <returns></returns>
-    Task<List<MarzbanVpnTemplateDto>> SendTemplatesGroupingByDays(long chatId, long vpnId, int days);
-
-    /// <summary>
-    /// add agent async
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="id"></param>
-    /// 
-    /// <returns></returns>
-    Task AddAgentAsync(long chatId, long id);
-
-    /// <summary>
-    /// send list transactions
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
-    Task<List<TransactionDto>> GetTransactionsAsync(long chatId);
-
-    /// <summary>
-    /// update message id
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="messageId"></param>
-    /// <returns></returns>
-    Task UpdateUserMessageId(long chatId, int messageId);
-
-
-    /// <summary>
-    /// send message for member
-    /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    Task SendMessageForAgentMembers(long chatId, string text);
-
-    /// <summary>
-    /// send  get marzban user by user name
-    /// </summary>
-    /// <param name="chatId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <param name="username"></param>
     /// <returns></returns>
-    Task<SubescribeStatus.ServiceStatus?> GetMarzbanUserByUserName(long chatId, string username);
+    Task SendListServicesAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, string? username = null);
 
     /// <summary>
-    /// delete service in que
+    /// send sub service
     /// </summary>
-    /// <param name="chatId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="user"></param>
     /// <returns></returns>
-    Task<bool> DeleteServiceInQue(long chatId);
+    Task SendSubscribeInformationAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser user);
+
+    /// <summary>
+    /// send subscribe config async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendConfigsAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send subscription async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendSubscriptionLinkAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// filter by name service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveServiceNameForFilterAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// when change link subscription
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task RevokesubscriptionAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// delete service
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextDeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+
+    /// <summary>
+    /// delete marzban user
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// delete service by agent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task DeletedMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// not delete service by agent
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="chatId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task MainNotDeleteMarzbanUserAsync(long id, long chatId);
+    Task NotDeleteMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
-    /// send sum agent income
+    /// active marzban user 
     /// </summary>
-    /// <param name="agentId"></param>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task<List<AgentsIncomesDetail>> GetAgentIncomesDetails(long agentId);
+    Task ActiveMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// disabled marzban user 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task DisabledMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send supporting menu
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendSupportingMenuAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send static text default question
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendDefaultQuestionAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send text message
+    /// </summary>
+    /// <returns></returns>
+    Task SendTextForSendMessageSupporting(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send message for agent for supporting
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendMessageForSupporting(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send user information for wallet
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendUserInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send transaction detail
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTransactionDetailsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send card number for user 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendCardNumberAndDetailAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// after transaction images
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveTransactionImageAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// after added image complete transaction
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task AddTransactionAsync(ITelegramBotClient? botClient, CallbackQuery? callbackQuery,
+        CancellationToken cancellationToken,
+        TelegramUser telegramUser);
+
+    /// <summary>
+    /// update transaction status
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send text for agent request
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextAgentRequest(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send text
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendDescriptionTextForAddedAgent(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// request for agent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task RequestForAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// accept agent request async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task AcceptAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// reject agent request async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task RejectAgentRequestAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send link start by agent code
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendTelegramInviteLinkAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list transactions
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTransactionsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send user transactions
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendUserTransactionsAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    ///  send user information for login to web
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendUserForLoginToWebAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// agency management
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMenuAgencyManagementAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send agent management
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> AgencyManagementAsync(ITelegramBotClient botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list agent by filter
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Message> SendListAgentsAsync(ITelegramBotClient? botClient, Message message,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// management user
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task ManagementUserAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+
+    /// <summary>
+    /// increase user by agent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send text for description increase
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveDescriptionForIncreaseTransactionAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// increase user balance
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>\
+    Task IncreaseUserBalanceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// decrease user by agent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send text for description increase
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveDescriptionForDecreaseTransactionAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// increase user balance
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>\
+    Task DecreaseUserBalanceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// on blocked user
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,
+        TelegramUser telegramUser);
+
+    /// <summary>
+    /// on blocked user
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task OnBlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextGiveMessageForUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken,
+        TelegramUser telegramUser);
+
+    /// <summary>
+    /// send message
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendMessageForUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// change card to card async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task ChangeStateCardToCardAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send message befor update agent percent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextForGiveSpecialPercent(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update agent percent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task UpdateAgentSpecialPercentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update Persion and english brandName
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task UpdateAgentBrandingNameAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send engilish brand name
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextEngilishBrandNameAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// set brand name
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SetBrandingNameAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// edite agent card information
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextForUpdateAgentCardDetailInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// set card number by agent async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SetCardNumberAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update anget card information
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task UpdateAgentCardDetailAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send agent transaction payment async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendAgentTransactionPaymentDetailAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
     
-    // Task<>
+    /// <summary>
+    /// update agent percent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextUpdateAgentPercentAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update agent user percent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextUpdateUserPercentAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// update agent percent
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task UpdateAgentPercentAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update agent user percent 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task UpdateUserPercentAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// update agnet payment
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextUpdatePaymentForAgentOptionAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// give maximum text
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveMaximumPaymentForAgent(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// set
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SetPaymentOptionForAgentAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// update user payment
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextUpdatePaymentForUserOptionAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// give maximum text
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveMaximumPaymentForUser(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// set
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SetPaymentOptionForUserAsync(ITelegramBotClient? botClient,  CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+    
+    /// <summary>
+    /// send agent information async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendAgentInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send user management by chat id
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextSearchUserByChatAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
 }

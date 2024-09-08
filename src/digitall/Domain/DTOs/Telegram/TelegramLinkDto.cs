@@ -6,6 +6,7 @@ public record TelegramLinkDto(string? Link, long? AgentCode)
     {
         if (Link is null)
             return $"https://t.me/{userInfo}?start={AgentCode}";
+        
         return $"{Link}?start={AgentCode}";
     }
 };

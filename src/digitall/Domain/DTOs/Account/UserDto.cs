@@ -3,7 +3,7 @@ using Domain.Entities.Account;
 
 namespace Domain.DTOs.Account;
 
-public class  UserDto
+public class UserDto
 {
     [Display(Name = "شناسه")] public long Id { get; set; }
 
@@ -53,9 +53,11 @@ public class  UserDto
     public bool UserStatus { get; set; }
 
     public bool IsBlocked { get; set; }
-    
-    public bool CardToCardPayment  { get; set; }
+
+    public bool CardToCardPayment { get; set; }
     public DateTime CreateDate { get; set; }
+    
+    public bool IsAgent { get; set; }
 
     public UserDto()
     {
@@ -79,8 +81,8 @@ public class  UserDto
         TelegramUsername = user.TelegramUsername;
         UserStatus = user.UserStatus;
         CreateDate = user.CreateDate;
-        CardToCardPayment  = user.CardToCardPayment;
+        CardToCardPayment = user.CardToCardPayment;
         IsBlocked = user.IsBlocked;
+        IsAgent = user.IsAgent;
     }
-    
 }

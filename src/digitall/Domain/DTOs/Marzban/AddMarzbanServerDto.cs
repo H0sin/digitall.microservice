@@ -37,7 +37,7 @@ public class AddMarzbanServerDto
     [Display(Name = "تعداد کاربر ها سرور")]
     public long Users { get; set; } = 0;
 
-    public MarzbanServer _CreateMarzban()
+    public MarzbanServer _CreateMarzban(string token = null)
     {
         return new MarzbanServer
         {
@@ -48,7 +48,8 @@ public class AddMarzbanServerDto
             ServerPort = ServerPort,
             UserName = UserName,
             Path = Path,
-            Users = Users
+            Users = Users,
+            Token = token ?? ""
         };
     }
 }

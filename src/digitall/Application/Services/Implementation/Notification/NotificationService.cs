@@ -62,6 +62,7 @@ public class NotificationService(INotificationRepository notificationRepository)
             .GetQuery()
             .Where(x => x.Send == false)
             .Include(x => x.User)
+            .Take(5)
             .Select(x => new NotificationDto(x))
             .ToListAsync();
 

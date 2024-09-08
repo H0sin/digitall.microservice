@@ -57,10 +57,12 @@ public class AgentService(
             (await agentRepository.GetQuery()
                 .SingleOrDefaultAsync(x => x.AgentCode == agentCode))!;
 
+        User? user = await userRepository.GetEntityById(agent.AgentAdminId);
+        
         return agent switch
         {
             null => null,
-            _ => new AgentDto(agent)
+            _ => new AgentDto(agent,user)
         };
     }
 
@@ -71,10 +73,11 @@ public class AgentService(
             .Include(c => c.TransactionDetail)
             .SingleOrDefaultAsync(x => x.Id == id);
 
+        User user = await userRepository.GetEntityById(agent.AgentAdminId);
         return agent switch
         {
             null => null,
-            _ => new AgentDto(agent)
+            _ => new AgentDto(agent,user)
         };
     }
 
@@ -163,9 +166,19 @@ public class AgentService(
 
                 agent.AgentPath = HierarchyId.Parse(parent.AgentPath + agent.Id.ToString() + "/");
 
+                await agentRepository.UpdateEntity(agent);
+                await agentRepository.SaveChanges(userId);
+
+                User? user = await userRepository.GetEntityById(agent.AgentAdminId);
+                user.IsAgent = true;
+
+                await userRepository.UpdateEntity(user);
+                await userRepository.SaveChanges(userId);
+                
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.ChangeRequestAgent(agent.AgentAdminId, "تایید"),
                     userId);
+                
                 break;
             case "reject":
                 await notificationService.AddNotificationAsync(
@@ -436,45 +449,58 @@ public class AgentService(
     public async Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId)
     {
         await using IDbContextTransaction transaction = await agentRepository.context.Database.BeginTransactionAsync();
-
-        User? admin = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == agent.AgentAdminId);
-
-        if (admin is null) throw new NotFoundException("چنین کاربری وجود ندارد! ");
-
-        if (await agentRepository.GetQuery().AnyAsync(x => x.AgentAdminId == agent.AgentAdminId))
-            throw new BadRequestException("این کاربرمدیر نمایندگی دیگری است");
-
-        Domain.Entities.Agent.Agent parentAgent = (await agentRepository.GetQuery()
-            .SingleOrDefaultAsync(x => x.AgentAdminId == userId))!;
-
-        if (admin.AgentId != parentAgent.Id)
+        try
         {
-            admin.AgentId = parentAgent.Id;
-            await userRepository.UpdateEntity(admin);
+            User? admin = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == agent.AgentAdminId);
+
+            if (admin is null) throw new NotFoundException("چنین کاربری وجود ندارد! ");
+
+            if (await agentRepository.GetQuery().AnyAsync(x => x.AgentAdminId == agent.AgentAdminId))
+                throw new BadRequestException("این کاربرمدیر نمایندگی دیگری است");
+
+            Domain.Entities.Agent.Agent parentAgent = (await agentRepository.GetQuery()
+                .SingleOrDefaultAsync(x => x.AgentAdminId == userId))!;
+
+            if (admin.AgentId != parentAgent.Id)
+            {
+                admin.AgentId = parentAgent.Id;
+                await userRepository.UpdateEntity(admin);
+                await userRepository.SaveChanges(userId);
+            }
+
+            Domain.Entities.Agent.Agent newAgent = new Domain.Entities.Agent.Agent
+            {
+                AgentAdminId = agent.AgentAdminId,
+                AgentCode = new Random().Next(10000, 9999999),
+                BrandAddress = agent.BrandAddress,
+                BrandName = agent.BrandName,
+                PersianBrandName = agent.PersianBrandName,
+                AgentPercent = agent.Percent
+            };
+
+            await agentRepository.AddEntity(newAgent);
+            await agentRepository.SaveChanges(userId);
+
+            newAgent.AgentPath = HierarchyId.Parse(parentAgent.AgentPath + newAgent.Id.ToString() + "/");
+
+            await agentRepository.UpdateEntity(newAgent);
+            await agentRepository.SaveChanges(userId);
+
+            User? user = await userRepository.GetEntityById(newAgent.AgentAdminId);
+            user.IsAgent = true;
+
+            await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
+
+            await transaction.CommitAsync();
+
+            return AddAgentResult.Success;
         }
-
-        Domain.Entities.Agent.Agent newAgent = new Domain.Entities.Agent.Agent
+        catch (Exception e)
         {
-            AgentAdminId = agent.AgentAdminId,
-            AgentCode = new Random().Next(10000, 9999999),
-            BrandAddress = agent.BrandAddress,
-            BrandName = agent.BrandName,
-            PersianBrandName = agent.PersianBrandName,
-            AgentPercent = agent.Percent
-        };
-
-        await agentRepository.AddEntity(newAgent);
-        await agentRepository.SaveChanges(userId);
-
-        newAgent.AgentPath = HierarchyId.Parse(parentAgent.AgentPath + newAgent.Id.ToString() + "/");
-
-        await agentRepository.UpdateEntity(newAgent);
-        await agentRepository.SaveChanges(userId);
-
-        await transaction.CommitAsync();
-
-        return AddAgentResult.Success;
+            await transaction.RollbackAsync();
+            throw new AppException(e.Message);
+        }
     }
 
 

@@ -20,10 +20,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public DbContext context { get; set; }
 
-    public IQueryable<TEntity> GetQuery()
+    public IQueryable<TEntity> GetQuery(bool? delete = false)
     {
+        if (delete is null)
+            return _dbSet.AsQueryable().OrderByDescending(x => x.Id);
+        
         return _dbSet.AsQueryable()
-            .Where(x => x.IsDelete == false)
+            .Where(x => x.IsDelete == delete)
             .OrderByDescending(x => x.Id);
     }
 

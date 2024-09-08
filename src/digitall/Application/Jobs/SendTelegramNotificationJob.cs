@@ -39,11 +39,9 @@ public class SendTelegramNotificationJob : IJob
             var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-            List<NotificationDto> notifications = 
+            List<NotificationDto> notifications =
                 await notificationService
-                .GetQueryableNotifications()
-                .Take(5)
-                .ToListAsync();
+                    .GetNotificationsAsync();
 
 
             foreach (NotificationDto notification in notifications)

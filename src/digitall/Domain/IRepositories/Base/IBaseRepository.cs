@@ -7,7 +7,7 @@ namespace Domain.IRepositories.Base;
 public interface IBaseRepository<TEntity> : IAsyncDisposable where TEntity : BaseEntity
 {
     DbContext context { get; set; }
-    IQueryable<TEntity> GetQuery();
+    IQueryable<TEntity> GetQuery(bool? delete = false);
     Task<IReadOnlyList<TEntity>> GetAllAsync();
     Task<IReadOnlyList<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate);
 

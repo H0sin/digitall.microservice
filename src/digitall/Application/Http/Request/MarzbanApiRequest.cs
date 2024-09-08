@@ -22,6 +22,7 @@ public class MarzbanApiRequest
     {
         _httpClient = new HttpClient();
         _marzbanServer = marzbanServer;
+        _token = marzbanServer.Token ?? "";
     }
 
     public async Task<string> LoginAsync()

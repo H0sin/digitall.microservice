@@ -9,7 +9,7 @@ public class TelegramBotClientFactory
     /// </summary>
     private static Dictionary<string, TelegramBotClient> _botClients = new();
 
-    public ITelegramBotClient GetOrAdd(string token)
+    public TelegramBotClient GetOrAdd(string token)
     {
         TelegramBotClient? botClient = _botClients
             .SingleOrDefault(x => x.Key == token).Value;
