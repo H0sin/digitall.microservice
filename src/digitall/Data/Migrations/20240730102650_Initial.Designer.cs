@@ -13,8 +13,8 @@ using Microsoft.SqlServer.Types;
 namespace Data.Migrations
 {
     [DbContext(typeof(DigitallDbContext))]
-    [Migration("20240905121059_seedData")]
-    partial class seedData
+    [Migration("20240730102650_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,12 +48,6 @@ namespace Data.Migrations
                     b.Property<long>("Balance")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("BotId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("CardToCardPayment")
-                        .HasColumnType("bit");
-
                     b.Property<long?>("ChatId")
                         .HasColumnType("bigint");
 
@@ -84,9 +78,6 @@ namespace Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("IsAgent")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsBlocked")
                         .HasColumnType("bit");
 
@@ -99,15 +90,9 @@ namespace Data.Migrations
                     b.Property<bool>("IsMobileActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsSupperAdmin")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LastName")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("MessageId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Mobile")
                         .HasMaxLength(12)
@@ -128,10 +113,6 @@ namespace Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("TelegramUsername")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<bool>("UserStatus")
                         .HasColumnType("bit");
 
@@ -147,29 +128,23 @@ namespace Data.Migrations
                             Id = 1L,
                             AgentId = 100001L,
                             Avatar = "",
-                            Balance = 10000000000L,
-                            BotId = 7419690675L,
-                            CardToCardPayment = false,
-                            ChatId = 1246211305L,
+                            Balance = 0L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 887, DateTimeKind.Local).AddTicks(4941),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 682, DateTimeKind.Local).AddTicks(9360),
                             Email = "h.faraji8079@gmail.com",
-                            EmailActiveCode = "4bc41dceb8db4776b8566e39d3768c5b",
+                            EmailActiveCode = "2fb0cc7cbef04a41b7a44377b9e723fa",
                             FinalCountTestMarzbanAccount = 0L,
                             FirstName = "حسین",
-                            IsAgent = false,
                             IsBlocked = false,
                             IsDelete = false,
                             IsEmailActive = true,
                             IsMobileActive = true,
-                            IsSupperAdmin = false,
                             LastName = "فرجی",
                             Mobile = "09913737962",
-                            MobileActiveCode = "286390",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 887, DateTimeKind.Local).AddTicks(4952),
+                            MobileActiveCode = "202223",
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 682, DateTimeKind.Local).AddTicks(9380),
                             ModifyBy = 1L,
                             Password = "FC-EA-92-0F-74-12-B5-DA-7B-E0-CF-42-B8-C9-37-59",
-                            TelegramUsername = "lll_hosin_lll",
                             UserStatus = false
                         });
                 });
@@ -194,11 +169,8 @@ namespace Data.Migrations
                     b.Property<long>("AgentPercent")
                         .HasColumnType("bigint");
 
-                    b.Property<bool>("AllowNegative")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("AmountWithNegative")
-                        .HasColumnType("bigint");
+                    b.Property<string>("AgentRequestStatus")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BrandAddress")
                         .HasColumnType("nvarchar(max)");
@@ -228,13 +200,17 @@ namespace Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<long?>("SpecialPercent")
+                    b.Property<long?>("TelegramBotId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("UserPercent")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TelegramBotId")
+                        .IsUnique()
+                        .HasFilter("[TelegramBotId] IS NOT NULL");
 
                     b.ToTable("Agent");
 
@@ -243,16 +219,15 @@ namespace Data.Migrations
                         {
                             Id = 100001L,
                             AgentAdminId = 1L,
-                            AgentCode = 857588L,
+                            AgentCode = 737566L,
                             AgentPath = Microsoft.SqlServer.Types.SqlHierarchyId.Parse("/"),
                             AgentPercent = 0L,
-                            AllowNegative = false,
-                            AmountWithNegative = 0L,
+                            AgentRequestStatus = "wating",
                             BrandName = "Samani",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 883, DateTimeKind.Local).AddTicks(6350),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 675, DateTimeKind.Local).AddTicks(8638),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 883, DateTimeKind.Local).AddTicks(6533),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 675, DateTimeKind.Local).AddTicks(9070),
                             ModifyBy = 1L,
                             PersianBrandName = "سامانی",
                             UserPercent = 0L
@@ -295,88 +270,6 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AgentOption");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Agent.AgentRequest", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AgentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("AgentPercent")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("AgentRequestStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BrandAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BrandName")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("CardHolderName")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("CardNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MaximumAmount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MinimalAmount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PaymentDescription")
-                        .HasMaxLength(700)
-                        .HasColumnType("nvarchar(700)");
-
-                    b.Property<string>("PersianBrandName")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("UserPercent")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("AgentRequest");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authorization.Permission", b =>
@@ -426,9 +319,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(589),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(177),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(592),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(185),
                             ModifyBy = 1L,
                             SystemName = "FilterUsers",
                             Title = "لیست کاربران"
@@ -472,9 +365,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7286),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8760),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7292),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8786),
                             ModifyBy = 1L,
                             Title = "مدیر"
                         },
@@ -482,9 +375,9 @@ namespace Data.Migrations
                         {
                             Id = 2L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7303),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8823),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7304),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8825),
                             ModifyBy = 1L,
                             Title = "همکار"
                         },
@@ -492,9 +385,9 @@ namespace Data.Migrations
                         {
                             Id = 3L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7305),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8827),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 888, DateTimeKind.Local).AddTicks(7306),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 685, DateTimeKind.Local).AddTicks(8827),
                             ModifyBy = 1L,
                             Title = "کاربر"
                         });
@@ -542,10 +435,10 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(8650),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(3381),
                             IsDelete = false,
                             MenuId = 1L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(8654),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(3397),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -553,10 +446,10 @@ namespace Data.Migrations
                         {
                             Id = 2L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9001),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4579),
                             IsDelete = false,
                             MenuId = 2L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9002),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4585),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -564,10 +457,10 @@ namespace Data.Migrations
                         {
                             Id = 3L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9004),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4588),
                             IsDelete = false,
                             MenuId = 3L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9005),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4588),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -575,10 +468,10 @@ namespace Data.Migrations
                         {
                             Id = 4L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9006),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4590),
                             IsDelete = false,
                             MenuId = 4L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9006),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4591),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -586,10 +479,10 @@ namespace Data.Migrations
                         {
                             Id = 5L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9008),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4592),
                             IsDelete = false,
                             MenuId = 5L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9009),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4593),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -597,10 +490,10 @@ namespace Data.Migrations
                         {
                             Id = 6L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9014),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4608),
                             IsDelete = false,
                             MenuId = 6L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9014),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4608),
                             ModifyBy = 1L,
                             RoleId = 1L
                         },
@@ -608,10 +501,10 @@ namespace Data.Migrations
                         {
                             Id = 7L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9016),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4610),
                             IsDelete = false,
                             MenuId = 1L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9016),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4611),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -619,10 +512,10 @@ namespace Data.Migrations
                         {
                             Id = 8L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9017),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4614),
                             IsDelete = false,
                             MenuId = 2L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9018),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4614),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -630,10 +523,10 @@ namespace Data.Migrations
                         {
                             Id = 9L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9019),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4616),
                             IsDelete = false,
                             MenuId = 3L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9019),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4617),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -641,10 +534,10 @@ namespace Data.Migrations
                         {
                             Id = 10L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9021),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4620),
                             IsDelete = false,
                             MenuId = 4L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9022),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4621),
                             ModifyBy = 1L,
                             RoleId = 2L
                         },
@@ -652,10 +545,10 @@ namespace Data.Migrations
                         {
                             Id = 11L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9023),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4623),
                             IsDelete = false,
                             MenuId = 5L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(9023),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 689, DateTimeKind.Local).AddTicks(4623),
                             ModifyBy = 1L,
                             RoleId = 2L
                         });
@@ -703,9 +596,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(2812),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(7716),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(2816),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 690, DateTimeKind.Local).AddTicks(7722),
                             ModifyBy = 1L,
                             PermissionId = 1L,
                             RoleId = 1L
@@ -754,9 +647,9 @@ namespace Data.Migrations
                         {
                             Id = 1L,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(4527),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 688, DateTimeKind.Local).AddTicks(1356),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(4530),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 688, DateTimeKind.Local).AddTicks(1361),
                             ModifyBy = 1L,
                             RoleId = 1L,
                             UserId = 1L
@@ -929,8 +822,8 @@ namespace Data.Migrations
                     b.Property<long>("ModifyBy")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("OnHoldExpireDuration")
-                        .HasColumnType("bigint");
+                    b.Property<string>("OnHoldExpireDuration")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OnHoldTimeout")
                         .HasColumnType("nvarchar(max)");
@@ -993,13 +886,6 @@ namespace Data.Migrations
 
                     b.Property<long>("DayPrice")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("Desired")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ExpireDetailInbound")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
 
                     b.Property<int>("GbMax")
                         .HasColumnType("int");
@@ -1171,9 +1057,9 @@ namespace Data.Migrations
                             Id = 1L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(1558),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(856),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(1550),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(839),
                             ModifyBy = 1L,
                             Sorted = 1,
                             Title = "اصلی"
@@ -1186,11 +1072,11 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Home",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(1930),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(2022),
                             Icon = "box",
                             IsDelete = false,
                             Link = "/",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(1928),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(2016),
                             ModifyBy = 1L,
                             ParentId = 1L,
                             Sorted = 2,
@@ -1201,9 +1087,9 @@ namespace Data.Migrations
                             Id = 3L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2740),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5609),
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2739),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5601),
                             ModifyBy = 1L,
                             Sorted = 3,
                             Title = "عملیات"
@@ -1213,10 +1099,10 @@ namespace Data.Migrations
                             Id = 4L,
                             Active = true,
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2743),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5613),
                             Icon = "list",
                             IsDelete = false,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2742),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5612),
                             ModifyBy = 1L,
                             ParentId = 3L,
                             Sorted = 4,
@@ -1230,10 +1116,10 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Account",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2746),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5618),
                             IsDelete = false,
                             Link = "Account/Users",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2745),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5617),
                             ModifyBy = 1L,
                             ParentId = 4L,
                             Sorted = 5,
@@ -1247,10 +1133,10 @@ namespace Data.Migrations
                             Area = "",
                             Controller = "Account",
                             CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2757),
+                            CreateDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5645),
                             IsDelete = false,
                             Link = "Account/AllUsers",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 889, DateTimeKind.Local).AddTicks(2757),
+                            ModifiedDate = new DateTime(2024, 7, 30, 13, 56, 48, 687, DateTimeKind.Local).AddTicks(5644),
                             ModifyBy = 1L,
                             ParentId = 4L,
                             Sorted = 6,
@@ -1266,9 +1152,6 @@ namespace Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("ButtonsJson")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<long>("CreateBy")
                         .HasColumnType("bigint");
 
@@ -1278,13 +1161,6 @@ namespace Data.Migrations
                     b.Property<DateTime>("Expire")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FileAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileCaption")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<bool>("ForAllMember")
                         .HasColumnType("bit");
 
@@ -1292,7 +1168,8 @@ namespace Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -1302,9 +1179,6 @@ namespace Data.Migrations
 
                     b.Property<byte>("NotificationType")
                         .HasColumnType("tinyint");
-
-                    b.Property<bool>("Send")
-                        .HasColumnType("bit");
 
                     b.Property<long?>("UserId")
                         .HasColumnType("bigint");
@@ -1688,7 +1562,7 @@ namespace Data.Migrations
                     b.ToTable("Server");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Subscription.Subscribtion", b =>
+            modelBuilder.Entity("Domain.Entities.Subscription.Subscription", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1737,9 +1611,6 @@ namespace Data.Migrations
                     b.Property<long>("AgentId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("BotId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("CreateBy")
                         .HasColumnType("bigint");
 
@@ -1756,10 +1627,6 @@ namespace Data.Migrations
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Link")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -1789,321 +1656,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AgentId")
-                        .IsUnique();
-
                     b.ToTable("TelegramBots");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            AgentId = 100001L,
-                            BotId = 7419690675L,
-                            CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(9059),
-                            Description = "ربات مستر ما",
-                            HostAddress = "https://364c-80-240-30-200.ngrok-free.app",
-                            IsDelete = false,
-                            Link = "https://t.me/master_digitall_vpn_bot",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 891, DateTimeKind.Local).AddTicks(93),
-                            ModifyBy = 1L,
-                            Name = "master_digitall_vpn_bot",
-                            PersionName = "ربات اصلی مستر",
-                            Route = "/7332050396:AAHvkWaF4MhUb3U8yfvSlD1y81i_jF2tCN0",
-                            SecretToken = "",
-                            Token = "7332050396:AAHvkWaF4MhUb3U8yfvSlD1y81i_jF2tCN0"
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramButtons", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AdditionalProp1")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("AdditionalProp2")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("AdditionalProp3")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("AdditionalProp4")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("CallBackQuery")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsLike")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Link")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<long?>("TelegramBotId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TelegramBotId");
-
-                    b.ToTable("TelegramButtons");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 891, DateTimeKind.Local).AddTicks(1628),
-                            IsDelete = false,
-                            IsLike = true,
-                            Link = "https://t.me/master_digitall_vpn_bot",
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 891, DateTimeKind.Local).AddTicks(2050),
-                            ModifyBy = 1L,
-                            Name = "master_digitall_vpn_bot",
-                            Title = "شروع ربات"
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramGroup", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ChatId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Link")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<long?>("TelegramBotId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TelegramBotId")
-                        .IsUnique()
-                        .HasFilter("[TelegramBotId] IS NOT NULL");
-
-                    b.ToTable("TelegramGroups");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            ChatId = -4178759105L,
-                            CreateBy = 0L,
-                            CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsDelete = false,
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifyBy = 0L,
-                            Name = "مستر گروه",
-                            TelegramBotId = 1L
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramGroupTopics", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("TelegramGroupId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("TelegramTopicId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TelegramGroupId");
-
-                    b.HasIndex("TelegramTopicId");
-
-                    b.ToTable("TelegramGroupTopics");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            CreateBy = 0L,
-                            CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsDelete = false,
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifyBy = 0L,
-                            TelegramGroupId = 1L,
-                            TelegramTopicId = 1L
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramTopic", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TelegramTopicCategory")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TelegramTopics");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            CreateBy = 0L,
-                            CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsDelete = false,
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifyBy = 0L,
-                            Name = "استارت ربات",
-                            TelegramTopicCategory = "start"
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Entities.Transaction.AgentsIncomesDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AgentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("CreateBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ModifyBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("OrderDetailId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Percent")
-                        .HasColumnType("int");
-
-                    b.Property<long>("Profit")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AgentId");
-
-                    b.HasIndex("OrderDetailId");
-
-                    b.ToTable("AgentsIncomesDetail");
                 });
 
             modelBuilder.Entity("Domain.Entities.Transaction.Transaction", b =>
@@ -2155,14 +1708,11 @@ namespace Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<long>("TransactionCode")
+                    b.Property<long>("TransactionDetailId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("TransactionDetailId")
-                        .HasColumnType("bigint");
-
-                    b.Property<byte>("TransactionStatus")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("TransactionStatus")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TransactionTime")
                         .HasColumnType("datetime2");
@@ -2209,17 +1759,11 @@ namespace Data.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.Property<long?>("MaximumAmountForAgent")
-                        .HasColumnType("bigint");
+                    b.Property<int>("MaximumAmount")
+                        .HasColumnType("int");
 
-                    b.Property<long?>("MaximumAmountForUser")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("MinimalAmountForAgent")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("MinimalAmountForUser")
-                        .HasColumnType("bigint");
+                    b.Property<int>("MinimalAmount")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -2233,25 +1777,6 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("TransactionDetail");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            AgentId = 100001L,
-                            CardHolderName = "حسین فرجی",
-                            CardNumber = "6037691610791079",
-                            CreateBy = 1L,
-                            CreateDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(6509),
-                            Description = "توضیحات",
-                            IsDelete = false,
-                            MaximumAmountForAgent = 2000000L,
-                            MaximumAmountForUser = 2000000L,
-                            MinimalAmountForAgent = 100000L,
-                            MinimalAmountForUser = 10000L,
-                            ModifiedDate = new DateTime(2024, 9, 5, 15, 40, 58, 890, DateTimeKind.Local).AddTicks(6512),
-                            ModifyBy = 1L
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Vpn.Vpn", b =>
@@ -2343,6 +1868,16 @@ namespace Data.Migrations
                     b.Navigation("Agent");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Agent.Agent", b =>
+                {
+                    b.HasOne("Domain.Entities.Telegram.TelegramBot", "TelegramBot")
+                        .WithOne("Agent")
+                        .HasForeignKey("Domain.Entities.Agent.Agent", "TelegramBotId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("TelegramBot");
+                });
+
             modelBuilder.Entity("Domain.Entities.Agent.AgentOptions", b =>
                 {
                     b.HasOne("Domain.Entities.Agent.Agent", "Agent")
@@ -2352,17 +1887,6 @@ namespace Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Agent");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Agent.AgentRequest", b =>
-                {
-                    b.HasOne("Domain.Entities.Account.User", "User")
-                        .WithOne("AgentRequest")
-                        .HasForeignKey("Domain.Entities.Agent.AgentRequest", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Authorization.Permission", b =>
@@ -2529,7 +2053,7 @@ namespace Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.Order.OrderDetail", "OrderDetail")
-                        .WithMany()
+                        .WithMany("Clients")
                         .HasForeignKey("OrderDetailId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -2560,79 +2084,13 @@ namespace Data.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramBot", b =>
-                {
-                    b.HasOne("Domain.Entities.Agent.Agent", "Agent")
-                        .WithOne("TelegramBot")
-                        .HasForeignKey("Domain.Entities.Telegram.TelegramBot", "AgentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agent");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramButtons", b =>
-                {
-                    b.HasOne("Domain.Entities.Telegram.TelegramBot", "TelegramBot")
-                        .WithMany("TelegramButtons")
-                        .HasForeignKey("TelegramBotId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("TelegramBot");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramGroup", b =>
-                {
-                    b.HasOne("Domain.Entities.Telegram.TelegramBot", "TelegramBot")
-                        .WithOne("TelegramGroup")
-                        .HasForeignKey("Domain.Entities.Telegram.TelegramGroup", "TelegramBotId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("TelegramBot");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramGroupTopics", b =>
-                {
-                    b.HasOne("Domain.Entities.Telegram.TelegramGroup", "TelegramGroup")
-                        .WithMany("TelegramGroupTopics")
-                        .HasForeignKey("TelegramGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Domain.Entities.Telegram.TelegramTopic", "TelegramTopic")
-                        .WithMany("TelegramGroupTopics")
-                        .HasForeignKey("TelegramTopicId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("TelegramGroup");
-
-                    b.Navigation("TelegramTopic");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Transaction.AgentsIncomesDetail", b =>
-                {
-                    b.HasOne("Domain.Entities.Agent.Agent", "Agent")
-                        .WithMany("AgentsTransactionsDetails")
-                        .HasForeignKey("AgentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Order.OrderDetail", "OrderDetail")
-                        .WithMany("AgentsIncomesDetails")
-                        .HasForeignKey("OrderDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agent");
-
-                    b.Navigation("OrderDetail");
-                });
-
             modelBuilder.Entity("Domain.Entities.Transaction.Transaction", b =>
                 {
                     b.HasOne("Domain.Entities.Transaction.TransactionDetail", "TransactionDetail")
                         .WithMany("Transactions")
                         .HasForeignKey("TransactionDetailId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("TransactionDetail");
                 });
@@ -2669,9 +2127,6 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.Account.User", b =>
                 {
-                    b.Navigation("AgentRequest")
-                        .IsRequired();
-
                     b.Navigation("Notifications");
 
                     b.Navigation("UserRoles");
@@ -2680,10 +2135,6 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Entities.Agent.Agent", b =>
                 {
                     b.Navigation("AgentOptions");
-
-                    b.Navigation("AgentsTransactionsDetails");
-
-                    b.Navigation("TelegramBot");
 
                     b.Navigation("TransactionDetail");
 
@@ -2738,7 +2189,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.Order.OrderDetail", b =>
                 {
-                    b.Navigation("AgentsIncomesDetails");
+                    b.Navigation("Clients");
 
                     b.Navigation("MarzbanUsers");
                 });
@@ -2755,19 +2206,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.Telegram.TelegramBot", b =>
                 {
-                    b.Navigation("TelegramButtons");
-
-                    b.Navigation("TelegramGroup");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramGroup", b =>
-                {
-                    b.Navigation("TelegramGroupTopics");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Telegram.TelegramTopic", b =>
-                {
-                    b.Navigation("TelegramGroupTopics");
+                    b.Navigation("Agent");
                 });
 
             modelBuilder.Entity("Domain.Entities.Transaction.TransactionDetail", b =>
