@@ -709,7 +709,7 @@ public class TelegramHelper
 
                 long chatId = -1;
                 Int64.TryParse(message.Text, out chatId);
-
+                
                 if (chatId == 0 || chatId <= 0)
                 {
                     await botClient!.SendTextMessageAsync(
