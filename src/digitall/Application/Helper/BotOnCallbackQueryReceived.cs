@@ -219,6 +219,10 @@ public static class BotOnCallbackQueryReceived
                         telegramUser);
                     break;
                 
+                case "added_agent":
+                    await telegramService.AddAgentAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
+                        break;    
                 default:
                     break;
             }

@@ -58,11 +58,11 @@ public class AgentService(
                 .SingleOrDefaultAsync(x => x.AgentCode == agentCode))!;
 
         User? user = await userRepository.GetEntityById(agent.AgentAdminId);
-        
+
         return agent switch
         {
             null => null,
-            _ => new AgentDto(agent,user)
+            _ => new AgentDto(agent, user)
         };
     }
 
@@ -77,7 +77,7 @@ public class AgentService(
         return agent switch
         {
             null => null,
-            _ => new AgentDto(agent,user)
+            _ => new AgentDto(agent, user)
         };
     }
 
@@ -174,11 +174,11 @@ public class AgentService(
 
                 await userRepository.UpdateEntity(user);
                 await userRepository.SaveChanges(userId);
-                
+
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.ChangeRequestAgent(agent.AgentAdminId, "تایید"),
                     userId);
-                
+
                 break;
             case "reject":
                 await notificationService.AddNotificationAsync(
@@ -297,8 +297,6 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository
             .GetQuery()
-            .Include(x => x.Users)
-            .Include(x => x.TelegramBot)
             .Include(x => x.AgentsTransactionsDetails)!
             .ThenInclude(x => x.OrderDetail)
             .Include(x => x.TransactionDetail)
@@ -339,10 +337,9 @@ public class AgentService(
             BrandAddress = agent.BrandAddress,
             BrandName = agent.BrandName,
             PersianBrandName = agent.PersianBrandName,
-            BotName = agent.TelegramBot?.PersionName ?? null,
-            BotToken = agent.TelegramBot?.Token ?? null,
-            CountUser = agent.Users?.Count() ?? 0,
-            Profit = agent!.AgentsTransactionsDetails?.Sum(x => x.Profit) ?? 0,
+            CountUser = await agentRepository.GetQuery()
+                .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
+            Profit = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x => x.Profit),
             Sale = agent!.AgentsTransactionsDetails?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,

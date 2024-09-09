@@ -53,8 +53,34 @@
 	  <Content Remove="wwwroot\images\TransactionAvatar\origin\45f93dc89f1e4d2abdbd2571e58f1646.jpg" />
 	  <Content Remove="wwwroot\images\TransactionAvatar\origin\307672570f404c889a1aedeb3e832135.jpg" />
 	  <Content Remove="wwwroot\images\TransactionAvatar\origin\2b0efcc2da1d45e091004bbad21131c4.jpg" />
+	  <Content Remove="wwwroot\images\ticket\thumb\AgACAgQAAxkBAAIE62bdgtXRfnS-Um8h6nf22OyEuolUAAJjxTEbSqTxUqkcQ7kSXWpHAQADAgADeAADNgQ.jpg" />
+	  <Content Remove="wwwroot\images\ticket\origin\AgACAgQAAxkBAAIEtWbdfk4IDawUQCaPWjdibeBPk3fxAAJTxTEbSqTxUnKYhyAuk54TAQADAgADeQADNgQ.jpg" />
+	  <Content Remove="wwwroot\images\ticket\origin\AgACAgQAAxkBAAIE62bdgtXRfnS-Um8h6nf22OyEuolUAAJjxTEbSqTxUqkcQ7kSXWpHAQADAgADeAADNgQ.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\d700e81f831848d5b0a4e774eef5ddec.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\d5944b2e41684e9c95dbf3849374c600.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\cae5387965fc455abcf8e27311f4a00e.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\b43a6eb7a9cd4e67ad0d6e4b3b02e599.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\b22eb3cc816149eab7599d67aff3624c.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\9b60b1d4f45d49d4be7206c9c037d5f5.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\6381d3dee74448b385b19f6986333d01.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\62530c7e5f794f4bbfcb6d201c470bd5.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\4b582552bbad4b2190d7bd9c9f1d3aac.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\thumb\2196cd720d2e4167a35abad9f674ecee.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\ede1ad36a319423cb48f82671f6884a9.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\d700e81f831848d5b0a4e774eef5ddec.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\d5944b2e41684e9c95dbf3849374c600.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\cae5387965fc455abcf8e27311f4a00e.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\b43a6eb7a9cd4e67ad0d6e4b3b02e599.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\b22eb3cc816149eab7599d67aff3624c.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\9b60b1d4f45d49d4be7206c9c037d5f5.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\6381d3dee74448b385b19f6986333d01.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\62530c7e5f794f4bbfcb6d201c470bd5.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\4b582552bbad4b2190d7bd9c9f1d3aac.jpg" />
+	  <Content Remove="wwwroot\images\TransactionAvatar\origin\2196cd720d2e4167a35abad9f674ecee.jpg" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="wwwroot\images\ticket\origin\" />
+	  <Folder Include="wwwroot\images\ticket\thumb\" />
 	  <Folder Include="wwwroot\images\TransactionAvatar\origin\" />
 	  <Folder Include="wwwroot\images\TransactionAvatar\thumb\" />
 	</ItemGroup>
