@@ -25,6 +25,7 @@ public class TelegramHelper
 
     public const string AgencyManagementButtonText = "مدیریت پنل نمایندگی ✏️";
     public const string RepresentationStatisticsButtonText = "آمار نمایندگی 📊";
+    public const string BackToManagement = "بازگشت به منو قبل ⬅️";
     public const string SendMessageButtonText = "ارسال پیام ✍️";
     public const string SearchUserButtonText = "جستجو کاربر 🔍";
     public const string BackToHomeButtonText = "بازگشت به منو اصلی 🔙";
@@ -36,7 +37,23 @@ public class TelegramHelper
     public const string ChangeUserPercenteButtonText = "تغییر درصد کاربران 💯";
     public const string UserPaymentButtonText = "پرداخت کاربری 💵";
     public const string AgentPaymentButtonText = "پرداخت نمایندگی 💵";
+    public const string ForwardMessageButtonText = "فوروارد پیام 🛩";
+    public const string CustomMessageButtonText = "ارسال پیام دلخواه 📝";
+    public const string ForAgentButtonText = "برای نماینده ها 👤";
+    public const string ForAllUserButtonText = "برای همه کاربران 👥";
+    public const string BackListTypeOfSendMessageButtonText = "بازگشت به ارسال پیام 📝";
 
+    public static readonly InlineKeyboardMarkup ButtonForMessage = new InlineKeyboardMarkup(new[]
+    {
+        new InlineKeyboardButton[]
+        {
+            InlineKeyboardButton.WithCallbackData("شروع ربات 💫", "button?query=start&text=شروع ربات 💫"),
+        },
+        new InlineKeyboardButton[]
+        {
+            InlineKeyboardButton.WithCallbackData("پیام بدون دکمه ارسال شود 📭", "button?query=null")
+        }
+    });
 
     private static readonly InlineKeyboardButton BackToHome =
         InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی 🏠", "back_to_home");
@@ -77,6 +94,31 @@ public class TelegramHelper
 
     #region buttons method
 
+    public static ReplyKeyboardMarkup? CreateListUserGroupingSendMessageButton()
+        => new(new[]
+        {
+            new KeyboardButton[] { ForAgentButtonText, ForAllUserButtonText },
+            new KeyboardButton[] { BackListTypeOfSendMessageButtonText },
+        })
+        {
+            ResizeKeyboard = true,
+            Selective = true,
+            InputFieldPlaceholder = "نوع گروه کاربری را مشخص کنید"
+        };
+
+    public static ReplyKeyboardMarkup? CreateListTypeOfSendMessageButton()
+        => new(new[]
+        {
+            new KeyboardButton[] { CustomMessageButtonText, ForwardMessageButtonText },
+            new KeyboardButton[] { BackToManagement },
+        })
+        {
+            ResizeKeyboard = true,
+            Selective = true,
+            InputFieldPlaceholder = "نوع ارسال پیام را مشخص کنید"
+        };
+
+
     public static ReplyKeyboardMarkup CreateAgentManagementButton()
         => new ReplyKeyboardMarkup(new[]
         {
@@ -98,6 +140,7 @@ public class TelegramHelper
             new KeyboardButton[] { ShowPaymentInformationeButtonText },
             new KeyboardButton[] { ChangeUserPercenteButtonText, ChangeAgentPercnteButtonText },
             new KeyboardButton[] { AgentPaymentButtonText, UserPaymentButtonText },
+            new KeyboardButton[] { BackToManagement },
             new KeyboardButton[] { BackToHomeButtonText }
         })
         {
@@ -165,6 +208,8 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
+    public static InlineKeyboardMarkup CreateListButtonsForSendMessage()
+        => ButtonForMessage;
 
     public InlineKeyboardMarkup CreateListVpnButton(List<MarzbanVpnTestDto> vpns)
     {
@@ -239,7 +284,8 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public InlineKeyboardMarkup CreateListGbAndPriceButton(List<MarzbanVpnTemplateDto> templates,long days, long subscribeId = 0)
+    public InlineKeyboardMarkup CreateListGbAndPriceButton(List<MarzbanVpnTemplateDto> templates, long days,
+        long subscribeId = 0)
     {
         templates = templates.Where(x => x.Days == days).OrderBy(x => x.Gb).ToList();
 
@@ -681,7 +727,6 @@ public class TelegramHelper
 
     #endregion
 
-
     #region telegram user state
 
     /// <summary>
@@ -693,7 +738,7 @@ public class TelegramHelper
     /// <param name="telegramUser"></param>
     /// <param name="user"></param>
     /// <param name="cancellationToken"></param>
-    public async Task MessageBasedOnStatus(
+    public static async Task MessageBasedOnStatus(
         ITelegramBotClient? botClient,
         ITelegramService telegramService,
         Message message, TelegramUser telegramUser,
@@ -705,11 +750,36 @@ public class TelegramHelper
         {
             #region awaiting send service name
 
+            case TelegramMarzbanVpnSessionState.AwaitingSendListButtons:
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = $"list_buttons_send",
+                };
+                
+                await telegramService.SendListButtonsForSendMessage(botClient!, callbackQuery,
+                    cancellationToken, telegramUser);
+
+                break;
+            case TelegramMarzbanVpnSessionState.AwaitingForwardMessage:
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = $"forward_message",
+                };
+
+                await telegramService.ForwardMessageForUserAsync(botClient!, callbackQuery,
+                    cancellationToken, telegramUser);
+
+                break;
+
             case TelegramMarzbanVpnSessionState.AwaitingSearchUserByChatId:
 
                 long chatId = -1;
                 Int64.TryParse(message.Text, out chatId);
-                
+
                 if (chatId == 0 || chatId <= 0)
                 {
                     await botClient!.SendTextMessageAsync(
@@ -733,6 +803,7 @@ public class TelegramHelper
 
                 await telegramService.ManagementUserAsync(botClient!, callbackQuery,
                     cancellationToken, telegramUser);
+
                 break;
 
             case TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser:

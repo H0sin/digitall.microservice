@@ -31,10 +31,7 @@ public static class BotOnMessageReceived
                 telegramUser = memoryCache.Get(message?.Chat.Id ?? 0) as TelegramUser;
             }
 
-
-            TelegramHelper telegramHelper = new TelegramHelper();
-
-
+            
             if (message.Photo is not { } photo & message.Text is not { } messageText)
                 await botClient.SendTextMessageAsync(chatId, "فرمت ارسالی درست نیست",
                     cancellationToken: cancellationToken);
@@ -42,8 +39,8 @@ public static class BotOnMessageReceived
             User? user = await telegramService.GetUserByChatIdAsync(chatId);
 
 
-            if (user != null && message.Text != TelegramHelper.BackToHomeButtonText)
-                await telegramHelper.MessageBasedOnStatus(botClient, telegramService, message, telegramUser, user,
+            if (user != null && message.Text != TelegramHelper.BackToHomeButtonText && message.Text != TelegramHelper.BackListTypeOfSendMessageButtonText)
+                await TelegramHelper.MessageBasedOnStatus(botClient, telegramService, message, telegramUser, user,
                     cancellationToken);
 
             bool? started = message?.Text?.StartsWith("/start");
@@ -119,13 +116,72 @@ public static class BotOnMessageReceived
                             botClient, new() { Message = message }, cancellationToken);
 
                         break;
-                    
+
                     case TelegramHelper.SearchUserButtonText:
                         await telegramService.SendTextSearchUserByChatAsync(
-                            botClient, new() { Message = message }, cancellationToken,telegramUser);
-                        
+                            botClient, new() { Message = message }, cancellationToken, telegramUser);
+
                         break;
 
+                    case TelegramHelper.SendMessageButtonText:
+                        await telegramService.SendMenuForSendMessageByAgentAsync(botClient, new() { Message = message },
+                            cancellationToken);
+                        break;
+                    
+                    case TelegramHelper.BackToManagement:
+                        await telegramService.SendMenuAgencyManagementAsync(botClient, new() { Message = message },
+                            cancellationToken);
+                        
+                        break;
+                    
+                    case TelegramHelper.BackListTypeOfSendMessageButtonText:
+                        await telegramService.SendMenuForSendMessageByAgentAsync(botClient, new() { Message = message },
+                            cancellationToken);
+                        
+                        break;
+                    
+                    case TelegramHelper.ForwardMessageButtonText:
+                        await telegramService.SendMenuForSelectedUserGroupingByAgentAsync(botClient,
+                            new()
+                            {
+                                Data = "sned_message?type=forward",
+                                Message = message
+                            },
+                            cancellationToken,telegramUser);
+                        break;
+                    
+                    case TelegramHelper.CustomMessageButtonText:
+                        await telegramService.SendMenuForSelectedUserGroupingByAgentAsync(botClient,
+                            new()
+                            {
+                                Data = "sned_message?type=custom",
+                                Message = message
+                            },
+                            cancellationToken,telegramUser);
+                        break;
+                    
+                    case TelegramHelper.ForAllUserButtonText:
+                        await telegramService.SubmitListingsButtonsAsync(botClient,
+                            new()
+                            {
+                                Data = "user_categroy?group=all",
+                                Message = message
+                            },
+                            cancellationToken,telegramUser);
+                        
+                        break;
+                    
+                    case TelegramHelper.ForAgentButtonText:
+                        await telegramService.SubmitListingsButtonsAsync(botClient,
+                            new()
+                            {
+                                Data = "user_categroy?group=agent",
+                                Message = message
+                            },
+                            cancellationToken,telegramUser);
+                        
+                        break;
+                    
                     default:
                         action = message?.Text switch
                         {

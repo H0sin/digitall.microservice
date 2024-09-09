@@ -19,6 +19,14 @@ public interface INotificationService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddNotificationsAsync(List<AddNotificationDto> notifications,long userId);
+
+    /// <summary>
+    /// update notification exeption
+    /// </summary>
+    /// <param name="notificationId"></param>
+    /// <param name="ex"></param>
+    /// <returns></returns>
+    Task UpdateNotificationExeption(long notificationId,string ex);
     
     /// <summary>
     /// for get list notifications and show user

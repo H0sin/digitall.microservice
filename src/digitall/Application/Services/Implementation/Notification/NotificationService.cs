@@ -19,7 +19,10 @@ public class NotificationService(INotificationRepository notificationRepository)
             NotificationType = notification.NotificationType,
             Buttons = notification.Buttons,
             FileAddress = notification.FileAddress,
-            FileCaption = notification.FileCaption
+            FileCaption = notification.FileCaption,
+            Forward = notification.Forward,
+            ForwarderChatId = notification.ForwardChatId,
+            MessageId = notification.MessageId
         };
 
         await notificationRepository.AddEntity(notify);
@@ -38,11 +41,28 @@ public class NotificationService(INotificationRepository notificationRepository)
                 NotificationType = x.NotificationType,
                 Buttons = x.Buttons,
                 FileAddress = x.FileAddress,
-                FileCaption = x.FileCaption
+                FileCaption = x.FileCaption,
+                Forward = x.Forward,
+                ForwarderChatId = x.ForwardChatId,
+                MessageId = x.MessageId
             }).ToList();
         
         await notificationRepository.AddEntities(notifies);
         await notificationRepository.SaveChanges(userId);
+    }
+
+    public async Task UpdateNotificationExeption(long notificationId, string ex)
+    {
+        Domain.Entities.Notification.Notification? notification =
+            await notificationRepository.GetEntityById(notificationId);
+
+        if (notification is not null)
+        {
+            notification.Execption = ex;
+            await notificationRepository.UpdateEntity(notification);
+        }
+
+        await notificationRepository.SaveChanges(1);
     }
 
     public async Task<List<NotificationDto>> GetNotificationsAsync(long userId)
@@ -60,7 +80,7 @@ public class NotificationService(INotificationRepository notificationRepository)
     {
         List<NotificationDto> notifications = await notificationRepository
             .GetQuery()
-            .Where(x => x.Send == false)
+            .Where(x => x.Send == false & string.IsNullOrEmpty(x.Execption))
             .Include(x => x.User)
             .Take(5)
             .Select(x => new NotificationDto(x))

@@ -15,4 +15,7 @@ public class AddNotificationDto
     public List<ButtonJsonDto>? Buttons { get; set; }
     public string? FileAddress { get; set; }
     public string? FileCaption { get; set; }
+    public bool Forward { get; set; } = false;
+    public long? ForwardChatId { get; set; } = null;
+    public int? MessageId { get; set; }
 }

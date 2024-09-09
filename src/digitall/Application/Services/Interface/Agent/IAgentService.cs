@@ -76,6 +76,7 @@ public interface IAgentService
     /// <param name="agentId"></param>
     /// <returns></returns>
     Task<AgentTreeDto> GetAgentsChildByFilterAsync(long userId);
+    
 
     /// <summary>
     /// when user wish payment show agent card information

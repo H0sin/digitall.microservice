@@ -31,6 +31,10 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "start":
+                    await telegramService.StartedTelegramBotAsync(botClient, callbackQuery.Message, cancellationToken, telegramUser!);
+                    break;
+                
                 case "back_to_home":
                     await telegramService.SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
                     break;
@@ -223,6 +227,12 @@ public static class BotOnCallbackQueryReceived
                     await telegramService.AddAgentAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser);
                         break;    
+                
+                case "button":
+                    await telegramService.SendMessageAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
+                    break;
+                
                 default:
                     break;
             }

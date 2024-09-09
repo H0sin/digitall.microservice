@@ -30,6 +30,8 @@ public class TelegramUser
     public string ServiceName { get; set; }
     public int MessageId { get; set; }
     public long Id { get; set; }
+    public string? SendMessageType { get; set; }
+    public string?  UserGroup { get; set; }
 
     public TelegramUser()
     {
@@ -94,7 +96,10 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendMessageForUser,
     AwaitingSendMessageForAllUser,
     AwaitingSendServiceName,
-    AwaitingSendDescriptionForDeleteMarzbanUser
+    AwaitingSendDescriptionForDeleteMarzbanUser,
+    AwaitingForwardMessage,
+    AwaitingSendListButtons,
+    AwaitingSendMessageText,
 }
 
 public static class BotSessions

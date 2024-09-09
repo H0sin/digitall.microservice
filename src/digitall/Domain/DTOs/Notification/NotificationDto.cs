@@ -16,6 +16,10 @@ public class NotificationDto
     public string? FileAddress { get; set; }
     public List<ButtonJsonDto?>? Buttons { get; set; }
     public string? FileCaption { get; set; }
+    public bool Forward { get; set; }
+    public long? ForwardChatId { get; set; }
+    public int? MessageId { get; set; }
+    
     public NotificationDto()
     {
     }
@@ -31,5 +35,8 @@ public class NotificationDto
         Buttons = notification!.Buttons!;
         FileAddress = notification.FileAddress;
         FileCaption = notification.FileCaption;
+        Forward = notification.Forward;
+        ForwardChatId = notification.ForwarderChatId;
+        MessageId = notification.MessageId;
     }
 }
