@@ -159,6 +159,7 @@ public class AgentService(
                     PersianBrandName = request.PersianBrandName,
                     AgentAdminId = request.UserId,
                     AgentCode = new Random().Next(10000, 9999999),
+                    AmountWithNegative = -50000
                 };
 
                 await agentRepository.AddEntity(agent);
@@ -472,7 +473,8 @@ public class AgentService(
                 BrandAddress = agent.BrandAddress,
                 BrandName = agent.BrandName,
                 PersianBrandName = agent.PersianBrandName,
-                AgentPercent = agent.Percent
+                AgentPercent = agent.Percent,
+                AmountWithNegative = -50000
             };
 
             await agentRepository.AddEntity(newAgent);

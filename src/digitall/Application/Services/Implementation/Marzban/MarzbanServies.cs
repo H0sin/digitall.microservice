@@ -364,8 +364,7 @@ public class MarzbanServies(
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
 
-                if (!(isAgent != null &&
-                      (isAgent.AllowNegative || isAgent.AmountWithNegative < totalPrice + user?.Balance)))
+                if (!(isAgent != null && isAgent.AmountWithNegative < user?.Balance - totalPrice))
                 {
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
@@ -922,17 +921,19 @@ public class MarzbanServies(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(userId);
 
-            if (isAgent == null && user?.Balance < totalPrice)
+            if (user.Balance < totalPrice)
             {
-                throw new BadRequestException("موجودی شما کافی نیست");
-            }
+                if (isAgent == null && user?.Balance < totalPrice)
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
 
-            if (!(isAgent != null &&
-                  (isAgent.AllowNegative | isAgent.AmountWithNegative < totalPrice + user?.Balance)))
-            {
-                throw new BadRequestException("موجودی شما کافی نیست");
+                if (!(isAgent != null && isAgent.AmountWithNegative < user?.Balance - totalPrice))
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
             }
-
+            
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
