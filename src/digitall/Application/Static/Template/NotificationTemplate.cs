@@ -91,7 +91,8 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto StartedBotNotification(long userId, string? name, bool cartToCard, long id,long chatId)
+    public static AddNotificationDto StartedBotNotification(long userId, string? name, bool cartToCard, long id,
+        long chatId)
     {
         List<ButtonJsonDto> buttons = new();
 
@@ -328,18 +329,23 @@ public static class NotificationTemplate
         };
     }
 
-    public static List<AddNotificationDto> SendMessageForUsers(List<long> userIds,
-        DateTime createServiceTime, string text)
+    public static List<AddNotificationDto> SendMessageForUsers(
+        List<long> userIds,
+        DateTime createServiceTime,
+        string text,
+        string? fileAddress = null,
+        ButtonJsonDto? button = null)
     {
         List<AddNotificationDto> notifications = new();
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
         foreach (var userId in userIds)
         {
             string message = $"""
-                              پیغام ارسالی از پشتیبانی:
-                              متن پیغام :
+                              📩 پیام ارسالی از پشتیبانی:
+                              📝 متن پیام:
                               {text}
-                              ساعت ارسال :{persianTime}
+                              ⏰ ساعت ارسال:
+                              {persianTime}
                               """;
 
             notifications.Add(new AddNotificationDto()
@@ -349,6 +355,37 @@ public static class NotificationTemplate
                 UserId = userId,
                 ForAllMember = false,
                 Expire = DateTime.Now.AddHours(2),
+                FileAddress = null,
+                Buttons = button != null
+                    ? new()
+                    {
+                        button
+                    }
+                    : null
+            });
+        }
+
+        return notifications;
+    }
+
+    public static List<AddNotificationDto> ForwardMessageForUsers(List<long> userIds,
+        DateTime createServiceTime,
+        int? messageId,
+        long? forwardChatId)
+    {
+        List<AddNotificationDto> notifications = new();
+        foreach (var userId in userIds)
+        {
+            notifications.Add(new AddNotificationDto()
+            {
+                NotificationType = NotificationType.Alter,
+                UserId = userId,
+                ForAllMember = false,
+                Expire = DateTime.Now.AddHours(24),
+                FileAddress = null,
+                Forward = true,
+                ForwardChatId = forwardChatId,
+                MessageId = messageId
             });
         }
 

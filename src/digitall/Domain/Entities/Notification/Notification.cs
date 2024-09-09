@@ -32,8 +32,15 @@ public class Notification : BaseEntity
         set => ButtonsJson = value == null ? null : JsonConvert.SerializeObject(value);
     }
 
+    public bool Forward { get; set; } = false;
+    public long? ForwarderChatId { get; set; } = null;
+    public int? MessageId { get; set; } = null;
+    
     public long? UserId { get; set; }
     public User? User { get; set; }
 
     public string? FileAddress { get; set; }
+
+    [Column(TypeName = "nvarchar(max)")]
+    public string? Execption { get; set; } = null;
 }
