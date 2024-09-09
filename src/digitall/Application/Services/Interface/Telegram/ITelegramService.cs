@@ -865,4 +865,15 @@ public interface ITelegramService
     Task SendTextSearchUserByChatAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramUser telegramUser);
 
+    /// <summary>
+    /// added agent async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken,TelegramUser telegramUser);
+
 }

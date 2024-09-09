@@ -91,16 +91,16 @@ public static class NotificationTemplate
         };
     }
 
-    public static AddNotificationDto StartedBotNotification(long userId, string? name, bool cartToCard, long chatId)
+    public static AddNotificationDto StartedBotNotification(long userId, string? name, bool cartToCard, long id,long chatId)
     {
         List<ButtonJsonDto> buttons = new();
 
         if (!cartToCard)
-            buttons.Add(new("فعال سازی کارت به کارت", $"action_card?id={chatId}&action={!cartToCard}"));
+            buttons.Add(new("فعال سازی کارت به کارت", $"action_card?id={id}&action={!cartToCard}"));
         else
-            buttons.Add(new("غیر فعال سازی کارت به کارت", $"action_card?id={chatId}&action={!cartToCard}"));
+            buttons.Add(new("غیر فعال سازی کارت به کارت", $"action_card?id={id}&action={!cartToCard}"));
 
-        buttons.Add(new("مدیریت کاربر", $"user_management?id={chatId}"));
+        buttons.Add(new("مدیریت کاربر", $"user_management?id={id}"));
 
         return new AddNotificationDto()
         {

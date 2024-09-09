@@ -148,7 +148,8 @@ public class TelegramService(
                         agent!.AgentAdminId,
                         newUser.TelegramUsername ?? "NOUSERNAME",
                         newUser.CardToCardPayment,
-                        message.Chat.Id),
+                        newUser.Id,
+                        newUser.ChatId ?? 0),
                 user?.Id ?? newUser.Id);
         }
         else
@@ -298,7 +299,7 @@ public class TelegramService(
             chatId,
             messageId: callbackQuery.Message.MessageId,
             "یکی از آیتم هایه زیر را انتخاب کنید",
-            replyMarkup: telegramHelper.CreateListGbAndPriceButton(templates,days, subscribeId),
+            replyMarkup: telegramHelper.CreateListGbAndPriceButton(templates, days, subscribeId),
             cancellationToken: cancellationToken);
     }
 
@@ -765,7 +766,6 @@ public class TelegramService(
             chatId: chatId,
             text: TelegramHelper.DeleteServiceText,
             cancellationToken: cancellationToken);
-        await Task.CompletedTask;
     }
 
     public async Task DeleteMarzbanUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -795,11 +795,15 @@ public class TelegramService(
 
         await marzbanService.DeleteMarzbanUserAsync(delete);
 
-        await botClient!.EditMessageTextAsync(
+        await botClient!.SendTextMessageAsync(
             chatId: chatId,
-            messageId: callbackQuery.Message.MessageId,
-            text: callbackQuery.Message.Text,
-            replyMarkup: "سرویس حدذ تایید شد ✅",
+            text: """
+                  درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
+                  درصورت تایید سرویس شما حذف میشود ❌
+                  تا وقتی این سرویس در حال برسی است نمیتوانید
+                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  """,
+            replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
     }
 
@@ -820,14 +824,13 @@ public class TelegramService(
 
         User? user = await GetUserByChatIdAsync(chatId);
 
-
         await marzbanService.MainDeleteMarzbanUserAsync(Id, user.Id);
 
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
             text: callbackQuery.Message.Text,
-            replyMarkup: "درخواست حذف رد شد ❌",
+            replyMarkup: "درخواست حذف تایید شد ✅",
             cancellationToken: cancellationToken);
     }
 
@@ -851,8 +854,11 @@ public class TelegramService(
         try
         {
             await marzbanService.NotDeleteMarzbanUserAsync(Id, user.Id);
-            await botClient!.EditMessageTextAsync(chatId, callbackQuery.Message.MessageId,
-                "عملیات با موفقیت انجام شد",
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: callbackQuery.Message.Text,
+                replyMarkup: "درخواست حذف تایید نشد ✅",
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)
@@ -1675,6 +1681,10 @@ public class TelegramService(
             information.SpecialPercent = (admin.SpecialPercent != 0 && admin?.SpecialPercent != null)
                 ? admin.SpecialPercent
                 : admin?.AgentPercent;
+
+            information.ReferralCount = await userRepository
+                .GetQuery()
+                .Where(x => x.AgentId == admin.Id).CountAsync();
         }
 
         information.TotalPurchaseAmount = await orderService
@@ -1684,7 +1694,8 @@ public class TelegramService(
         information.LastName = currentUser.LastName;
         information.TelegramUserName = currentUser.TelegramUsername;
         information.Mobile = currentUser.Mobile;
-        information.TotalPaymentAmount = transactions.Where(x => x.TransactionStatus == TransactionStatus.Accepted)
+        information.TotalPaymentAmount = transactions.Where(x =>
+                x.TransactionStatus == TransactionStatus.Accepted && x.TransactionType == TransactionType.Increase)
             .Sum(x => x.Price) ?? 0;
         information.UserStatus = currentUser.UserStatus;
         information.Email = currentUser.Email;
@@ -2596,7 +2607,7 @@ public class TelegramService(
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
-            chatId:chatId,
+            chatId: chatId,
             text: agentInformation?.Information_Text() ?? "NO RESULT",
             cancellationToken: cancellationToken);
     }
@@ -2612,5 +2623,47 @@ public class TelegramService(
             chatId: chatId,
             "ایدی عددی کاربر را ارسال کنید 🔍",
             cancellationToken: cancellationToken);
+    }
+
+    public async Task AddAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long Id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out Id);
+        }
+
+        User? parentUser = await GetUserByChatIdAsync(chatId);
+        AgentDto? parentAgent = await agentService.GetAgentByAdminIdAsync(parentUser!.Id);
+
+        User? user = await userRepository.GetEntityById(Id);
+
+        AddAgentDto agent = new()
+        {
+            AgentAdminId = user.Id,
+            BrandName = "",
+            PersianBrandName = user.UserFullName(),
+            BrandAddress = "",
+        };
+
+        await agentService.AddAgentAsync(agent, parentUser.Id);
+
+        telegramUser.Id = Id;
+
+        await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
+            cancellationToken: cancellationToken);
+
+        await ManagementUserAsync(botClient!, new CallbackQuery()
+        {
+            Data = $"user_management?id={telegramUser.Id}",
+            Message = callbackQuery.Message,
+        }, cancellationToken, telegramUser);
     }
 }
