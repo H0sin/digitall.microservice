@@ -35,11 +35,7 @@ public class MarzbanVpn : BaseEntity
     [Display(Name = "قیمت هر روز")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public long DayPrice { get; set; }
-
-    [Display(Name = "نام هلدر بات")]
-    [MaxLength(300)]
-    public string? ExpireDetailInbound { get; set; } = null;
-
+    
     [Display(Name = "وضعیت حجم و زمان دلخواه")]
     public bool Desired { get; set; }   
     

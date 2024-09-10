@@ -35,4 +35,13 @@ public class MarzbanServer : BaseEntity
 
     [Display(Name = "تعداد کاربر ها سرور")]
     public long Users { get; set; }
+    
+    [Display(Name = "اینباند هایه هولدر")]
+    [MaxLength(300)]
+    public List<string>? HolderInbound { get; set; } = null;
+    
+    [Display(Name = "نام هولدر بات")]
+    [MaxLength(300)]
+    public string? TypeHolderInbound { get; set; } = null;
+
 }
