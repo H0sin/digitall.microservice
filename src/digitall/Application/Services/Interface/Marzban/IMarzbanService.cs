@@ -7,6 +7,18 @@ namespace Application.Services.Interface.Marzban;
 public interface IMarzbanService
 {
     /// <summary>
+    /// list marzban server dto
+    /// </summary>
+    /// <returns></returns>
+    Task<List<MarzbanServer>> ListMarzbanServerAsync();
+
+    /// <summary>
+    /// list marzban server dto
+    /// </summary>
+    /// <returns></returns>
+    Task<List<GetMarzbanServerDto>> GetListMarzbanServcerAsync();
+    
+    /// <summary>
     /// for add marzban server
     /// </summary>
     /// <param name="marzban"></param>
@@ -269,9 +281,17 @@ public interface IMarzbanService
     /// update marzban user just my database
     /// </summary>
     /// <param name="user"></param>
-    /// <param name="serverId"></param>
+    /// <param name="userId"></param>
     /// <returns></returns>
     Task<MarzbanUserDto?> UpdateMarzbanUserAsync(MarzbanUserDto user, long userId);
+
+    /// <summary>
+    /// update marzban user holder inbound
+    /// </summary>
+    /// <param name="marzbanUser"></param>
+    /// <param name="marzbanServer"></param>
+    /// <returns></returns>
+    Task UpdateMarzbanUserHolderInboundAsync(MarzbanUser? marzbanUser,MarzbanServer? marzbanServer);
 
     /// <summary>
     /// reveval marzban user
@@ -317,10 +337,16 @@ public interface IMarzbanService
     /// <summary>
     /// get list marzban vpn Id
     /// </summary>
-    /// <param name="marzbanVpnId"></param>
+    /// <param name="marzbanServerId"></param>
     /// <returns></returns>
-    Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId);
+    Task<List<MarzbanUser?>> GetListExpireUserAsync(long marzbanServerId);
 
+    /// <summary>
+    /// get list marzban service
+    /// </summary>
+    /// <param name="marzbanServerId"></param>
+    /// <returns></returns>
+    Task<List<string?>> GetListExpireUsernameAsync(long marzbanServerId);
 
     /// <summary>
     /// send marzban user by username

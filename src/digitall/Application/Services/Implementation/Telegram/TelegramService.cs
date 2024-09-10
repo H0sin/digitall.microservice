@@ -181,9 +181,17 @@ public class TelegramService(
         throw new NotImplementedException();
     }
 
-    public Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
+    public async Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId)
     {
-        throw new NotImplementedException();
+        TelegramBot telegramBot = bot._GenerateTelegramBot();
+
+        if (await telegramBotRepository.GetQuery().AnyAsync(x => x.Token == bot.Token))
+            throw new ExistsException("این بات از قبل ثبت شده است");
+
+        await telegramBotRepository.AddEntity(telegramBot);
+        await telegramBotRepository.SaveChanges(userId);
+        
+        return bot;
     }
 
     public async Task<List<TelegramBot>?> GetAllTelegramBotAsync()

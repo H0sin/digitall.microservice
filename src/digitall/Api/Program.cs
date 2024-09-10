@@ -194,6 +194,9 @@ builder.Services.AddQuartz(q =>
                 case "SendTelegramNotificationJob":
                     q.AddJob<SendTelegramNotificationJob>(opts => opts.WithIdentity(jobKey));
                     break;
+                case "MarzbanHolderBotJob":
+                    q.AddJob<MarzbanHolderBotJob>(opts => opts.WithIdentity(jobKey));
+                    break;
             }
 
             q.AddTrigger(opts => opts

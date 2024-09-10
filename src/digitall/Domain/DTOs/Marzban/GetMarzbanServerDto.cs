@@ -13,21 +13,26 @@ public class GetMarzbanServerDto
     public string? UserName { get; set; }
     public string? Password { get; set; }
     public long Users { get; set; }
+    public List<string>? HolderInbound { get; set; } = null;
+    public string? TypeHolderInbound { get; set; } = null;
+    public long Id { get; set; }
 
     public GetMarzbanServerDto()
     {
-
     }
 
-    public GetMarzbanServerDto(MarzbanServer marzban)
+    public GetMarzbanServerDto(MarzbanServer server)
     {
-        ServerName = marzban.ServerName;
-        ServerIp = marzban.ServerIp;
-        ServerPort = marzban.ServerPort;
-        Ssl = marzban.Ssl;
-        Path = marzban.Path;
-        UserName = marzban.UserName;
-        Password = marzban.Password;
-        Users = marzban.Users;
+        ServerName = server.ServerName;
+        ServerIp = server.ServerIp;
+        ServerPort = server.ServerPort;
+        Ssl = server.Ssl;
+        Path = server.Path;
+        UserName = server.UserName;
+        Password = server.Password;
+        Users = server.Users;
+        HolderInbound = server.HolderInbound;
+        TypeHolderInbound = server.TypeHolderInbound;
+        Id = server.Id;
     }
 }

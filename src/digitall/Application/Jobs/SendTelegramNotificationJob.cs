@@ -39,6 +39,8 @@ public class SendTelegramNotificationJob : IJob
             var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
             List<NotificationDto> notifications =
                 await notificationService
                     .GetNotificationsAsync();
@@ -157,6 +159,8 @@ public class SendTelegramNotificationJob : IJob
                     await notificationService.UpdateNotificationExeption(notification.Id,
                         e.Message + " -- | -- " + e.InnerException);
                 }
+
+                cts.Token.ThrowIfCancellationRequested();
             }
         }
         catch (Exception e)

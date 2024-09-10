@@ -31,4 +31,5 @@ public class MarzbanUser : BaseEntity
     public long? Lifetime_Used_Traffic { get; set; }
     public DateTime? Created_At { get; set; }
     public List<string?> Links { get; set; } = new();
+    public bool AddedHolderInbound { get; set; } = false;
 }

@@ -41,11 +41,17 @@ public class MarzbanUserDto
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
 
+
+    [JsonProperty("proxies")] public object Proxies { get; set; } = new();
+
+    [JsonProperty("inbounds")] public object Inbounds { get; set; } = new();
+    
     public bool IsDelete { get; set; }
     public long MarzbanVpnId { get; set; }
     public long MarzbanServerId { get; set; }
     public long UserId { get; set; }
-
+    public bool AddedHolderInbound { get; set; }
+        
     public MarzbanUserDto()
     {
     }
@@ -72,5 +78,6 @@ public class MarzbanUserDto
         MarzbanServerId = marzbanUser.MarzbanServerId;
         UserId = marzbanUser.UserId;
         IsDelete = marzbanUser.IsDelete;
+        AddedHolderInbound = marzbanUser.AddedHolderInbound;
     }
 }

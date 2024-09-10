@@ -29,6 +29,8 @@ public class MarzbanApiRequest
     {
         try
         {
+            if (_marzbanServer.Token != null) return _marzbanServer.Token;
+            
             var loginData = new Dictionary<string, string?>()
             {
                 { "username", _marzbanServer?.UserName },
@@ -36,7 +38,8 @@ public class MarzbanApiRequest
             };
 
             var content = new FormUrlEncodedContent(loginData);
-            var response = await _httpClient.PostAsync(_marzbanServer?.GetFullIpAddress() + MarzbanPaths.Login, content);
+            var response =
+                await _httpClient.PostAsync(_marzbanServer?.GetFullIpAddress() + MarzbanPaths.Login, content);
 
             if (response.StatusCode == HttpStatusCode.NotFound) throw new LogicException("سرور در دست رس نیست");
 

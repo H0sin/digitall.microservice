@@ -48,6 +48,13 @@ public class MarzbanServies(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     IAgentService agentService) : IMarzbanService
 {
+    public async Task<List<MarzbanServer>> ListMarzbanServerAsync()
+        => await marzbanServerRepository.GetQuery().ToListAsync();
+
+    public async Task<List<GetMarzbanServerDto>> GetListMarzbanServcerAsync()
+        => await marzbanServerRepository.GetQuery().Select(x => new GetMarzbanServerDto(x))
+            .ToListAsync();
+
     public async Task AddMarzbanServerAsync(AddMarzbanServerDto marzban, long userId)
     {
         if (
@@ -389,7 +396,7 @@ public class MarzbanServies(
             DateTime today = DateTime.Today;
             DateTime futureDate = today.AddDays(template?.Days ?? vpn.TotalDay);
 
-            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>() { };
+            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>();
 
             if (marzbanVpn.Vmess?.Count() >= 1) inbounds.Add("vmess", marzbanVpn.Vmess);
             if (marzbanVpn.Vless?.Count() >= 1) inbounds.Add("vless", marzbanVpn.Vless);
@@ -418,7 +425,16 @@ public class MarzbanServies(
                     // Expire = unixTimestamp.ToString(),
                     Data_Limit_Reset_Strategy = "no_reset",
                     Inbounds = inbounds,
-                    Note = "",
+                    Note = (user.ChatId ?? user.Id) +
+                           " | " +
+                           userId +
+                           " | " +
+                           DateTime.Now +
+                           " |  " +
+                           "Buy" +
+                           " | " +
+                           user.TelegramUsername ??
+                           user.UserFullName(),
                     Proxies = proxies,
                     Status = "on_hold",
                     On_Hold_Expire_Duration =
@@ -858,11 +874,51 @@ public class MarzbanServies(
         mu.Sub_Last_User_Agent = user.Sub_Last_User_Agent;
         mu.Data_Limit = user.Data_Limit;
         mu.Sub_Updated_At = user.Sub_Updated_At;
+        mu.AddedHolderInbound = user.AddedHolderInbound;
 
         await marzbanUserRepository.UpdateEntity(mu);
         await marzbanUserRepository.SaveChanges(userId);
 
         return user;
+    }
+
+    public async Task UpdateMarzbanUserHolderInboundAsync(MarzbanUser? marzbanUser, MarzbanServer? marzbanServer)
+    {
+        if (marzbanServer != null)
+        {
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+            try
+            {
+                if (marzbanServer.TypeHolderInbound != null && marzbanServer.HolderInbound != null)
+                {
+                    Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>();
+                    Dictionary<string, object> proxies = new Dictionary<string, object>();
+
+                    AddMarzbanUserDto newMarzbanUser = new()
+                    {
+                        Inbounds = inbounds,
+                        Proxies = proxies,
+                    };
+
+                    inbounds.Add(marzbanServer.TypeHolderInbound.ToLower(), marzbanServer.HolderInbound);
+
+                    if (marzbanServer.HolderInbound.Count > 0)
+                        proxies.Add(marzbanServer.TypeHolderInbound.ToLower(), new { });
+
+                    await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                        MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
+                        HttpMethod.Put, newMarzbanUser);
+                    marzbanUser.AddedHolderInbound = true;
+
+                    await marzbanUserRepository.UpdateEntity(marzbanUser);
+                    await marzbanUserRepository.SaveChanges(marzbanUser.UserId);
+                }
+            }
+            catch (Exception e)
+            {
+                await Task.CompletedTask;
+            }
+        }
     }
 
     public async Task<MarzbanUserDto> RenewalMarzbanVpnAsync(BuyMarzbanVpnDto vpn, long userId)
@@ -933,7 +989,7 @@ public class MarzbanServies(
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
             }
-            
+
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
@@ -1004,13 +1060,43 @@ public class MarzbanServies(
                 .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
                     DateTime.Now, true, marzbanUser.Username), userId);
 
+            Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>();
+
+            if (marzbanVpn.Vmess?.Count() >= 1) inbounds.Add("vmess", marzbanVpn.Vmess);
+            if (marzbanVpn.Vless?.Count() >= 1) inbounds.Add("vless", marzbanVpn.Vless);
+            if (marzbanVpn.Trojan?.Count() >= 1) inbounds.Add("trojan", marzbanVpn.Trojan);
+            if (marzbanVpn.Shadowsocks?.Count() >= 0)
+                inbounds.Add("shadowsocks", marzbanVpn.Shadowsocks);
+
+            Dictionary<string, object> proxies = new Dictionary<string, object>();
+
+            if (marzbanVpn.Vmess.Count > 0)
+                proxies.Add("vmess", new { });
+            if (marzbanVpn.Trojan.Count > 0)
+                proxies.Add("trojan", new { });
+            if (marzbanVpn.Vless.Count > 0)
+                proxies.Add("vless", new { });
+            if (marzbanVpn.Shadowsocks.Count > 0)
+                proxies.Add("shadowsocks", new { });
+
             MarzbanUserDto newMarzbanUser = new()
             {
                 Expire = marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds,
                 Data_Limit_Reset_Strategy = "no_reset",
-                Note = "",
+                Note = (user.ChatId ?? user.Id) +
+                       " | " +
+                       userId +
+                       " | " +
+                       DateTime.Now +
+                       " |  " +
+                       "Renewal" +
+                       " | " +
+                       user.TelegramUsername ??
+                       user.UserFullName(),
                 Status = "active",
                 Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)), // marzbanUser?.Data_Limit ?? 0,
+                Inbounds = inbounds,
+                Proxies = proxies,
             };
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
@@ -1027,6 +1113,8 @@ public class MarzbanServies(
             MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
                 HttpMethod.Put, newMarzbanUser);
+
+            marzbanUser.AddedHolderInbound = false;
 
             await UpdateMarzbanUserAsync(marzbanUser, userId);
             await transaction.CommitAsync();
@@ -1188,7 +1276,7 @@ public class MarzbanServies(
                 UserId = marzbanUser.UserId,
             }, userId);
 
-             marzbanUserRepository.DeletePermanent(marzbanUser);
+            marzbanUserRepository.DeletePermanent(marzbanUser);
             await marzbanUserRepository.SaveChanges(userId);
 
             await transaction.CommitAsync();
@@ -1234,10 +1322,9 @@ public class MarzbanServies(
         }
     }
 
-    public async Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanVpnId)
+    public async Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanServerId)
     {
-        MarzbanVpn? marzbanVpn = await marzbanVpnRepository.GetEntityById(marzbanVpnId);
-        MarzbanServer? marzbanServer = await marzbanServerRepository.GetEntityById(marzbanVpnId);
+        MarzbanServer? marzbanServer = await marzbanServerRepository.GetEntityById(marzbanServerId);
 
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer ?? throw new AppException("سرور در دست رس نیست"));
 
@@ -1253,10 +1340,22 @@ public class MarzbanServies(
 
         List<MarzbanUser> marzbanUsers = await marzbanUserRepository
             .GetQuery()
-            .Where(x => x.Username.Contains(serverUser.ToString()))
+            .Where(x => serverUser.Contains(x.Username) && x.AddedHolderInbound == false)
             .ToListAsync();
 
         return marzbanUsers;
+    }
+
+    public async Task<List<string>> GetListExpireUsernameAsync(long marzbanServerId)
+    {
+        MarzbanServer? marzbanServer = await marzbanServerRepository.GetEntityById(marzbanServerId);
+
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer ?? throw new AppException("سرور در دست رس نیست"));
+
+        return
+            await marzbanApiRequest.CallApiAsync<List<string>>(
+                MarzbanPaths.UsersExpire,
+                HttpMethod.Get);
     }
 
     public async Task<MarzbanUserDto?> GetMarzbanUserByUsernameAsync(string username, long userId)
