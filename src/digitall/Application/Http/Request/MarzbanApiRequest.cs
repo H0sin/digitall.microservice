@@ -29,8 +29,6 @@ public class MarzbanApiRequest
     {
         try
         {
-            if (_marzbanServer.Token != null) return _marzbanServer.Token;
-            
             var loginData = new Dictionary<string, string?>()
             {
                 { "username", _marzbanServer?.UserName },
@@ -51,7 +49,10 @@ public class MarzbanApiRequest
             return _token;
         }
         catch (Exception e)
-        {
+        { 
+            _marzbanServer.Token = null;
+            await LoginAsync();
+            await Task.CompletedTask;
             return "";
         }
     }

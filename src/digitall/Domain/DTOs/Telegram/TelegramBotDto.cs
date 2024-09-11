@@ -14,6 +14,7 @@ public class TelegramBotDto
     public string? HostAddress { get; set; }
     public string? SecretToken { get; set; }
     public long? BotId { get; set; }
+    public long? AgentId { get; set; }
     
     public TelegramBotDto(long id, string? token, string? name, string? persionName, string? description, string? route, string? hostAddress, string? secretToken)
     {
@@ -42,5 +43,6 @@ public class TelegramBotDto
         HostAddress = bot?.HostAddress;
         SecretToken = bot?.SecretToken;
         BotId = bot?.BotId;
+        AgentId = bot?.AgentId;
     }
 }

@@ -11,9 +11,11 @@ using Application.Services.Interface.Transaction;
 using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
+using Data.DefaultData;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
@@ -126,10 +128,19 @@ public class TelegramService(
                 agent = await agentService.GetAgentByCode(agentCode);
             }
 
+            TelegramBotDto? telegramBot = null;
+
+            if (agentCode == 0)
+            {
+                telegramBot = await GetTelegramBotByBotIdAsync(botId);
+                agent = await agentService.GetAgentByIdAsync(telegramBot.AgentId ?? 0);
+            }
+
+
             newUser = new User()
             {
                 Balance = 0,
-                AgentId = agent!.Id,
+                AgentId = agent?.Id ?? telegramBot?.AgentId ?? AgentItems.Agents.First().Id,
                 FirstName = message.From?.FirstName,
                 LastName = message.From?.LastName,
                 Password = PasswordHelper.EncodePasswordMd5(message.Chat.Id.ToString()),
@@ -146,7 +157,7 @@ public class TelegramService(
             await notificationService.AddNotificationAsync(
                 NotificationTemplate
                     .StartedBotNotification(
-                        agent!.AgentAdminId,
+                        agent?.AgentAdminId ?? AgentItems.Agents.First().AgentAdminId,
                         newUser.TelegramUsername ?? "NOUSERNAME",
                         newUser.CardToCardPayment,
                         newUser.Id,
@@ -190,7 +201,7 @@ public class TelegramService(
 
         await telegramBotRepository.AddEntity(telegramBot);
         await telegramBotRepository.SaveChanges(userId);
-        
+
         return bot;
     }
 
@@ -581,7 +592,6 @@ public class TelegramService(
         filter.Username = username;
 
         FilterMarzbanUser users = await marzbanService.FilterMarzbanUsersAsync(filter);
-
 
         try
         {
@@ -1054,12 +1064,12 @@ public class TelegramService(
 
         User? user = await GetUserByChatIdAsync(chatId);
 
-        TransactionDetailDto transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
-
-        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
-
+        TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
+        
         if (transactionDetail is null)
-            throw new ApplicationException("پرداخت کارت به کارت برای شما غیر فعال است.");
+            throw new ApplicationException(" ❌❌ درگاه پرداخت غیر فعال است ❌❌");
+        
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
 
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
@@ -1084,7 +1094,7 @@ public class TelegramService(
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber) | !user.CardToCardPayment)
         {
-            if (user.CardToCardPayment)
+            if (!user.CardToCardPayment)
             {
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate
@@ -2142,6 +2152,23 @@ public class TelegramService(
         await userRepository.UpdateEntity(child);
         await userRepository.SaveChanges(user.Id);
 
+        if (action)
+        {
+            ButtonJsonDto buttonJson = new ButtonJsonDto("\ud83d\udcb0 افزایش موجودی", "inventory_increase");
+
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = "درگاه کارت به کارت برای شما فعال شد ✅",
+                UserId = child.Id,
+                ForAllMember = false,
+                Buttons = new()
+                {
+                    buttonJson
+                }
+            }, user.Id);
+        }
+
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.ChangeCardToCardText(action),
@@ -2650,8 +2677,6 @@ public class TelegramService(
         }
 
         User? parentUser = await GetUserByChatIdAsync(chatId);
-        AgentDto? parentAgent = await agentService.GetAgentByAdminIdAsync(parentUser!.Id);
-
         User? user = await userRepository.GetEntityById(Id);
 
         AddAgentDto agent = new()
@@ -2664,6 +2689,15 @@ public class TelegramService(
 
         await agentService.AddAgentAsync(agent, parentUser.Id);
 
+        await notificationService.AddNotificationAsync(new AddNotificationDto()
+        {
+            Message = "شما با موفقیت نماینده شدید ✅",
+            UserId = user.Id,
+            Buttons = new()
+            {
+                new("مدیریت پنل نمایندگی 🏢", "agency_management")
+            },
+        }, user.Id);
         telegramUser.Id = Id;
 
         await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
@@ -2693,9 +2727,9 @@ public class TelegramService(
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         long chatId = callbackQuery.Message!.Chat.Id;
-        
+
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        
+
         string? messageType = null;
 
         string? callbackData = callbackQuery.Data;
@@ -2723,9 +2757,9 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         string? group = null;
-        
+
         telegramUser.Message = "";
-        
+
         string? callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData!.IndexOf('?');
         if (questionMarkIndex >= 0)
@@ -2817,9 +2851,9 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.Message = callbackQuery.Message.Text;
-        
+
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -2884,7 +2918,7 @@ public class TelegramService(
                     agent.AgentAdminId);
                 break;
         }
-        
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "پیغام شما با موفقیت به صف ارسال رفت ✅",

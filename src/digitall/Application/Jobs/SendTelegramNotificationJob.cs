@@ -44,8 +44,7 @@ public class SendTelegramNotificationJob : IJob
             List<NotificationDto> notifications =
                 await notificationService
                     .GetNotificationsAsync();
-
-
+            
             foreach (NotificationDto notification in notifications)
             {
                 try

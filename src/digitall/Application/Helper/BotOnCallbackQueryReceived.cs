@@ -248,6 +248,7 @@ public static class BotOnCallbackQueryReceived
                     {
                         InlineKeyboardButton.WithCallbackData("\ud83d\udcb0 افزایش موجودی", "inventory_increase")
                     };
+                    
                     telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
                     await botClient.SendTextMessageAsync(

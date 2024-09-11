@@ -55,7 +55,7 @@ public class Agent : BaseEntity
     public TelegramBot? TelegramBot { get; set; }
     public AgentOptions? AgentOptions { get; set; }
     public TransactionDetail? TransactionDetail { get; set; }
-    public ICollection<AgentsIncomesDetail>? AgentsTransactionsDetails { get; set; }
+    public ICollection<AgentsIncomesDetail>? AgentsIncomesDetail { get; set; }
 
     #endregion
 }

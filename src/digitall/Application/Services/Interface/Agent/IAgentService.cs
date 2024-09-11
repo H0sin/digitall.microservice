@@ -18,7 +18,7 @@ public interface IAgentService
     /// <param name="agentId"></param>
     /// <returns></returns>
     Task<List<AgentsIncomesDetail>> ListAgentIncomeDetailsByAgentId(long agentId);
-    
+
     /// <summary>
     /// get users  by agent Id
     /// </summary>
@@ -26,12 +26,21 @@ public interface IAgentService
     /// <returns></returns>
     Task<List<UserDto>?> GetAgentUserAsync(long agentId);
 
+    ///<summary>
     /// after add transaction added agent transaction details 
     /// </summary>
     /// <param name="agentsTransactionsDetails"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsIncomesDetail, long userId);
+    Task AddAgentsIncomesDetailAsync(List<AgentsIncomesDetail> agentsIncomesDetail, long userId);
+
+    /// <summary>
+    /// add agent income async
+    /// </summary>
+    /// <param name="agentsIncomesDetail"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddAgentsIncomesDetailAsync(AgentsIncomesDetail agentsIncomesDetail, long userId);
 
     /// <summary>
     /// get agent information by code
@@ -76,7 +85,7 @@ public interface IAgentService
     /// <param name="agentId"></param>
     /// <returns></returns>
     Task<AgentTreeDto> GetAgentsChildByFilterAsync(long userId);
-    
+
 
     /// <summary>
     /// when user wish payment show agent card information
@@ -144,15 +153,15 @@ public interface IAgentService
     Task<bool> HaveRequestAgentAsync(long userId);
 
     Task<List<AgentDto>> GetAgentsListAsync();
-    
+
     /// <summary>
     /// filter agent list async
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
     Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter);
-    
-    
+
+
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
     Task<AgentDto?> GetAgentByAdminIdAsync(long? adminId);

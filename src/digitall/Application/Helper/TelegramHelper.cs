@@ -714,8 +714,8 @@ public class TelegramHelper
 
     public static string ChangeCardToCardText(bool action) => action switch
     {
-        true => "شماره کارت برای این کار بر قابل رویت شد ✅",
-        _ => "شماره کارت برای این کار بر پنهان شد ❌"
+        true => "شماره کارت برای این کاربر قابل رویت شد ✅",
+        _ => "شماره کارت برای این کاربر پنهان شد ❌"
     };
 
     public static string BrandingInformationText(AgentInformationDto? agentInformation) =>
