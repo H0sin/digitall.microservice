@@ -25,10 +25,12 @@ public class MarzbanApiRequest
         _token = marzbanServer.Token ?? "";
     }
 
-    public async Task<string> LoginAsync()
+    public async Task<string> LoginAsync(bool newToken = false)
     {
         try
         {
+            // if (_marzbanServer.Token != null) return _marzbanServer.Token;
+            
             var loginData = new Dictionary<string, string?>()
             {
                 { "username", _marzbanServer?.UserName },
@@ -50,8 +52,6 @@ public class MarzbanApiRequest
         }
         catch (Exception e)
         { 
-            _marzbanServer.Token = null;
-            await LoginAsync();
             await Task.CompletedTask;
             return "";
         }
