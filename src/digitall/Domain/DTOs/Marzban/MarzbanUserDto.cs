@@ -40,8 +40,7 @@ public class MarzbanUserDto
     [JsonProperty("links")] public List<string?> Links { get; set; } = new();
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
-
-
+    
     [JsonProperty("proxies")] public object Proxies { get; set; } = new();
 
     [JsonProperty("inbounds")] public object Inbounds { get; set; } = new();

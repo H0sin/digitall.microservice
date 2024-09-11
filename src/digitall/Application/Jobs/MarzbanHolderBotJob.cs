@@ -2,7 +2,10 @@
 using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
+using Domain.DTOs.Telegram;
 using Domain.Entities.Marzban;
+using Domain.Enums.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
@@ -25,7 +28,7 @@ public class MarzbanHolderBotJob : IJob
 
             await using var scope = _serviceScopeFactory.CreateAsyncScope();
             IMarzbanService marzbanService = scope.ServiceProvider.GetRequiredService<IMarzbanService>();
-
+            
             List<MarzbanServer> marzbanServers = await marzbanService.ListMarzbanServerAsync();
 
             List<MarzbanUser> marzban_users_list = new List<MarzbanUser>();
@@ -33,7 +36,7 @@ public class MarzbanHolderBotJob : IJob
             foreach (var marzbanServer in marzbanServers)
             {
                 List<MarzbanUser?> marzban_users = await marzbanService.GetListExpireUserAsync(marzbanServer.Id);
-
+                
                 if (marzban_users.Count > 0)
                     marzban_users_list.AddRange(marzban_users);
             }

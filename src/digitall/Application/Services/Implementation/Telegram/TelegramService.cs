@@ -11,6 +11,7 @@ using Application.Services.Interface.Transaction;
 using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
+using Data.DefaultData;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
@@ -126,10 +127,19 @@ public class TelegramService(
                 agent = await agentService.GetAgentByCode(agentCode);
             }
 
+            TelegramBotDto? telegramBot = null;
+
+            if (agentCode == 0)
+            {
+                telegramBot = await GetTelegramBotByBotIdAsync(botId);
+                agent = await agentService.GetAgentByIdAsync(telegramBot.AgentId ?? 0);
+            }
+
+
             newUser = new User()
             {
                 Balance = 0,
-                AgentId = agent!.Id,
+                AgentId = agent?.Id ?? telegramBot?.AgentId ?? AgentItems.Agents.First().Id,
                 FirstName = message.From?.FirstName,
                 LastName = message.From?.LastName,
                 Password = PasswordHelper.EncodePasswordMd5(message.Chat.Id.ToString()),
@@ -146,7 +156,7 @@ public class TelegramService(
             await notificationService.AddNotificationAsync(
                 NotificationTemplate
                     .StartedBotNotification(
-                        agent!.AgentAdminId,
+                        agent?.AgentAdminId ?? AgentItems.Agents.First().AgentAdminId,
                         newUser.TelegramUsername ?? "NOUSERNAME",
                         newUser.CardToCardPayment,
                         newUser.Id,
@@ -162,7 +172,7 @@ public class TelegramService(
         }
 
         return agent;
-    }
+    } 
 
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
@@ -190,7 +200,7 @@ public class TelegramService(
 
         await telegramBotRepository.AddEntity(telegramBot);
         await telegramBotRepository.SaveChanges(userId);
-        
+
         return bot;
     }
 
@@ -581,7 +591,6 @@ public class TelegramService(
         filter.Username = username;
 
         FilterMarzbanUser users = await marzbanService.FilterMarzbanUsersAsync(filter);
-
 
         try
         {
@@ -2693,9 +2702,9 @@ public class TelegramService(
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         long chatId = callbackQuery.Message!.Chat.Id;
-        
+
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        
+
         string? messageType = null;
 
         string? callbackData = callbackQuery.Data;
@@ -2723,9 +2732,9 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         string? group = null;
-        
+
         telegramUser.Message = "";
-        
+
         string? callbackData = callbackQuery.Data;
         int questionMarkIndex = callbackData!.IndexOf('?');
         if (questionMarkIndex >= 0)
@@ -2817,9 +2826,9 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.Message = callbackQuery.Message.Text;
-        
+
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -2884,7 +2893,7 @@ public class TelegramService(
                     agent.AgentAdminId);
                 break;
         }
-        
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "پیغام شما با موفقیت به صف ارسال رفت ✅",

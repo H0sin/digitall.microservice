@@ -218,39 +218,76 @@ public static class NotificationTemplate
     {
         List<AddNotificationDto> notifications = new();
         string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
-        foreach (var income in incomes)
+        
+        IOrderedEnumerable<CalculatorUserIncome> newIncomes = incomes.OrderByDescending(x => x.AgentId);
+        
+        var largestAgentIncome = newIncomes.First();
+        
+        foreach (var income in newIncomes)
         {
             string? price_No = $"{price:N0}";
             string? balance_No = $"{income.Balance:N0}";
             string message = "";
-
+            
+            bool isLargestAgent = income == largestAgentIncome;
+            
             if (renewal)
             {
-                message = $"""
-                           🛍 تمدید جدید
-                           کاربری با شناسه :`\{chatId}`\
-                           نام کاربری :@{userName}
-                           سرویسی را تمدید کرد
-                           نام سرویس:{marzbanUsername}
-                           سود شما از خرید:{balance_No} تومان
-                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
-                           تاریخ خرید سرویس:{persianTime}
-                           """;
+                if (isLargestAgent)
+                {
+                    message = $"""
+                               🛍 تمدید جدید
+                               کاربری با شناسه :`\{chatId}`\
+                               نام کاربری :@{userName}
+                               سرویسی را تمدید کرد
+                               نام سرویس:{marzbanUsername}
+                               سود شما از خرید:{balance_No} تومان
+                               مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                               تاریخ خرید سرویس:{persianTime}
+                               """;
+                }
+                else
+                {
+                    message = $"""
+                               🛍 تمدید جدید
+                               کاربری با شناسه :`\{chatId}`\
+                               سرویسی را تمدید کرد
+                               نام سرویس:{marzbanUsername}
+                               سود شما از خرید:{balance_No} تومان
+                               مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                               تاریخ خرید سرویس:{persianTime}
+                               """;
+                }
             }
             else
             {
-                message = $"""
-                           🛍 خرید جدید
-                           کاربری با شناسه :`\{chatId}`\
-                           نام کاربری :@{userName}
-                           سفارسی ثبت کرد
-                           سود شما از خرید:{balance_No} تومان
-                           مبلغ کسر شده از موجودی کاربر:{price_No} تومان
-                           تاریخ خرید سرویس:{persianTime}
-                           """;
+                if (isLargestAgent)
+                {
+                    message = $"""
+                               🛍 خرید جدید
+                               کاربری با شناسه :`\{chatId}`\
+                               نام کاربری :@{userName}
+                               سفارسی ثبت کرد
+                               نام سرویس:{marzbanUsername}
+                               سود شما از خرید:{balance_No} تومان
+                               مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                               تاریخ خرید سرویس:{persianTime}
+                               """;
+                }
+                else
+                {
+                    message = $"""
+                               🛍 خرید جدید
+                               کاربری با شناسه :`\{chatId}`\
+                               سفارسی ثبت کرد
+                               نام سرویس:{marzbanUsername}
+                               سود شما از خرید:{balance_No} تومان
+                               مبلغ کسر شده از موجودی کاربر:{price_No} تومان
+                               تاریخ خرید سرویس:{persianTime}
+                               """;
+                }
             }
-
-
+            
             notifications.Add(new AddNotificationDto()
             {
                 Message = message,
