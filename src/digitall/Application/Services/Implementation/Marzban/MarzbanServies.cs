@@ -493,7 +493,7 @@ public class MarzbanServies(
                     NotificationTemplate.IncomeFromPaymentAsync(
                         income: i,
                         userName: user.TelegramUsername ?? "NOUSERNAME",
-                        chatId: user.ChatId ?? 0,
+                        chatId: u.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,
                         createServiceTime:DateTime.Now,
