@@ -53,6 +53,15 @@ public class CountingVpnPrice
                     percent = (i == 0
                         ? (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)
                         : (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent));
+
+                    if (i > 0)
+                    {
+                        if (childByPath != null && childByPath.SpecialPercent.HasValue && childByPath.SpecialPercent != 0)
+                        {
+                            percent = childByPath?.SpecialPercent == 0 ? 1 : childByPath?.SpecialPercent ?? 1;
+                        }
+                    }
+
                 }
 
                 double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;

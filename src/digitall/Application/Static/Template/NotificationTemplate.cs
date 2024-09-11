@@ -4,6 +4,7 @@ using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
+using Domain.Entities.Notification;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
@@ -204,6 +205,104 @@ public static class NotificationTemplate
             FileAddress = newTransactionAvatarTransaction,
             FileCaption = fileCaption,
             Buttons = buttons,
+            Expire = DateTime.Now.AddHours(2),
+        };
+    }
+
+    public static AddNotificationDto IncomeFromPaymentAsync(CalculatorUserIncome income,
+        string? userName,
+        long chatId,
+        long price,
+        long userbalance,
+        DateTime createServiceTime,
+        bool renewal = false,
+        string marzbanVpnName = "",
+        string marzbanUsername = null,
+        bool isLargestAgent = false)
+    {
+        string persianTime = PersianDateTimeHelper.GetPersianDateTime(createServiceTime);
+        string message = "";
+        if (renewal)
+        {
+            if (isLargestAgent)
+            {
+                message = $"""
+                           🔄🛍 **تمدید جدید**
+                           👤 کاربری با شناسه : `\{chatId}`
+                           📦 نوع سرویس : {marzbanVpnName}
+                           📧 نام کاربری : @{userName}
+                           ✨ سرویسی را تمدید کرد
+                           📋 نام سرویس : {marzbanUsername}
+                           💰 سود شما از تمدید : {income.Balance:N0} تومان
+                           💼 موجودی شما قبل از تمدید : {income.BalanceBeforPayment:N0} تومان
+                           📈 موجودی شما بعد از تمدید : {(income.Balance + income.BalanceBeforPayment):N0} تومان
+                           📉 مبلغ کسر شده از موجودی کاربر : {price:N0} تومان
+                           💳 موجودی فعلی کاربر : {userbalance:N0} تومان
+                           🕰️ موجودی کاربر قبل از تمدید : {(userbalance + price):N0} تومان
+                           🗓️ تاریخ تمدید سرویس : {persianTime}
+                           """;
+            }
+            else
+            {
+                message = $"""
+                           🔄🛍 **تمدید جدید**
+                           👥 زیر مجموعه نماینده شما سرویسی را تمدید کرد
+                           🆔 شناسه نماینده : `\{income.chatId}`
+                           📦 نوع سرویس : {marzbanVpnName}
+                           💰 سود شما از تمدید : {income.Balance:N0} تومان
+                           💼 موجودی شما قبل از تمدید : {income.BalanceBeforPayment:N0} تومان
+                           📈 موجودی شما بعد از تمدید : {(income.Balance + income.BalanceBeforPayment):N0} تومان
+                           📉 مبلغ کسر شده از موجودی کاربر : {price:N0} تومان
+                           💳 موجودی فعلی کاربر : {userbalance:N0} تومان
+                           🕰️ موجودی کاربر قبل از تمدید : {(userbalance + price):N0} تومان
+                           🗓️ تاریخ تمدید سرویس : {persianTime}
+                           """;
+            }
+        }
+        else
+        {
+            if (isLargestAgent)
+            {
+                message = $"""
+                           🛍🆕 **خرید جدید**
+                           👤 کاربری با شناسه : `\{chatId}`
+                           📦 نوع سرویس : {marzbanVpnName}
+                           📧 نام کاربری : @{userName}
+                           📝 سفارسی ثبت کرد
+                           📋 نام سرویس : {marzbanUsername}
+                           💰 سود شما از خرید : {income.Balance:N0} تومان
+                           💼 موجودی شما قبل از خرید : {income.BalanceBeforPayment:N0} تومان
+                           📈 موجودی شما بعد از خرید : {(income.Balance + income.BalanceBeforPayment):N0} تومان
+                           📉 مبلغ کسر شده از موجودی کاربر : {price:N0} تومان
+                           💳 موجودی فعلی کاربر : {userbalance:N0} تومان
+                           🕰️ موجودی کاربر قبل از خرید : {(userbalance + price):N0} تومان
+                           🗓️ تاریخ خرید سرویس : {persianTime}
+                           """;
+            }
+            else
+            {
+                message = $"""
+                           🛍🆕 **خرید جدید **
+                           👥زیر مجموعه نماینده شما سرویسی را خرید کرد
+                           🆔 شناسه نماینده : `\{income.chatId}`
+                           📦 نوع سرویس : {marzbanVpnName}
+                           📋 نام سرویس : {marzbanUsername}
+                           💰 سود شما از تمدید : {income.Balance:N0} تومان
+                           💼 موجودی شما قبل از تمدید : {income.BalanceBeforPayment:N0} تومان
+                           📈 موجودی شما بعد از تمدید : {(income.Balance + income.BalanceBeforPayment):N0} تومان
+                           📉 مبلغ کسر شده از موجودی کاربر : {price:N0} تومان
+                           💳 موجودی فعلی کاربر : {userbalance:N0} تومان
+                           🕰️ موجودی کاربر قبل از تمدید : {(userbalance + price):N0} تومان
+                           🗓️ تاریخ خرید سرویس : {persianTime}
+                           """;
+            }
+        }
+
+        return new()
+        {
+            Message = message,
+            UserId = income.UserId,
+            ForAllMember = false,
             Expire = DateTime.Now.AddHours(2),
         };
     }
