@@ -1,7 +1,11 @@
 ﻿using System.Diagnostics;
+using Application.Extensions;
+using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Notification;
+using Domain.Enums.Notification;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot;
@@ -16,6 +20,7 @@ public static class BotOnMessageReceived
         ITelegramBotClient botClient,
         IMemoryCache memoryCache,
         ITelegramService telegramService,
+        INotificationService notificationService,
         CancellationToken cancellationToken)
     {
         try
@@ -31,7 +36,7 @@ public static class BotOnMessageReceived
                 telegramUser = memoryCache.Get(message?.Chat.Id ?? 0) as TelegramUser;
             }
 
-            
+
             if (message.Photo is not { } photo & message.Text is not { } messageText)
                 await botClient.SendTextMessageAsync(chatId, "فرمت ارسالی درست نیست",
                     cancellationToken: cancellationToken);
@@ -39,7 +44,8 @@ public static class BotOnMessageReceived
             User? user = await telegramService.GetUserByChatIdAsync(chatId);
 
 
-            if (user != null && message.Text != TelegramHelper.BackToHomeButtonText && message.Text != TelegramHelper.BackListTypeOfSendMessageButtonText)
+            if (user != null && message.Text != TelegramHelper.BackToHomeButtonText &&
+                message.Text != TelegramHelper.BackListTypeOfSendMessageButtonText)
                 await TelegramHelper.MessageBasedOnStatus(botClient, telegramService, message, telegramUser, user,
                     cancellationToken);
 
@@ -127,19 +133,19 @@ public static class BotOnMessageReceived
                         await telegramService.SendMenuForSendMessageByAgentAsync(botClient, new() { Message = message },
                             cancellationToken);
                         break;
-                    
+
                     case TelegramHelper.BackToManagement:
                         await telegramService.SendMenuAgencyManagementAsync(botClient, new() { Message = message },
                             cancellationToken);
-                        
+
                         break;
-                    
+
                     case TelegramHelper.BackListTypeOfSendMessageButtonText:
                         await telegramService.SendMenuForSendMessageByAgentAsync(botClient, new() { Message = message },
                             cancellationToken);
-                        
+
                         break;
-                    
+
                     case TelegramHelper.ForwardMessageButtonText:
                         await telegramService.SendMenuForSelectedUserGroupingByAgentAsync(botClient,
                             new()
@@ -147,9 +153,9 @@ public static class BotOnMessageReceived
                                 Data = "sned_message?type=forward",
                                 Message = message
                             },
-                            cancellationToken,telegramUser);
+                            cancellationToken, telegramUser);
                         break;
-                    
+
                     case TelegramHelper.CustomMessageButtonText:
                         await telegramService.SendMenuForSelectedUserGroupingByAgentAsync(botClient,
                             new()
@@ -157,9 +163,9 @@ public static class BotOnMessageReceived
                                 Data = "sned_message?type=custom",
                                 Message = message
                             },
-                            cancellationToken,telegramUser);
+                            cancellationToken, telegramUser);
                         break;
-                    
+
                     case TelegramHelper.ForAllUserButtonText:
                         await telegramService.SubmitListingsButtonsAsync(botClient,
                             new()
@@ -167,10 +173,10 @@ public static class BotOnMessageReceived
                                 Data = "user_categroy?group=all",
                                 Message = message
                             },
-                            cancellationToken,telegramUser);
-                        
+                            cancellationToken, telegramUser);
+
                         break;
-                    
+
                     case TelegramHelper.ForAgentButtonText:
                         await telegramService.SubmitListingsButtonsAsync(botClient,
                             new()
@@ -178,10 +184,10 @@ public static class BotOnMessageReceived
                                 Data = "user_categroy?group=agent",
                                 Message = message
                             },
-                            cancellationToken,telegramUser);
-                        
+                            cancellationToken, telegramUser);
+
                         break;
-                    
+
                     default:
                         action = message?.Text switch
                         {
@@ -225,7 +231,57 @@ public static class BotOnMessageReceived
         }
         catch (Exception e)
         {
-            await botClient!.SendTextMessageAsync(message.Chat.Id, e.Message, cancellationToken: cancellationToken);
+            User? curent_user = await telegramService.GetUserByChatIdAsync(message!.Chat.Id);
+
+            bool containsEnglishCharacters = e.Message.Any(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z');
+
+            if (containsEnglishCharacters)
+            {
+                var errorDetails = $"""
+                                    🛠️ گزارش باگ جدید
+                                    ❌❌❌❌❌❌❌
+                                    👤 کاربری که دچار خطا شده: {curent_user.UserFullName()}
+                                    💬 شناسه کاربریش: {curent_user.ChatId}
+                                    ❗ عنوان خطا: {e.Message}
+                                    📜 جزیات خطا: {e.InnerException?.Message ?? "مشخص نیست"}
+                                    📍 مکان خطا: {e.StackTrace ?? "مشخص نیست"}
+                                    ❌❌❌❌❌❌❌
+                                    """;
+
+
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
+                {
+                    Message = errorDetails,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = curent_user.Id,
+                }, curent_user.Id);
+
+                var userErrorMessage = $"""
+                                        ⚠️ متاسفانه مشکلی در هنگام پردازش درخواست شما پیش آمده است.
+
+                                        🚫 ما عمیقاً از این موضوع پوزش می‌طلبیم و به سرعت در حال بررسی این مشکل هستیم. لطفاً چند دقیقه صبر کنید و دوباره تلاش کنید.
+
+                                        🔄 اگر این مشکل ادامه پیدا کرد، پیشنهاد می‌کنیم ربات را دوباره استارت کنید تا شاید مشکل برطرف شود.
+
+                                        /start
+
+                                        🔧 در صورتی که مشکل همچنان باقی ماند، لطفاً با پشتیبانی تماس بگیرید تا بتوانیم به شما کمک کنیم.
+
+                                        🙏 با تشکر از شکیبایی و درک شما.
+                                        """;
+
+                await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: userErrorMessage,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: e.Message,
+                    cancellationToken: cancellationToken);
+            }
         }
     }
 }

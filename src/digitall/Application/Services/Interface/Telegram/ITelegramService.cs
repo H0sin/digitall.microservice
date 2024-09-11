@@ -941,4 +941,10 @@ public interface ITelegramService
     /// <returns></returns>
     Task SendMessageAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,
         TelegramUser? telegramUser);
+
+    /// <summary>
+    /// after created topic updated
+    /// </summary>
+    /// <param name="telegramGroupTopic"></param>
+    Task UpdateCreatedTopicAsync(TelegramGroupTopics telegramGroupTopic);
 }

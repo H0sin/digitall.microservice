@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
 using Application.Extensions;
+using Application.Factory;
 using Application.Helper;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
@@ -41,11 +42,13 @@ namespace Application.Services.Implementation.Telegram;
 
 public class TelegramService(
     ITelegramBotRepository telegramBotRepository,
+    ITelegramGroupTopicRepository telegramGroupTopicRepository,
     IUserRepository userRepository,
     INotificationService notificationService,
     IAgentService agentService,
     IMarzbanService marzbanService,
     ITransactionService transactionService,
+    TelegramBotClientFactory botClientFactory,
     IOrderService orderService,
     IWebHostEnvironment webHostEnvironment)
     : ITelegramService
@@ -70,7 +73,6 @@ public class TelegramService(
             replyMarkup: TelegramHelper.CreateStartMenu(user),
             cancellationToken: cancellationToken);
     }
-
 
     public async Task SendMainMenuAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken,
@@ -199,8 +201,18 @@ public class TelegramService(
         if (await telegramBotRepository.GetQuery().AnyAsync(x => x.Token == bot.Token))
             throw new ExistsException("این بات از قبل ثبت شده است");
 
+        ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
+
+        var webhookAddress = $"{bot?.HostAddress}{bot?.Route}";
+
         await telegramBotRepository.AddEntity(telegramBot);
         await telegramBotRepository.SaveChanges(userId);
+
+        await botClient.SetWebhookAsync(
+            url: webhookAddress,
+            allowedUpdates: Array.Empty<UpdateType>(),
+            secretToken: bot!.SecretToken,
+            cancellationToken: default);
 
         return bot;
     }
@@ -209,9 +221,9 @@ public class TelegramService(
     {
         return await telegramBotRepository
             .GetQuery()
-            // .Include(x=>x.TelegramGroup)
-            // .ThenInclude(x=>x.TelegramGroupTopics)
-            // .ThenInclude(x=>x.TelegramTopic)
+            .Include(x => x.TelegramGroup)
+            .ThenInclude(x => x.TelegramGroupTopics)
+            .ThenInclude(x => x.TelegramTopic)
             .ToListAsync();
     }
 
@@ -1065,10 +1077,10 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
-        
+
         if (transactionDetail is null)
             throw new ApplicationException(" ❌❌ درگاه پرداخت غیر فعال است ❌❌");
-        
+
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
 
         await botClient!.EditMessageTextAsync(
@@ -2924,5 +2936,11 @@ public class TelegramService(
             text: "پیغام شما با موفقیت به صف ارسال رفت ✅",
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
+    }
+
+    public async Task UpdateCreatedTopicAsync(TelegramGroupTopics telegramGroupTopic)
+    {
+        await telegramGroupTopicRepository.UpdateEntity(telegramGroupTopic);
+        await telegramBotRepository.SaveChanges(1);
     }
 }

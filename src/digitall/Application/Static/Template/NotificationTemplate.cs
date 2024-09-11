@@ -25,6 +25,7 @@ public static class NotificationTemplate
                        """,
             UserId = userId,
             Expire = DateTime.Now.AddHours(2),
+            NotificationType = NotificationType.DeletedReports
         };
 
 
@@ -40,6 +41,7 @@ public static class NotificationTemplate
                 new("حذف سرویس", $"deleted_service?id={serviceId}")
             },
             Expire = DateTime.Now.AddHours(2),
+            NotificationType = NotificationType.DeletedReports
         };
 
 
@@ -73,7 +75,7 @@ public static class NotificationTemplate
         {
             Expire = DateTime.Now.AddHours(24),
             Message = message,
-            NotificationType = NotificationType.Warning,
+            NotificationType = NotificationType.AgentRequestReports,
             UserId = userId,
             ForAllMember = false,
             Buttons = buttonJson
@@ -86,7 +88,7 @@ public static class NotificationTemplate
         {
             Expire = DateTime.Now.AddHours(24),
             Message = $"درخواست نمایندگی شما {status}  شد",
-            NotificationType = NotificationType.Warning,
+            NotificationType = NotificationType.AgentRequestReports,
             UserId = userId,
             ForAllMember = false
         };
@@ -114,7 +116,7 @@ public static class NotificationTemplate
                        `\{chatId}`\
                        ربات را استارت کرد
                        """,
-            NotificationType = NotificationType.Warning,
+            NotificationType = NotificationType.StartReports,
             UserId = userId,
             ForAllMember = false,
             Buttons = buttons
@@ -140,7 +142,7 @@ public static class NotificationTemplate
         return new AddNotificationDto()
         {
             Message = status,
-            NotificationType = NotificationType.Alter,
+            NotificationType = NotificationType.FinancialReports,
             UserId = userId,
             ForAllMember = false,
         };
@@ -199,7 +201,7 @@ public static class NotificationTemplate
                        توضیحات:
                        ✍️ در صورت درست بودن رسید پرداخت را تایید نمایی
                        """,
-            NotificationType = NotificationType.Alter,
+            NotificationType = NotificationType.FinancialReports,
             UserId = userId,
             ForAllMember = false,
             FileAddress = newTransactionAvatarTransaction,
@@ -304,6 +306,7 @@ public static class NotificationTemplate
             UserId = income.UserId,
             ForAllMember = false,
             Expire = DateTime.Now.AddHours(2),
+            NotificationType = renewal ? NotificationType.RenewReports : NotificationType.BuyReports 
         };
     }
 

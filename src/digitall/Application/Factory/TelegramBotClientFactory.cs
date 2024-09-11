@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Domain.Entities.Telegram;
+using Telegram.Bot;
 
 namespace Application.Factory;
 
@@ -8,6 +9,24 @@ public class TelegramBotClientFactory
     /// list bot clients
     /// </summary>
     private static Dictionary<string, TelegramBotClient> _botClients = new();
+
+    private static List<TelegramBot> _telegramClient = new();
+
+    public TelegramBot? Get(long botId)
+    {
+        TelegramBot? telegramBot = _telegramClient.SingleOrDefault(x => x.BotId == botId);
+        return telegramBot;
+    }
+
+    public void Add(TelegramBot telegramBot)
+    {
+        _telegramClient.Add(telegramBot);
+    }
+
+    public void AddRange(List<TelegramBot> telegramBots)
+    {
+        _telegramClient.AddRange(telegramBots);
+    }
 
     public TelegramBotClient GetOrAdd(string token)
     {

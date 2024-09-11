@@ -467,7 +467,7 @@ public class MarzbanServies(
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
-
+                
                 i.BalanceBeforPayment = u.Balance;
                 u.Balance += i.Balance;
 
@@ -488,12 +488,12 @@ public class MarzbanServies(
                 var largestAgentIncome = newIncomes.First();
 
                 bool isLargestAgent = i == largestAgentIncome;
-
+                
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.IncomeFromPaymentAsync(
                         income: i,
                         userName: user.TelegramUsername ?? "NOUSERNAME",
-                        chatId: u.ChatId ?? 0,
+                        chatId: user.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,
                         createServiceTime:DateTime.Now,
