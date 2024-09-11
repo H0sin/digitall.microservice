@@ -194,7 +194,7 @@ public class MarzbanServies(
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
-        string token =  await marzbanApiRequest.LoginAsync();
+        string token = await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
             throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
@@ -467,10 +467,10 @@ public class MarzbanServies(
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
-                
+
                 i.BalanceBeforPayment = u.Balance;
                 u.Balance += i.Balance;
-                
+
                 await agentService.AddAgentsIncomesDetailAsync(new AgentsIncomesDetail()
                 {
                     OrderDetailId = orderDetailId,
@@ -483,10 +483,23 @@ public class MarzbanServies(
                 i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
                 i.chatId = u.ChatId;
 
-                await notificationService.AddNotificationsAsync(NotificationTemplate
-                    .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0,
-                        totalPrice,user.Balance,
-                        DateTime.Now,marzbanVpnName:marzbanVpn.Name ?? "",marzbanUsername:users.First().Username), userId);
+                IOrderedEnumerable<CalculatorUserIncome> newIncomes = incomes.OrderByDescending(x => x.AgentId);
+
+                var largestAgentIncome = newIncomes.First();
+
+                bool isLargestAgent = i == largestAgentIncome;
+
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.IncomeFromPaymentAsync(
+                        income: i,
+                        userName: user.TelegramUsername ?? "NOUSERNAME",
+                        chatId: user.ChatId ?? 0,
+                        price: totalPrice,
+                        userbalance: user.Balance,
+                        createServiceTime:DateTime.Now,
+                        marzbanVpnName: marzbanVpn.Name ?? "",
+                        marzbanUsername: users.First().Username,
+                        isLargestAgent: isLargestAgent), userId);
 
                 await userRepository.UpdateEntity(u);
             }
@@ -996,7 +1009,7 @@ public class MarzbanServies(
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
             }
-            
+
             user!.Balance -= totalPrice;
 
             await userRepository.UpdateEntity(user);
@@ -1051,10 +1064,10 @@ public class MarzbanServies(
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
-                
+
                 i.BalanceBeforPayment = u.Balance;
                 u.Balance += i.Balance;
-                
+
                 await agentService.AddAgentsIncomesDetailAsync(new AgentsIncomesDetail()
                 {
                     OrderDetailId = orderDetailId,
@@ -1067,11 +1080,25 @@ public class MarzbanServies(
                 i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
                 i.chatId = u.ChatId;
 
-                await notificationService.AddNotificationsAsync(NotificationTemplate
-                    .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0,
-                        totalPrice,user.Balance,
-                        DateTime.Now,marzbanVpnName:marzbanVpn.Name ?? "",marzbanUsername:marzbanUser?.Username ?? "",renewal:true), userId);
+                IOrderedEnumerable<CalculatorUserIncome> newIncomes = incomes.OrderByDescending(x => x.AgentId);
 
+                var largestAgentIncome = newIncomes.First();
+
+                bool isLargestAgent = i == largestAgentIncome;
+
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.IncomeFromPaymentAsync(
+                        income: i,
+                        userName: user.TelegramUsername ?? "NOUSERNAME",
+                        chatId: user.ChatId ?? 0,
+                        price: totalPrice,
+                        userbalance: user.Balance,
+                        createServiceTime:DateTime.Now,
+                        marzbanVpnName: marzbanVpn.Name ?? "",
+                        marzbanUsername: marzbanUser.Username,
+                        renewal:true,
+                        isLargestAgent: isLargestAgent), userId);
+                
                 await userRepository.UpdateEntity(u);
             }
 
