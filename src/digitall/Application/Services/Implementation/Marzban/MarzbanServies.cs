@@ -194,7 +194,7 @@ public class MarzbanServies(
         MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(serverId);
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
-        string token = marzbanServer.Token ?? await marzbanApiRequest.LoginAsync();
+        string token =  await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
             throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
@@ -377,13 +377,6 @@ public class MarzbanServies(
                 }
             }
 
-            foreach (var i in incomes)
-            {
-                User? u = await userRepository.GetEntityById(i.UserId);
-                u.Balance += i.Balance;
-                await userRepository.UpdateEntity(u);
-            }
-
             user!.Balance -= totalPrice;
 
             await userRepository.UpdateEntity(user);
@@ -471,15 +464,32 @@ public class MarzbanServies(
             long orderDetailId = orders.First().OrderDetails.First().Id;
 
 
-            await agentService.AddAgentsIncomesDetail(
-                incomes.Select(x => new AgentsIncomesDetail()
+            foreach (var i in incomes)
+            {
+                User? u = await userRepository.GetEntityById(i.UserId);
+                
+                i.BalanceBeforPayment = u.Balance;
+                u.Balance += i.Balance;
+                
+                await agentService.AddAgentsIncomesDetailAsync(new AgentsIncomesDetail()
                 {
                     OrderDetailId = orderDetailId,
-                    Profit = x.Balance,
-                    AgentId = x.AgentId,
-                    UserId = x.UserId,
-                    Percent = x.Percent
-                }).ToList(), userId);
+                    Profit = i.Balance,
+                    AgentId = i.AgentId,
+                    UserId = i.UserId,
+                    Percent = i.Percent,
+                }, userId);
+
+                i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
+                i.chatId = u.ChatId;
+
+                await notificationService.AddNotificationsAsync(NotificationTemplate
+                    .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0,
+                        totalPrice,user.Balance,
+                        DateTime.Now,marzbanVpnName:marzbanVpn.Name ?? "",marzbanUsername:users.First().Username), userId);
+
+                await userRepository.UpdateEntity(u);
+            }
 
             List<MarzbanUser> marzbanUsers = await AddMarzbanUserAsync(users, marzbanServer.Id);
 
@@ -491,9 +501,6 @@ public class MarzbanServies(
                 x.MarzbanVpnId = marzbanVpn.Id;
             });
 
-            await notificationService.AddNotificationsAsync(NotificationTemplate
-                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
-                    DateTime.Now), userId);
 
             await marzbanUserRepository.AddEntities(marzbanUsers);
             await marzbanUserRepository.SaveChanges(userId);
@@ -989,14 +996,7 @@ public class MarzbanServies(
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
             }
-
-            foreach (var i in incomes)
-            {
-                User? u = await userRepository.GetEntityById(i.UserId);
-                u.Balance += i.Balance;
-                await userRepository.UpdateEntity(u);
-            }
-
+            
             user!.Balance -= totalPrice;
 
             await userRepository.UpdateEntity(user);
@@ -1047,18 +1047,33 @@ public class MarzbanServies(
 
             long orderDetailId = orders.First().OrderDetails.First().Id;
 
-            await agentService.AddAgentsIncomesDetail(incomes.Select(x => new AgentsIncomesDetail()
-            {
-                OrderDetailId = orderDetailId,
-                Profit = x.Balance,
-                AgentId = x.AgentId,
-                UserId = x.UserId,
-                Percent = x.Percent
-            }).ToList(), userId);
 
-            await notificationService.AddNotificationsAsync(NotificationTemplate
-                .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0, totalPrice,
-                    DateTime.Now, true, marzbanUser.Username), userId);
+            foreach (var i in incomes)
+            {
+                User? u = await userRepository.GetEntityById(i.UserId);
+                
+                i.BalanceBeforPayment = u.Balance;
+                u.Balance += i.Balance;
+                
+                await agentService.AddAgentsIncomesDetailAsync(new AgentsIncomesDetail()
+                {
+                    OrderDetailId = orderDetailId,
+                    Profit = i.Balance,
+                    AgentId = i.AgentId,
+                    UserId = i.UserId,
+                    Percent = i.Percent,
+                }, userId);
+
+                i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
+                i.chatId = u.ChatId;
+
+                await notificationService.AddNotificationsAsync(NotificationTemplate
+                    .IncomeFromPaymentAsync(incomes, user.TelegramUsername ?? "NOUSERNAME", user.ChatId ?? 0,
+                        totalPrice,user.Balance,
+                        DateTime.Now,marzbanVpnName:marzbanVpn.Name ?? "",marzbanUsername:marzbanUser?.Username ?? "",renewal:true), userId);
+
+                await userRepository.UpdateEntity(u);
+            }
 
             Dictionary<string, List<string>?> inbounds = new Dictionary<string, List<string>?>();
 

@@ -45,9 +45,15 @@ public class AgentService(
         return agent?.Users?.Select(x => new UserDto(x)).ToList();
     }
 
-    public async Task AddAgentsIncomesDetail(List<AgentsIncomesDetail> agentsTransactionsDetails, long userId)
+    public async Task AddAgentsIncomesDetailAsync(List<AgentsIncomesDetail> agentsTransactionsDetails, long userId)
     {
         await agentsIncomesDetailRepository.AddEntities(agentsTransactionsDetails);
+        await agentsIncomesDetailRepository.SaveChanges(userId);
+    }
+
+    public async Task AddAgentsIncomesDetailAsync(AgentsIncomesDetail agentsIncomesDetail, long userId)
+    {
+        await agentsIncomesDetailRepository.AddEntity(agentsIncomesDetail);
         await agentsIncomesDetailRepository.SaveChanges(userId);
     }
 
@@ -298,7 +304,7 @@ public class AgentService(
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository
             .GetQuery()
-            .Include(x => x.AgentsTransactionsDetails)!
+            .Include(x => x.AgentsIncomesDetail)!
             .ThenInclude(x => x.OrderDetail)
             .Include(x => x.TransactionDetail)
             .ThenInclude(x => x!.Transactions)
@@ -341,7 +347,7 @@ public class AgentService(
             CountUser = await agentRepository.GetQuery()
                 .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
             Profit = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x => x.Profit),
-            Sale = agent!.AgentsTransactionsDetails?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
+            Sale = agent!.AgentsIncomesDetail?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,
             // BotId = agent.TelegramBotId
@@ -474,7 +480,13 @@ public class AgentService(
                 BrandName = agent.BrandName,
                 PersianBrandName = agent.PersianBrandName,
                 AgentPercent = agent.Percent,
-                AmountWithNegative = -50000
+                AmountWithNegative = -50000,
+                TransactionDetail = new()
+                {
+                    Description = "",
+                    CardNumber = "",
+                    CardHolderName = "",
+                },
             };
 
             await agentRepository.AddEntity(newAgent);

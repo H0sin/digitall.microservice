@@ -50,11 +50,9 @@ public class CountingVpnPrice
                 }
                 else
                 {
-                    percent = i == 0
-                        ? agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent
-                        : agentByPath.AgentPercent == 0
-                            ? 1
-                            : agentByPath.AgentPercent;
+                    percent = (i == 0
+                        ? (agentByPath.UserPercent == 0 ? 1 : agentByPath.UserPercent)
+                        : (agentByPath.AgentPercent == 0 ? 1 : agentByPath.AgentPercent));
                 }
 
                 double multiplier = percent != 1 ? 1 + (percent / 100.0) : 1;
@@ -131,7 +129,7 @@ public class CountingVpnPrice
                 }
 
                 users.Add(new CalculatorUserIncome(agentByPath.AgentAdminId, totalProfit, agentByPath.Id,
-                    (int)multiplier));
+                    (int)multiplier, agentByPath?.BrandName ?? agentByPath?.PersianBrandName));
             }
         }
 
@@ -151,6 +149,4 @@ public class CountingVpnPrice
                 : (agent.AgentPercent == 0 ? 1 : agent.AgentPercent);
         }
     }
-
-    
 }

@@ -15,6 +15,7 @@ using Data.DefaultData;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.Entities.Marzban;
@@ -172,7 +173,7 @@ public class TelegramService(
         }
 
         return agent;
-    } 
+    }
 
     public async Task<User?> GetUserByChatIdAsync(long chatId)
     {
@@ -1063,12 +1064,12 @@ public class TelegramService(
 
         User? user = await GetUserByChatIdAsync(chatId);
 
-        TransactionDetailDto transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
-
-        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
-
+        TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
+        
         if (transactionDetail is null)
-            throw new ApplicationException("پرداخت کارت به کارت برای شما غیر فعال است.");
+            throw new ApplicationException(" ❌❌ درگاه پرداخت غیر فعال است ❌❌");
+        
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
 
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
@@ -1093,7 +1094,7 @@ public class TelegramService(
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber) | !user.CardToCardPayment)
         {
-            if (user.CardToCardPayment)
+            if (!user.CardToCardPayment)
             {
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate
@@ -2151,6 +2152,23 @@ public class TelegramService(
         await userRepository.UpdateEntity(child);
         await userRepository.SaveChanges(user.Id);
 
+        if (action)
+        {
+            ButtonJsonDto buttonJson = new ButtonJsonDto("\ud83d\udcb0 افزایش موجودی", "inventory_increase");
+
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = "درگاه کارت به کارت برای شما فعال شد ✅",
+                UserId = child.Id,
+                ForAllMember = false,
+                Buttons = new()
+                {
+                    buttonJson
+                }
+            }, user.Id);
+        }
+
+
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.ChangeCardToCardText(action),
@@ -2659,8 +2677,6 @@ public class TelegramService(
         }
 
         User? parentUser = await GetUserByChatIdAsync(chatId);
-        AgentDto? parentAgent = await agentService.GetAgentByAdminIdAsync(parentUser!.Id);
-
         User? user = await userRepository.GetEntityById(Id);
 
         AddAgentDto agent = new()
@@ -2673,6 +2689,15 @@ public class TelegramService(
 
         await agentService.AddAgentAsync(agent, parentUser.Id);
 
+        await notificationService.AddNotificationAsync(new AddNotificationDto()
+        {
+            Message = "شما با موفقیت نماینده شدید ✅",
+            UserId = user.Id,
+            Buttons = new()
+            {
+                new("مدیریت پنل نمایندگی 🏢", "agency_management")
+            },
+        }, user.Id);
         telegramUser.Id = Id;
 
         await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
