@@ -4,6 +4,7 @@ using Application.Services.Interface.Telegram;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Telegram;
+using Domain.Enums.Notification;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,7 @@ public class SendTelegramNotificationJob : IJob
             List<NotificationDto> notifications =
                 await notificationService
                     .GetNotificationsAsync();
-            
+
             foreach (NotificationDto notification in notifications)
             {
                 try
@@ -140,15 +141,145 @@ public class SendTelegramNotificationJob : IJob
                                     .Replace(".", "\\.")
                                     .Replace("!", "\\!");
 
-
-                                await botClient!.SendTextMessageAsync(
-                                    chatId: notification!.ChatId,
-                                    text: text ?? "بدون پیام",
-                                    replyMarkup: new InlineKeyboardMarkup(keys),
-                                    parseMode: ParseMode.MarkdownV2
-                                );
+                                if (notification?.NotificationType != NotificationType.BogsReports)
+                                {
+                                    await botClient!.SendTextMessageAsync(
+                                        chatId: notification!.ChatId,
+                                        text: text ?? "بدون پیام",
+                                        replyMarkup: new InlineKeyboardMarkup(keys),
+                                        cancellationToken: default,
+                                        parseMode: ParseMode.MarkdownV2
+                                    );
+                                }
 
                                 await notificationService.UpdateSendNotification(notification.Id);
+
+                                TelegramBot? telegramBot = _botClientFactory.Get(7419690675);
+
+                                if (telegramBot is not null)
+                                {
+                                    User botInfo = await botClient.GetMeAsync();
+
+                                    ITelegramBotClient TBotClient = _botClientFactory.GetOrAdd(telegramBot.Token);
+                                    TelegramGroup? telegramGroup = telegramBot.TelegramGroup;
+                                    List<TelegramTopic> topics = telegramBot.TelegramGroup.TelegramGroupTopics
+                                        .Select(x => x.TelegramTopic).ToList();
+
+                                    switch (notification.NotificationType.ToString())
+                                    {
+                                        case "BuyReports":
+                                            TelegramTopic? buy_topic = topics.SingleOrDefault(x =>
+                                                x.TelegramTopicCategory == "BuyReports");
+                                            if (buy_topic != null)
+                                            {
+                                                int? messageThreadId =
+                                                    telegramBot.TelegramGroup.TelegramGroupTopics.SingleOrDefault(x =>
+                                                        x.TelegramTopicId == buy_topic.Id)?.MessageThreadId;
+
+                                                await TBotClient.SendTextMessageAsync(
+                                                    chatId: telegramGroup!.ChatId,
+                                                    text: $"""
+                                                           نام ربات : {botInfo.Username.Replace("_", "\\_")}
+                                                           {text}
+                                                           """,
+                                                    messageThreadId: messageThreadId,
+                                                    parseMode: ParseMode.MarkdownV2,
+                                                    cancellationToken: default
+                                                );
+                                            }
+
+                                            break;
+                                        case "StartReports":
+                                            TelegramTopic? start_topic = topics.SingleOrDefault(x =>
+                                                x.TelegramTopicCategory == "StartReports");
+                                            if (start_topic != null)
+                                            {
+                                                int? messageThreadId =
+                                                    telegramBot.TelegramGroup.TelegramGroupTopics.SingleOrDefault(x =>
+                                                        x.TelegramTopicId == start_topic.Id)?.MessageThreadId;
+
+                                                await TBotClient.SendTextMessageAsync(
+                                                    chatId: telegramGroup!.ChatId,
+                                                    text: $"""
+                                                           نام ربات : {botInfo.Username.Replace("_", "\\_")}
+                                                           {text}
+                                                           """,
+                                                    messageThreadId: messageThreadId,
+                                                    parseMode: ParseMode.MarkdownV2,
+                                                    cancellationToken: default
+                                                );
+                                            }
+
+                                            break;
+                                        case "FinancialReports":
+                                            TelegramTopic? financial_topic = topics.SingleOrDefault(x =>
+                                                x.TelegramTopicCategory == "FinancialReports");
+                                            if (financial_topic != null)
+                                            {
+                                                int? messageThreadId =
+                                                    telegramBot.TelegramGroup.TelegramGroupTopics.SingleOrDefault(x =>
+                                                        x.TelegramTopicId == financial_topic.Id)?.MessageThreadId;
+
+                                                await TBotClient.SendTextMessageAsync(
+                                                    chatId: telegramGroup!.ChatId,
+                                                    text: $"""
+                                                           نام ربات : {botInfo.Username?.Replace("_", "\\_")}
+                                                           {text}
+                                                           """,
+                                                    messageThreadId: messageThreadId,
+                                                    parseMode: ParseMode.MarkdownV2,
+                                                    cancellationToken: default
+                                                );
+                                            }
+
+                                            break;
+                                        case "RenewReports":
+                                            TelegramTopic? renew_topic = topics.SingleOrDefault(x =>
+                                                x.TelegramTopicCategory == "RenewReports");
+                                            if (renew_topic != null)
+                                            {
+                                                int? messageThreadId =
+                                                    telegramBot.TelegramGroup.TelegramGroupTopics.SingleOrDefault(x =>
+                                                        x.TelegramTopicId == renew_topic.Id)?.MessageThreadId;
+
+                                                await TBotClient.SendTextMessageAsync(
+                                                    chatId: telegramGroup!.ChatId,
+                                                    text: $"""
+                                                           نام ربات : {botInfo.Username?.Replace("_", "\\_")}
+                                                           {text}
+                                                           """,
+                                                    messageThreadId: messageThreadId,
+                                                    parseMode: ParseMode.MarkdownV2,
+                                                    cancellationToken: default
+                                                );
+                                            }
+
+                                            break;
+
+                                        case "BogsReports":
+                                            TelegramTopic? bogs_topic = topics.SingleOrDefault(x =>
+                                                x.TelegramTopicCategory == "BogsReports");
+                                            if (bogs_topic != null)
+                                            {
+                                                int? messageThreadId =
+                                                    telegramBot.TelegramGroup.TelegramGroupTopics.SingleOrDefault(x =>
+                                                        x.TelegramTopicId == bogs_topic.Id)?.MessageThreadId;
+
+                                                await TBotClient.SendTextMessageAsync(
+                                                    chatId: telegramGroup!.ChatId,
+                                                    text: $"""
+                                                           نام ربات : {botInfo.Username?.Replace("_", "\\_")}
+                                                           {text}
+                                                           """,
+                                                    messageThreadId: messageThreadId,
+                                                    parseMode: ParseMode.MarkdownV2,
+                                                    cancellationToken: default
+                                                );
+                                            }
+
+                                            break;
+                                    }
+                                }
                             }
                         }
                     }

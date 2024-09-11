@@ -18,6 +18,6 @@ public class TelegramGroup : BaseEntity
     public long? TelegramBotId { get; set; }
     
     public TelegramBot? TelegramBot { get; set; }
-
+    
     public ICollection<TelegramGroupTopics>? TelegramGroupTopics { get; set; }
 }

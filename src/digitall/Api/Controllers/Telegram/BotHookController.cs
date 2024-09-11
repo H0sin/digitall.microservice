@@ -5,6 +5,7 @@ using Api.Filters;
 using Application.Extensions;
 using Application.Factory;
 using Application.Helper;
+using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Application.Utilities;
@@ -31,7 +32,8 @@ public class BotHookController(
     IServiceProvider serviceProvider,
     ITelegramService telegramService,
     TelegramBotClientFactory botClientFactory,
-    IMemoryCache memoryCache
+    IMemoryCache memoryCache,
+    INotificationService notificationService
 ) : ControllerBase
 {
     private TelegramBotClient? _botClient;
@@ -75,7 +77,7 @@ public class BotHookController(
 
     {
         await Task.Delay(TimeSpan.FromMilliseconds(300.100), cancellationToken);
-        
+
         var handler = update switch
         {
             { Message: { } message } => BotOnMessageReceived
@@ -84,14 +86,16 @@ public class BotHookController(
                     _botClient!,
                     memoryCache!,
                     telegramService,
+                    notificationService,
                     cancellationToken
                 ),
-            { EditedMessage : { } message} => BotOnMessageReceived
+            { EditedMessage : { } message } => BotOnMessageReceived
                 .Action(
                     message,
                     _botClient!,
                     memoryCache!,
                     telegramService,
+                    notificationService,
                     cancellationToken
                 ),
             { CallbackQuery: { } callbackQuery } => BotOnCallbackQueryReceived
@@ -100,6 +104,7 @@ public class BotHookController(
                     _botClient!,
                     callbackQuery,
                     memoryCache!,
+                    notificationService,
                     cancellationToken
                 ),
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)

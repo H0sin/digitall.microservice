@@ -9,4 +9,8 @@ public class TelegramGroupTopics : BaseEntity
 
     public long? TelegramTopicId { get; set; }
     public TelegramTopic? TelegramTopic { get; set; }
+    
+    public bool Created { get; set; } = false;
+
+    public int? MessageThreadId { get; set; }  
 }

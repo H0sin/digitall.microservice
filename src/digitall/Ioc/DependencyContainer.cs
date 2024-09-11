@@ -105,7 +105,8 @@ public static class DependencyContainer
         services.AddScoped<IAgentOptionRepository, AgentOptionRepository>();
         services.AddScoped<IAgentRequestRepository, AgentRequestRepository>();
         services.AddScoped<IAgentsIncomesDetailRepository, AgentsIncomesDetailRepository>();
-
+        services.AddScoped<ITelegramGroupTopicRepository,TelegramGroupTopicRepository>();
+        
         #endregion
 
         #region services

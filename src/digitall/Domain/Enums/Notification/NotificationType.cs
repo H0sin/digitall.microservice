@@ -6,5 +6,13 @@ public enum NotificationType : byte
     Alter,
     Warning,
     Danger,
-    Success
+    Success,
+    StartReports,
+    FinancialReports,
+    BogsReports,
+    BuyReports,
+    RenewReports,
+    PaymentReports,
+    DeletedReports,
+    AgentRequestReports,
 }

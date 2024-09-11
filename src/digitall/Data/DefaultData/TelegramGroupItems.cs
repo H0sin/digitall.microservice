@@ -11,7 +11,7 @@ public static class TelegramGroupItems
             Name = "مستر گروه",
             TelegramBotId = 1,
             Id = 1,
-            ChatId = -4178759105,
+            ChatId = -1002449260173,
         }
     };
 }
