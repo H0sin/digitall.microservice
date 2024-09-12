@@ -467,7 +467,7 @@ public class MarzbanServies(
             foreach (var i in incomes)
             {
                 User? u = await userRepository.GetEntityById(i.UserId);
-                
+
                 i.BalanceBeforPayment = u.Balance;
                 u.Balance += i.Balance;
 
@@ -488,7 +488,7 @@ public class MarzbanServies(
                 var largestAgentIncome = newIncomes.First();
 
                 bool isLargestAgent = i == largestAgentIncome;
-                
+
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.IncomeFromPaymentAsync(
                         income: i,
@@ -496,7 +496,7 @@ public class MarzbanServies(
                         chatId: user.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,
-                        createServiceTime:DateTime.Now,
+                        createServiceTime: DateTime.Now,
                         marzbanVpnName: marzbanVpn.Name ?? "",
                         marzbanUsername: users.First().Username,
                         isLargestAgent: isLargestAgent), userId);
@@ -508,6 +508,8 @@ public class MarzbanServies(
 
             marzbanUsers.ForEach(x =>
             {
+                x.ServiceTime = vpn.MarzbanVpnTemplateId is not null ? template.Days : vpn.TotalDay;
+                x.Volume = vpn.MarzbanVpnTemplateId is not null ? template.Gb : vpn.TotalGb;
                 x.OrderDetailId = orders.First().OrderDetails.First().Id;
                 x.UserId = userId;
                 x.MarzbanServerId = marzbanServer.Id;
@@ -895,7 +897,9 @@ public class MarzbanServies(
         mu.Data_Limit = user.Data_Limit;
         mu.Sub_Updated_At = user.Sub_Updated_At;
         mu.AddedHolderInbound = user.AddedHolderInbound;
-
+        mu.Volume = user.Volume;
+        mu.ServiceTime = user.ServiceTime;
+        
         await marzbanUserRepository.UpdateEntity(mu);
         await marzbanUserRepository.SaveChanges(userId);
 
@@ -1093,12 +1097,12 @@ public class MarzbanServies(
                         chatId: user.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,
-                        createServiceTime:DateTime.Now,
+                        createServiceTime: DateTime.Now,
                         marzbanVpnName: marzbanVpn.Name ?? "",
                         marzbanUsername: marzbanUser.Username,
-                        renewal:true,
+                        renewal: true,
                         isLargestAgent: isLargestAgent), userId);
-                
+
                 await userRepository.UpdateEntity(u);
             }
 
@@ -1157,7 +1161,12 @@ public class MarzbanServies(
                 HttpMethod.Put, newMarzbanUser);
 
             marzbanUser.AddedHolderInbound = false;
-
+            marzbanUser.Volume = template?.Gb ?? vpn.TotalGb;
+            
+            DateTimeOffset dateTime = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds);
+            DateTimeOffset currentDate = DateTimeOffset.UtcNow;
+            TimeSpan difference = currentDate - dateTime;
+            marzbanUser.ServiceTime = (int)difference.TotalDays;
             await UpdateMarzbanUserAsync(marzbanUser, userId);
             await transaction.CommitAsync();
             return response;
@@ -1242,14 +1251,10 @@ public class MarzbanServies(
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
 
-            if (marzbanUser is null & marzbanUser.IsDelete)
+            MarzbanUserDto marzbanUserFromServer = await GetMarzbanUserByUserIdAsync(marzbanUserId,marzbanUser.UserId);
+            
+            if (marzbanUser is null & marzbanUserFromServer.IsDelete)
                 throw new AppException("شما قبلا این درخواست را برسی کردید");
-
-            AgentDto? parent = await agentService.GetAgentByAdminIdAsync(userId);
-            List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
-
-            if (!users.Any(x => x.Id == marzbanUser.UserId))
-                throw new AppException("شما مجاز به حدف نیستید");
 
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
@@ -1264,18 +1269,35 @@ public class MarzbanServies(
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
                     HttpMethod.Get);
 
-            long byteSize = 1073741824;
-            long remaining_data = (marzbanUser.Data_Limit ?? 0) - (serverUser.Used_Traffic ?? 0);
-            double mg = (remaining_data / byteSize);
-            long gb = (long)Math.Ceiling(mg);
-
-            DateTime expire = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire ?? 0).DateTime;
-
-            TimeSpan difference = expire - DateTime.Now;
-
-
             OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDetailId);
 
+
+            long byteSize = 1073741824;
+            long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
+            long remainingGb = remaining_data / byteSize;
+            long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
+            long gbPrice = ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb;
+
+            long dayPrice = orderDetail.ProductPrice / 2;
+
+            if (marzbanUserFromServer.Expire != null)
+            {
+                DateTime utcNow = DateTime.UtcNow;
+                long? expireUnixTimestamp = marzbanUserFromServer.Expire;
+
+                DateTime expireDate = DateTimeOffset
+                    .FromUnixTimeSeconds(expireUnixTimestamp ?? new DateTimeOffset(utcNow).ToUnixTimeSeconds())
+                    .UtcDateTime;
+
+                TimeSpan remainingTimeSpan = expireDate - utcNow;
+                int remainingDays = remainingTimeSpan.Days;
+                DateTime createdAtDate = marzbanUser.ModifiedDate;
+                TimeSpan totalDuration = expireDate - createdAtDate;
+                int totalDaysBetween = (int)totalDuration.TotalDays;
+
+                dayPrice = ((orderDetail.ProductPrice / 2) / totalDaysBetween) * remainingDays;
+            }
+            
             List<AgentsIncomesDetail> agentsIncomesDetail = await agentsIncomesDetailRepository
                 .GetQuery().Where(x => x.OrderDetailId == orderDetail.Id)
                 .ToListAsync();
@@ -1294,7 +1316,7 @@ public class MarzbanServies(
             await orderRepository.DeleteEntity(orderDetail.OrderId);
             await orderRepository.SaveChanges(userId);
 
-            long price = orderDetail.ProductPrice;
+            long price = gbPrice + dayPrice;
 
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;

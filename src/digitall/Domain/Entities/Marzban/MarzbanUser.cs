@@ -12,9 +12,7 @@ public class MarzbanUser : BaseEntity
     public long MarzbanVpnId { get; set; }
 
     [MaxLength(500, ErrorMessage = "username")]
-    public string Username { get; set; }
-
-    [MaxLength(500, ErrorMessage = "username")]
+    public string? Username { get; set; }
     public long? Expire { get; set; }
     public long? Data_Limit { get; set; }
     public long UserId { get; set; }
@@ -32,4 +30,6 @@ public class MarzbanUser : BaseEntity
     public DateTime? Created_At { get; set; }
     public List<string?> Links { get; set; } = new();
     public bool AddedHolderInbound { get; set; } = false;
+    public int? ServiceTime { get; set; }
+    public int? Volume { get; set; }
 }

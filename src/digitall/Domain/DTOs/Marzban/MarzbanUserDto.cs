@@ -78,5 +78,10 @@ public class MarzbanUserDto
         UserId = marzbanUser.UserId;
         IsDelete = marzbanUser.IsDelete;
         AddedHolderInbound = marzbanUser.AddedHolderInbound;
+        Volume = marzbanUser.Volume;
+        ServiceTime = marzbanUser.ServiceTime;
     }
+
+    public int? ServiceTime { get; set; }
+    public int? Volume { get; set; }
 }
