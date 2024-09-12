@@ -1297,21 +1297,27 @@ public class MarzbanServies(
                 .GetQuery().Where(x => x.OrderDetailId == orderDetail.Id)
                 .ToListAsync();
 
-            foreach (var agentIncomeDetail in agentsIncomesDetail)
-            {
-                User? userBalance = await userRepository.GetEntityById(agentIncomeDetail.UserId);
-                userBalance.Balance -= agentIncomeDetail.Profit;
-                await userRepository.UpdateEntity(userBalance);
-                await userRepository.SaveChanges(userId);
-                await notificationService.AddNotificationAsync(
-                    NotificationTemplate.DecreaseForDeleteService(userBalance.Id, marzbanUser.Username,
-                        agentIncomeDetail.Profit), userId);
-            }
-
             await orderRepository.DeleteEntity(orderDetail.OrderId);
             await orderRepository.SaveChanges(userId);
 
             long price = gbPrice + dayPrice;
+            
+            if (marzbanUserFromServer.Status != null & marzbanUserFromServer.Status == "active" &
+                marzbanUserFromServer.Status == "disabled")
+            {
+                foreach (var agentIncomeDetail in agentsIncomesDetail)
+                {
+                    User? userBalance = await userRepository.GetEntityById(agentIncomeDetail.UserId);
+                    userBalance.Balance -= agentIncomeDetail.Profit;
+                    await userRepository.UpdateEntity(userBalance);
+                    await userRepository.SaveChanges(userId);
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.DecreaseForDeleteService(userBalance.Id, marzbanUser.Username,
+                            agentIncomeDetail.Profit), userId);
+                }
+
+                price = 0;
+            }
 
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;
