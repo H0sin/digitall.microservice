@@ -899,7 +899,7 @@ public class MarzbanServies(
         mu.AddedHolderInbound = user.AddedHolderInbound;
         mu.Volume = user.Volume;
         mu.ServiceTime = user.ServiceTime;
-        
+
         await marzbanUserRepository.UpdateEntity(mu);
         await marzbanUserRepository.SaveChanges(userId);
 
@@ -1162,8 +1162,9 @@ public class MarzbanServies(
 
             marzbanUser.AddedHolderInbound = false;
             marzbanUser.Volume = template?.Gb ?? vpn.TotalGb;
-            
-            DateTimeOffset dateTime = DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds);
+
+            DateTimeOffset dateTime =
+                DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds);
             DateTimeOffset currentDate = DateTimeOffset.UtcNow;
             TimeSpan difference = currentDate - dateTime;
             marzbanUser.ServiceTime = (int)difference.TotalDays;
@@ -1251,8 +1252,8 @@ public class MarzbanServies(
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
 
-            MarzbanUserDto marzbanUserFromServer = await GetMarzbanUserByUserIdAsync(marzbanUserId,marzbanUser.UserId);
-            
+            MarzbanUserDto marzbanUserFromServer = await GetMarzbanUserByUserIdAsync(marzbanUserId, marzbanUser.UserId);
+
             if (marzbanUser is null & marzbanUserFromServer.IsDelete)
                 throw new AppException("شما قبلا این درخواست را برسی کردید");
 
@@ -1265,12 +1266,8 @@ public class MarzbanServies(
             if (string.IsNullOrEmpty(token))
                 throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
-            MarzbanUserDto serverUser =
-                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
-                    HttpMethod.Get);
 
             OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDetailId);
-
 
             long byteSize = 1073741824;
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
@@ -1280,7 +1277,7 @@ public class MarzbanServies(
 
             long dayPrice = orderDetail.ProductPrice / 2;
 
-            if (marzbanUserFromServer.Expire != null)
+            if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
             {
                 DateTime utcNow = DateTime.UtcNow;
                 long? expireUnixTimestamp = marzbanUserFromServer.Expire;
@@ -1293,11 +1290,9 @@ public class MarzbanServies(
                 int remainingDays = remainingTimeSpan.Days;
                 DateTime createdAtDate = marzbanUser.ModifiedDate;
                 TimeSpan totalDuration = expireDate - createdAtDate;
-                int totalDaysBetween = (int)totalDuration.TotalDays;
-
-                dayPrice = ((orderDetail.ProductPrice / 2) / totalDaysBetween) * remainingDays;
+                dayPrice = ((orderDetail.ProductPrice / 2) / marzbanUser.ServiceTime ?? 0) * remainingDays;
             }
-            
+
             List<AgentsIncomesDetail> agentsIncomesDetail = await agentsIncomesDetailRepository
                 .GetQuery().Where(x => x.OrderDetailId == orderDetail.Id)
                 .ToListAsync();
