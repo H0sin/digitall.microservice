@@ -1,5 +1,4 @@
 ﻿using Application.Extensions;
-
 using Domain.Entities.Server;
 
 namespace Application.Utilities;
@@ -28,7 +27,26 @@ public static class MarzbanPaths
     public static string UsersExpire = "/api/users/expired";
     public static string UsersReset(string username) => $"/api/user/{username}/reset";
 
+    public static string UserDeleteExpire(string? before = null, string? after = null)
+    {
+        string query = "/api/users/expired";
+        if (before != null)
+            query += $"?expired_before={before}";
+
+        if (before != null & after != null)
+        {
+            query += $"&expired_after={after}";
+        }
+
+        if (after != null)
+        {
+            query += $"?expired_after={after}";
+        }
+
+        return query;
+    }
+
+
     // inbound
     public static string InboundGet = "/api/inbounds";
-
 }

@@ -1301,7 +1301,7 @@ public class MarzbanServies(
             await orderRepository.SaveChanges(userId);
 
             long price = gbPrice + dayPrice;
-            
+
             if (marzbanUserFromServer.Status != null & marzbanUserFromServer.Status == "active" &
                 marzbanUserFromServer.Status == "disabled")
             {
@@ -1504,6 +1504,34 @@ public class MarzbanServies(
         {
             Console.WriteLine(e);
             throw new MarzbanException(HttpStatusCode.BadRequest, e.Message);
+        }
+    }
+
+
+    public async Task DeleteMarzbanUserExpire(MarzbanServer? marzbanServer, long? beforeday, long? afterday)
+    {
+        try
+        {
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+            await marzbanApiRequest.LoginAsync();
+
+            List<string> usernames = await marzbanApiRequest.CallApiAsync<List<string>>(
+                MarzbanPaths.UserDeleteExpire(DateTime.UtcNow.AddDays(-(beforeday ?? 0))
+                    .ToString("yyyy-MM-ddTHH:mm:ssZ")),
+                HttpMethod.Delete);
+
+            List<MarzbanUser> marzbanUsers = await marzbanUserRepository
+                .GetQuery()
+                .Where(x => usernames.Contains(x.Username) && x.AddedHolderInbound == false)
+                .ToListAsync();
+
+            await marzbanUserRepository.Deletes(marzbanUsers);
+            await marzbanUserRepository.SaveChanges(1);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 

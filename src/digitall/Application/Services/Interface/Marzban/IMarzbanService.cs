@@ -378,4 +378,13 @@ public interface IMarzbanService
     /// <param name="marzbanServer"></param>
     /// <returns></returns>
     Task ResetMarzbanUserDataUsedAsync(string username, MarzbanServer marzbanServer);
+
+    /// <summary>
+    /// delete marzban users
+    /// </summary>
+    /// <param name="marzbanServer"></param>
+    /// <param name="beforeday"></param>
+    /// <param name="afterday"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserExpire(MarzbanServer? marzbanServer,long? beforeday, long? afterday);
 }

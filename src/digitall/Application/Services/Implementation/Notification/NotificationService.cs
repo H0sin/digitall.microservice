@@ -122,5 +122,6 @@ public class NotificationService(INotificationRepository notificationRepository)
                 .ToListAsync();
 
         await notificationRepository.Deletes(notifications);
+        await notificationRepository.SaveChanges(1);
     }
 }

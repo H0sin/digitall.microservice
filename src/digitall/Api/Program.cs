@@ -197,6 +197,9 @@ builder.Services.AddQuartz(q =>
                 case "MarzbanHolderBotJob":
                     q.AddJob<MarzbanHolderBotJob>(opts => opts.WithIdentity(jobKey));
                     break;
+                case "DeleteMarzbanUsersExpireJob":
+                    q.AddJob<DeleteMarzbanUsersExpireJob>(opts => opts.WithIdentity(jobKey));
+                    break;
             }
 
             q.AddTrigger(opts => opts

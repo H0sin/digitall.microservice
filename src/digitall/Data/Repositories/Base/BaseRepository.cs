@@ -121,7 +121,6 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     public async Task Deletes(List<TEntity> entities)
     {
         _context.RemoveRange(entities);
-        await SaveChanges(1);
     }
 
     public async Task SaveChanges(long id)
