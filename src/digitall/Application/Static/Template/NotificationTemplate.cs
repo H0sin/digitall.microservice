@@ -149,8 +149,14 @@ public static class NotificationTemplate
     }
 
     public static AddNotificationDto ErrorForAddTransactionNotification(long userId, string userName, long chatId,
-        long price, bool notSeeCardToCard = false)
+        long price, bool notSeeCardToCard = false,long? childUserId = null)
     {
+        
+        List<ButtonJsonDto> buttons = new()
+        {
+            new ButtonJsonDto("فعال کردن شماره کارت 🟢",$"action_card?id={childUserId ?? 0}&action={true}")
+        };
+        
         string message = notSeeCardToCard
             ? $"""
                 ⚠️ خطا در پرداخت
@@ -174,6 +180,7 @@ public static class NotificationTemplate
             NotificationType = NotificationType.Alter,
             UserId = userId,
             ForAllMember = false,
+            Buttons = notSeeCardToCard ? buttons : null
         };
     }
 

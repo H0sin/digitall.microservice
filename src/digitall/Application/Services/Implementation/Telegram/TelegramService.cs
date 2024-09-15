@@ -1134,6 +1134,29 @@ public class TelegramService(
             telegramUser.State = TelegramMarzbanVpnSessionState.None;
             throw new AppException("❌ پرداخت غیر فعال است ❌");
         }
+        else if (remainingBalance < 0 & agent?.NegativeChargeCeiling == 0)
+        {
+            ButtonJsonDto buttonJson = new ButtonJsonDto("\ud83d\udcb0 افزایش موجودی", "inventory_increase");
+            notificationService.AddNotificationAsync(new()
+            {
+                Message = $"""
+                            ⚠️ خطا در پرداخت
+                           کاربری با شناسه چت : `\{chatId}`\
+                            نام کاربری : @{user.TelegramUsername ?? "NOUSERNAME"}
+                           قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل اینکه مبلغ از موجودی شما بیشتر بود،
+                           تراکنش انجام نشد
+                           """,
+                Buttons = new()
+                {
+                    buttonJson
+                },
+                ForAllMember = false,
+                NotificationType = NotificationType.FinancialReports,
+                UserId = parentUser.Id,
+            }, user.Id);
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
+            throw new AppException("❌ پرداخت غیر فعال است ❌");
+        }
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber) | !user.CardToCardPayment)
         {
@@ -1142,7 +1165,7 @@ public class TelegramService(
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate
                         .ErrorForAddTransactionNotification(agent.AgentAdminId, user.TelegramUsername,
-                            user.ChatId ?? 0, price, true), user.Id
+                            user.ChatId ?? 0, price, true, user.Id), user.Id
                 );
             }
             else
