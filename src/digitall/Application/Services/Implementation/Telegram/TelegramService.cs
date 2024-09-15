@@ -2300,6 +2300,16 @@ public class TelegramService(
 
         await agentService.UpdateAgentAsync(agent, user!.Id);
 
+        if (specialPercent > 75)
+            throw new AppException("""
+                                   با عرض پوژش ⚠️
+                                   به دلیل محدودیت 🚫
+                                   قیمت گزاری امکان ثبت درصد
+                                   برای نماینده تا سقف
+                                   75 درصد امکان پذیر است
+                                   لطفا درصد نا سقف 75 درصد ارسال کنید
+                                   """);
+
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
         await botClient.SendTextMessageAsync(
@@ -2510,7 +2520,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendUserPercent;
-
+        
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
@@ -2530,6 +2540,17 @@ public class TelegramService(
 
         int percent = TelegramHelper.CheckPercent(callbackQuery.Message.Text);
 
+        if (percent > 75)
+            throw new AppException("""
+                                   با عرض پوژش ⚠️
+                                   به دلیل محدودیت 🚫
+                                   قیمت گزاری امکان ثبت درصد
+                                   برای نماینده تا سقف
+                                   75 درصد امکان پذیر است
+                                   لطفا درصد نا سقف 75 درصد ارسال کنید
+                                   """);
+
+        
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
@@ -2555,7 +2576,17 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         int percent = TelegramHelper.CheckPercent(callbackQuery.Message.Text);
-
+        
+        if (percent > 500)
+            throw new AppException("""
+                                   با عرض پوژش ⚠️
+                                   به دلیل محدودیت 🚫
+                                   قیمت گزاری امکان ثبت درصد
+                                   برای نماینده تا سقف
+                                   75 درصد امکان پذیر است
+                                   لطفا درصد نا سقف 75 درصد ارسال کنید
+                                   """);
+        
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
