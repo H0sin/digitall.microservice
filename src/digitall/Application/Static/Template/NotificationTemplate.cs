@@ -422,13 +422,13 @@ public static class NotificationTemplate
         return notifications;
     }
 
-    public static AddNotificationDto SendTicketForAgentAsync(long userId, string message, long chatId, string username,
+    public static AddNotificationDto SendTicketForAgentAsync(long userId, string message,long chatId, long childUserId, string username,
         DateTime dateTime, string? filaAddress = null)
     {
         List<ButtonJsonDto> buttons = new()
         {
-            new("مدیریت کاربر", $"user_management?id={chatId}"),
-            new("ارسال پیام", $"send_message_user?id={chatId}"),
+            new("مدیریت کاربر", $"user_management?id={childUserId}"),
+            new("ارسال پیام", $"send_message_user?id={childUserId}"),
         };
 
         return new()

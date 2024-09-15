@@ -47,6 +47,8 @@ public class Agent : BaseEntity
 
     public long AmountWithNegative { get; set; } = 0;
 
+    public long NegativeChargeCeiling { get; set; } = 0;
+    
     #endregion
 
     #region relation

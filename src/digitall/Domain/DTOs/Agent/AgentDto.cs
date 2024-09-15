@@ -23,6 +23,7 @@ public class AgentDto
         SpecialPercent = agent.SpecialPercent ?? 0;
         AllowNegative = agent.AllowNegative;
         AmountWithNegative = agent.AmountWithNegative;
+        NegativeChargeCeiling = agent.NegativeChargeCeiling;
     }
 
     public AgentDto()
@@ -45,6 +46,7 @@ public class AgentDto
         User = new UserDto(admin);
         AllowNegative = agent.AllowNegative;
         AmountWithNegative = agent.AmountWithNegative;
+        NegativeChargeCeiling = agent.NegativeChargeCeiling;
     }
 
 
@@ -63,4 +65,5 @@ public class AgentDto
     public UserDto? User { get; set; }
     public bool AllowNegative { get; set; } = false;
     public long AmountWithNegative { get; set; } = 0;
+    public long NegativeChargeCeiling { get; set; } = 0;
 }
