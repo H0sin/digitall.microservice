@@ -1815,14 +1815,14 @@ public class TelegramService(
 
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
-        
-        long remainingBalance = user.Balance - price;
 
-        if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0))
+        long remainingBalance = user.Balance - price;
+        
+        if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
             throw new AppException(
                 "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
-        
-        if (user?.Balance < price)
+
+        if (user?.Balance < price & agent?.NegativeChargeCeiling == 0)
             throw new AppException(
                 "مقدار که برای افزایش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب شما است! ❌");
 
