@@ -1387,7 +1387,7 @@ public class MarzbanServies(
         }
     }
 
-    public async Task<List<MarzbanUser>> GetListExpireUserAsync(long marzbanServerId)
+    public async Task<List<MarzbanUser?>> GetListExpireUserAsync(long marzbanServerId)
     {
         MarzbanServer? marzbanServer = await marzbanServerRepository.GetEntityById(marzbanServerId);
 
@@ -1403,10 +1403,10 @@ public class MarzbanServies(
                 MarzbanPaths.UsersExpire,
                 HttpMethod.Get);
 
-        List<MarzbanUser> marzbanUsers = await marzbanUserRepository
+        List<MarzbanUser?> marzbanUsers = (await marzbanUserRepository
             .GetQuery()
-            .Where(x => serverUser.Any(u => u.Trim().Equals(x.Username.Trim(), StringComparison.Ordinal)) && x.AddedHolderInbound == false)
-            .ToListAsync();
+            .Where(x => serverUser.Any(u => u == x.Username.Trim()) & x.AddedHolderInbound == false)
+            .ToListAsync())!;
 
         return marzbanUsers;
     }
@@ -1520,10 +1520,10 @@ public class MarzbanServies(
                     .ToString("yyyy-MM-ddTHH:mm:ssZ")),
                 HttpMethod.Delete);
 
-            List<MarzbanUser> marzbanUsers = await marzbanUserRepository
+            List<MarzbanUser?> marzbanUsers = (await marzbanUserRepository
                 .GetQuery()
-                .Where(x => usernames.Any(u => u.Trim().Equals(x.Username.Trim(), StringComparison.Ordinal)) && x.AddedHolderInbound == false)
-                .ToListAsync();
+                .Where(x => usernames.Any(u => u == x.Username.Trim()) & x.AddedHolderInbound == false)
+                .ToListAsync())!;
 
             await marzbanUserRepository.Deletes(marzbanUsers);
             await marzbanUserRepository.SaveChanges(1);
