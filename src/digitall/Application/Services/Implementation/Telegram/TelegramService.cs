@@ -1088,7 +1088,7 @@ public class TelegramService(
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
-            text: TelegramHelper.SendPriceTransactionText(user.IsAgent, transactionDetail),
+            text: TelegramHelper.SendPriceTransactionText(user, transactionDetail),
             replyMarkup: TelegramHelper.Back("wallet"),
             cancellationToken: cancellationToken);
     }
@@ -1755,21 +1755,20 @@ public class TelegramService(
         List<TransactionDto> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(currentUser.Id);
 
-        AgentDto? admin = await agentService.GetAgentByAdminIdAsync(currentUser.Id);
-
-        if (admin != null)
+        if (currentUser.IsAgent)
         {
+            AgentDto? admin = await agentService.GetAgentByAdminIdAsync(currentUser.Id);
             List<AgentsIncomesDetail> incomes = await agentService.ListAgentIncomeDetailsByAgentId(admin.Id);
             information.SumAgentIncomes = incomes.Sum(x => x.Profit);
-
             information.IsAgent = true;
-            information.SpecialPercent = (admin.SpecialPercent != 0 && admin?.SpecialPercent != null)
+
+            information.SpecialPercent = (admin.SpecialPercent != 0 & admin?.SpecialPercent != null)
                 ? admin.SpecialPercent
-                : admin?.AgentPercent;
+                : agent.AgentPercent;
 
             information.ReferralCount = await userRepository
                 .GetQuery()
-                .Where(x => x.AgentId == admin.Id).CountAsync();
+                .Where(x => x.AgentId == admin.Id).CountAsync(cancellationToken: cancellationToken);
         }
 
         information.TotalPurchaseAmount = await orderService
@@ -2496,8 +2495,8 @@ public class TelegramService(
         await botClient!.SendTextMessageAsync(
             chatId,
             $"""
-             درصد صود فروش از نماینده ها : {agentInformation?.AgentPercent ?? 0}
-              درصد صود خود را ارسال کنید ♻️
+             درصد سود فروش از نماینده ها : {agentInformation?.AgentPercent ?? 0}
+              درصد سود خود را ارسال کنید ♻️
              """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
@@ -2517,8 +2516,8 @@ public class TelegramService(
         await botClient!.SendTextMessageAsync(
             chatId,
             $"""
-             درصد صود فروش از کاربر ها : {agentInformation?.UserPercent ?? 0}
-              درصد صود خود را ارسال کنید ♻️
+             درصد سود فروش از کاربر ها : {agentInformation?.UserPercent ?? 0}
+              درصد سود خود را ارسال کنید ♻️
              """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
