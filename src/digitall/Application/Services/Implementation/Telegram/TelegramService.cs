@@ -23,6 +23,7 @@ using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Enums.Marzban;
+using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -816,7 +817,7 @@ public class TelegramService(
 
         DeleteMarzbanUserDto delete = new()
         {
-            Username = me.Username,
+            Username = user.TelegramUsername ?? "NOUSERNAME",
             Message = callbackQuery.Message.Text,
             UserId = user.Id,
             ChatId = user.ChatId ?? 0,
@@ -1101,9 +1102,38 @@ public class TelegramService(
 
         TransactionDetailDto transactionDetail = await transactionService.GetTransactionDetailsAsync(user.AgentId);
 
+        AgentDto? agent = await agentService.GetAgentByUserIdAsync(user.Id);
+
+        User? parentUser = await userRepository.GetEntityById(agent.AgentAdminId);
+
         long price = TelegramHelper.CheckPrice(user, transactionDetail, callbackQuery.Message.Text);
 
-        AgentDto? agent = await agentService.GetAgentByUserIdAsync(user.Id);
+        long remainingBalance = parentUser!.Balance - price;
+
+        if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
+        {
+            ButtonJsonDto buttonJson = new ButtonJsonDto("\ud83d\udcb0 افزایش موجودی", "inventory_increase");
+            notificationService.AddNotificationAsync(new()
+            {
+                Message = $"""
+                            ⚠️ خطا در پرداخت
+                           کاربری با شناسه چت : `\{chatId}`\
+                            نام کاربری : @{user.TelegramUsername ?? "NOUSERNAME"}
+                           قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل اینکه مبلغ از موجودی شما بیشتر بود،
+                           تراکنش انجام نشد
+                           """,
+                Buttons = new()
+                {
+                    buttonJson   
+                },
+                ForAllMember = false,
+                NotificationType = NotificationType.FinancialReports,
+                UserId = parentUser.Id,
+            }, user.Id);
+
+            throw new AppException(
+                "❌ پرداخت غیر فعال است ❌");
+        }
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber) | !user.CardToCardPayment)
         {
@@ -1817,7 +1847,7 @@ public class TelegramService(
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
         long remainingBalance = user.Balance - price;
-        
+
         if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
             throw new AppException(
                 "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");

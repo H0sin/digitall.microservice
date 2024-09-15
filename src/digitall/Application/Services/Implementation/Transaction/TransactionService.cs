@@ -202,7 +202,7 @@ public class TransactionService(
                     "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
             
             if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted & agent?.NegativeChargeCeiling == 0)
-                throw new BadRequestException("مبلغ شارج درخواستی بیشتر از موجودی حساب شما است!");
+                throw new BadRequestException("مبلغ شارژ درخواستی بیشتر از موجودی حساب شما است!");
 
             if (transaction.TransactionStatus == TransactionStatus.Accepted &&
                 transe.TransactionStatus == TransactionStatus.Waiting)
