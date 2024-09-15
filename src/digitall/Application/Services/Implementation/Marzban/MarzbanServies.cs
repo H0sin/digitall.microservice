@@ -1405,7 +1405,7 @@ public class MarzbanServies(
 
         List<MarzbanUser> marzbanUsers = await marzbanUserRepository
             .GetQuery()
-            .Where(x => serverUser.Contains(x.Username) && x.AddedHolderInbound == false)
+            .Where(x => serverUser.Any(u => u.Trim().Equals(x.Username.Trim(), StringComparison.Ordinal)) && x.AddedHolderInbound == false)
             .ToListAsync();
 
         return marzbanUsers;
@@ -1522,7 +1522,7 @@ public class MarzbanServies(
 
             List<MarzbanUser> marzbanUsers = await marzbanUserRepository
                 .GetQuery()
-                .Where(x => usernames.Contains(x.Username) && x.AddedHolderInbound == false)
+                .Where(x => usernames.Any(u => u.Trim().Equals(x.Username.Trim(), StringComparison.Ordinal)) && x.AddedHolderInbound == false)
                 .ToListAsync();
 
             await marzbanUserRepository.Deletes(marzbanUsers);
