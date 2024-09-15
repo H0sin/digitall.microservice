@@ -106,12 +106,15 @@ public static class NotificationTemplate
 
         buttons.Add(new("مدیریت کاربر", $"user_management?id={id}"));
 
+
+        string username = name != null ? "@" + name : "NOUSERNAME";
+        
         return new AddNotificationDto()
         {
             Expire = DateTime.Now.AddHours(24),
             Message = $"""
                        کاربری با ایدی
-                       @{name}
+                       {username}
                        و شناسه
                        `\{chatId}`\
                        ربات را استارت کرد
@@ -149,14 +152,13 @@ public static class NotificationTemplate
     }
 
     public static AddNotificationDto ErrorForAddTransactionNotification(long userId, string userName, long chatId,
-        long price, bool notSeeCardToCard = false,long? childUserId = null)
+        long price, bool notSeeCardToCard = false, long? childUserId = null)
     {
-        
         List<ButtonJsonDto> buttons = new()
         {
-            new ButtonJsonDto("فعال کردن شماره کارت 🟢",$"action_card?id={childUserId ?? 0}&action={true}")
+            new ButtonJsonDto("فعال کردن شماره کارت 🟢", $"action_card?id={childUserId ?? 0}&action={true}")
         };
-        
+
         string message = notSeeCardToCard
             ? $"""
                 ⚠️ خطا در پرداخت
@@ -313,7 +315,7 @@ public static class NotificationTemplate
             UserId = income.UserId,
             ForAllMember = false,
             Expire = DateTime.Now.AddHours(2),
-            NotificationType = renewal ? NotificationType.RenewReports : NotificationType.BuyReports 
+            NotificationType = renewal ? NotificationType.RenewReports : NotificationType.BuyReports
         };
     }
 
@@ -429,7 +431,8 @@ public static class NotificationTemplate
         return notifications;
     }
 
-    public static AddNotificationDto SendTicketForAgentAsync(long userId, string message,long chatId, long childUserId, string username,
+    public static AddNotificationDto SendTicketForAgentAsync(long userId, string message, long chatId, long childUserId,
+        string username,
         DateTime dateTime, string? filaAddress = null)
     {
         List<ButtonJsonDto> buttons = new()

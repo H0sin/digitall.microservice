@@ -669,18 +669,29 @@ public class TelegramHelper
         $"💰 سقف پرداخت کاربر: {transactionDetail.MaximumAmountForUser:N0}\n" +
         $"💵 کف پرداخت کاربر: {transactionDetail.MinimalAmountForUser:N0}\n";
 
-    public static string SendPriceTransactionText(bool isAgent, TransactionDetailDto transactionDetail) =>
-        isAgent switch
+    public static string SendPriceTransactionText(User user, TransactionDetailDto transactionDetail)
+    {
+        if (user.IsAgent)
         {
-            true => $"""
-                     💸 مبلغ را به تومان وارد کنید:
-                     حداقل مبلغ {transactionDetail.MinimalAmountForAgent:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForAgent:N0} تومان می باشد ✅
-                     """,
-            _ => $"""
-                  💸 مبلغ را به تومان وارد کنید:
-                  حداقل مبلغ {transactionDetail.MinimalAmountForUser:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForUser:N0} تومان می باشد ✅
-                  """,
-        };
+            long max = user.Balance < 0
+                ? transactionDetail.MaximumAmountForAgent + (-user.Balance)
+                : transactionDetail.MaximumAmountForAgent;
+            long min = user.Balance < 0
+                ? transactionDetail.MinimalAmountForAgent + (-user.Balance)
+                : transactionDetail.MinimalAmountForAgent;
+            
+            return $"""
+                    💸 مبلغ را به تومان وارد کنید:
+                    حداقل مبلغ {max:N0} حداکثر مبلغ {min:N0} تومان می باشد ✅
+                    """;
+        }
+
+        return $"""
+                💸 مبلغ را به تومان وارد کنید:
+                حداقل مبلغ {transactionDetail.MinimalAmountForUser:N0} حداکثر مبلغ {transactionDetail.MaximumAmountForUser:N0} تومان می باشد ✅
+                """;
+    }
+
 
     public static string SendTextCardNumber(TransactionDetailDto transactionDetail, long price) => $"""
            برای افزایش موجودی مبلغ {price:N0}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
@@ -757,7 +768,7 @@ public class TelegramHelper
                     From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
                     Data = $"list_buttons_send",
                 };
-                
+
                 await telegramService.SendListButtonsForSendMessage(botClient!, callbackQuery,
                     cancellationToken, telegramUser);
 
