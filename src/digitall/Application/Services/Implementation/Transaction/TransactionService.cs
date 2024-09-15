@@ -169,7 +169,7 @@ public class TransactionService(
 
             await userService.UpdateUserBalanceAsync(newTransaction.Price * -1, userId);
             await userService.UpdateUserBalanceAsync((newTransaction.Price), agentId);
-            
+
             await t.CommitAsync();
         }
         catch (Exception e)
@@ -194,7 +194,14 @@ public class TransactionService(
             AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
             UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
-            if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted)
+            
+            long remainingBalance = user.Balance - transe.Price;
+        
+            if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
+                throw new AppException(
+                    "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
+            
+            if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted & agent?.NegativeChargeCeiling == 0)
                 throw new BadRequestException("مبلغ شارج درخواستی بیشتر از موجودی حساب شما است!");
 
             if (transaction.TransactionStatus == TransactionStatus.Accepted &&
