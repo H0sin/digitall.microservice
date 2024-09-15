@@ -1124,15 +1124,15 @@ public class TelegramService(
                            """,
                 Buttons = new()
                 {
-                    buttonJson   
+                    buttonJson
                 },
                 ForAllMember = false,
                 NotificationType = NotificationType.FinancialReports,
                 UserId = parentUser.Id,
             }, user.Id);
 
-            throw new AppException(
-                "❌ پرداخت غیر فعال است ❌");
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
+            throw new AppException("❌ پرداخت غیر فعال است ❌");
         }
 
         if (string.IsNullOrEmpty(transactionDetail.CardNumber) | !user.CardToCardPayment)
