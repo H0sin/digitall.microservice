@@ -23,6 +23,7 @@ using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Enums.Marzban;
+using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -1111,6 +1112,7 @@ public class TelegramService(
 
         if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
         {
+            ButtonJsonDto buttonJson = new ButtonJsonDto("\ud83d\udcb0 افزایش موجودی", "inventory_increase");
             notificationService.AddNotificationAsync(new()
             {
                 Message = $"""
@@ -1120,6 +1122,13 @@ public class TelegramService(
                            قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل اینکه مبلغ از موجودی شما بیشتر بود،
                            تراکنش انجام نشد
                            """,
+                Buttons = new()
+                {
+                    buttonJson   
+                },
+                ForAllMember = false,
+                NotificationType = NotificationType.FinancialReports,
+                UserId = parentUser.Id,
             }, user.Id);
 
             throw new AppException(
