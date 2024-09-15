@@ -679,10 +679,10 @@ public class TelegramHelper
             long min = user.Balance < 0
                 ? transactionDetail.MinimalAmountForAgent + (-user.Balance)
                 : transactionDetail.MinimalAmountForAgent;
-            
+
             return $"""
                     💸 مبلغ را به تومان وارد کنید:
-                    حداقل مبلغ {max:N0} حداکثر مبلغ {min:N0} تومان می باشد ✅
+                    حداقل مبلغ {min:N0} حداکثر مبلغ {max:N0} تومان می باشد ✅
                     """;
         }
 
