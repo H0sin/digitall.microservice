@@ -387,4 +387,11 @@ public interface IMarzbanService
     /// <param name="afterday"></param>
     /// <returns></returns>
     Task DeleteMarzbanUserExpire(MarzbanServer? marzbanServer,long? beforeday, long? afterday);
+    
+    /// <summary>
+    /// send list marzban services deleted in que
+    /// </summary>
+    /// <param name="agentId"></param>
+    /// <returns></returns>
+    Task<List<MarzbanUserDto>> ListMarzbanUsersDeletedInQue(long agentId);
 }

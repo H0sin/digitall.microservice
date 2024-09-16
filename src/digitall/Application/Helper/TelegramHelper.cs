@@ -7,6 +7,7 @@ using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.Entities.Transaction;
 using Domain.Exceptions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -42,6 +43,8 @@ public class TelegramHelper
     public const string ForAgentButtonText = "برای نماینده ها 👤";
     public const string ForAllUserButtonText = "برای همه کاربران 👥";
     public const string BackListTypeOfSendMessageButtonText = "بازگشت به ارسال پیام 📝";
+    public const string SendTransactionWaitingMessageButtonText = "تراکنش هایه برسی نشده 💵";
+    public const string SendDeleteServiceWaitingMessageButtonText = "سرویس های در صف حذف ❌";
 
     public static readonly InlineKeyboardMarkup ButtonForMessage = new InlineKeyboardMarkup(new[]
     {
@@ -123,7 +126,9 @@ public class TelegramHelper
         => new ReplyKeyboardMarkup(new[]
         {
             new KeyboardButton[] { AgencyManagementButtonText, RepresentationStatisticsButtonText },
+            new KeyboardButton[] { SendDeleteServiceWaitingMessageButtonText },
             new KeyboardButton[] { SearchUserButtonText, SendMessageButtonText },
+            new KeyboardButton[] { SendTransactionWaitingMessageButtonText },
             new KeyboardButton[] { BackToHomeButtonText },
         })
         {
@@ -160,6 +165,19 @@ public class TelegramHelper
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
         buttons.Add(CreateList1Button(ViewLearnLink(url)));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup TransactionButtons(TransactionDto transaction)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList2Button(
+            InlineKeyboardButton.WithCallbackData("رد پرداخت ❌",
+                $"update_trans?status=NotAccepted&id={transaction.Id}"),
+            InlineKeyboardButton.WithCallbackData("تایید پرداخت ✅",
+                $"update_trans?status=Accepted&id={transaction.Id}")));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -300,6 +318,17 @@ public class TelegramHelper
         }
 
         buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+
+    public static IReplyMarkup? MainDeleteServiceButton(long marzbanUserId)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+        buttons.Add(CreateList2Button(
+            InlineKeyboardButton.WithCallbackData("عدم تایید حذف سرویس 🔴", $"not_deleted_service?id={marzbanUserId}"),
+            InlineKeyboardButton.WithCallbackData("حذف سرویس 🟢", $"deleted_service?id={marzbanUserId}")));
 
         return new InlineKeyboardMarkup(buttons);
     }

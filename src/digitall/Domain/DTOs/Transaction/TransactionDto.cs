@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.Entities.Account;
 using Domain.Enums.Transaction;
 
 namespace Domain.DTOs.Transaction;
@@ -18,7 +19,9 @@ public class TransactionDto
     [Display(Name = "عکس تراکنش")] public string? AvatarTransaction { get; set; }
     public long TransactionCode { get; set; }
     public long CreateBy { get; set; }
-
+    public string? Username { get; set; }
+    public long ChatId { get; set; }
+    
     public long TransactionDetailId { get; set; }
 
     public TransactionDto()
@@ -40,5 +43,24 @@ public class TransactionDto
         AvatarTransaction = transaction?.AvatarTransaction;
         TransactionDetailId = transaction.TransactionDetailId ?? 0;
         TransactionCode = transaction.TransactionCode;
+    }
+    
+    public TransactionDto(Entities.Transaction.Transaction? transaction,User user)
+    {
+        Id = transaction?.Id ?? 0;
+        Title = transaction?.Title;
+        Price = transaction?.Price;
+        Description = transaction?.Description;
+        TransactionType = transaction?.TransactionType;
+        TransactionStatus = transaction?.TransactionStatus;
+        AccountName = transaction?.AccountName;
+        TransactionTime = transaction.TransactionTime;
+        CardNumber = transaction.CardNumber;
+        BankName = transaction.BankName;
+        AvatarTransaction = transaction?.AvatarTransaction;
+        TransactionDetailId = transaction.TransactionDetailId ?? 0;
+        TransactionCode = transaction.TransactionCode;
+        ChatId = user.ChatId ?? 0;
+        Username = user.TelegramUsername;
     }
 }

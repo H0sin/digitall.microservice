@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Marzban;
+﻿using Domain.Entities.Account;
+using Domain.Entities.Marzban;
 using Newtonsoft.Json;
 
 namespace Domain.DTOs.Marzban;
@@ -40,17 +41,17 @@ public class MarzbanUserDto
     [JsonProperty("links")] public List<string?> Links { get; set; } = new();
 
     [JsonProperty("subscription_url")] public string? Subscription_Url { get; set; }
-    
+
     [JsonProperty("proxies")] public object Proxies { get; set; } = new();
 
     [JsonProperty("inbounds")] public object Inbounds { get; set; } = new();
-    
+
     public bool IsDelete { get; set; }
     public long MarzbanVpnId { get; set; }
     public long MarzbanServerId { get; set; }
     public long UserId { get; set; }
     public bool AddedHolderInbound { get; set; }
-        
+
     public MarzbanUserDto()
     {
     }
@@ -81,6 +82,39 @@ public class MarzbanUserDto
         Volume = marzbanUser.Volume;
         ServiceTime = marzbanUser.ServiceTime;
     }
+
+    public MarzbanUserDto(MarzbanUser? marzbanUser, User? user)
+    {
+        Id = marzbanUser.Id;
+        Username = marzbanUser.Username;
+        Expire = marzbanUser.Expire;
+        Data_Limit = marzbanUser.Data_Limit;
+        Sub_Updated_At = marzbanUser.Sub_Updated_At;
+        Sub_Last_User_Agent = marzbanUser.Sub_Last_User_Agent;
+        Online_At = marzbanUser.Online_At;
+        On_Hold_Expire_Duration = marzbanUser.OnHoldExpireDuration;
+        OnHoldTimeout = marzbanUser.OnHoldTimeout;
+        Username = marzbanUser.Username;
+        Status = marzbanUser.Status;
+        Used_Traffic = marzbanUser.Used_Traffic;
+        Lifetime_Used_Traffic = marzbanUser.Lifetime_Used_Traffic;
+        Created_At = marzbanUser.Created_At;
+        Links = marzbanUser.Links;
+        Subscription_Url = marzbanUser.Subscription_Url;
+        MarzbanVpnId = marzbanUser.MarzbanVpnId;
+        MarzbanServerId = marzbanUser.MarzbanServerId;
+        UserId = marzbanUser.UserId;
+        IsDelete = marzbanUser.IsDelete;
+        AddedHolderInbound = marzbanUser.AddedHolderInbound;
+        Volume = marzbanUser.Volume;
+        ServiceTime = marzbanUser.ServiceTime;
+        TelegramUsername = user?.TelegramUsername;
+        ChatId = user?.ChatId ?? 0;
+    }
+
+    public long ChatId { get; set; }
+
+    public string? TelegramUsername { get; set; }
 
     public int? ServiceTime { get; set; }
     public int? Volume { get; set; }

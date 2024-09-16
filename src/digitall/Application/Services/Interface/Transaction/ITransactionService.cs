@@ -19,6 +19,13 @@ public interface ITransactionService
     Task<List<TransactionDto>> GetAllTransactionByUserIdAsync(long userId);
 
     /// <summary>
+    /// send list transaction waiting async
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<List<TransactionDto>> SendTransactionWaitingAsync(long userId);
+
+    /// <summary>
     /// increase user balanse
     /// </summary>
     /// <param name="transaction"></param>

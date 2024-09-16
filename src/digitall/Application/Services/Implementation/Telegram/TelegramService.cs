@@ -2517,7 +2517,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendUserPercent;
-        
+
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
@@ -2544,7 +2544,7 @@ public class TelegramService(
                                    لطفاً درصد پیشنهادی خود را کمتر از ۷۵٪ ارسال کنید. 🙏
                                    """);
 
-        
+
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
@@ -2570,14 +2570,14 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         int percent = TelegramHelper.CheckPercent(callbackQuery.Message.Text);
-        
+
         if (percent > 500)
             throw new AppException("""
                                    ⚠️ توجه:
                                    به دلیل محدودیت‌ها 🚫، امکان ثبت درصد سود برای کاربران تا سقف 500٪ امکان‌پذیر است.
                                    لطفاً درصد پیشنهادی خود را کمتر از 500٪ ارسال کنید. 🙏
                                    """);
-        
+
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
@@ -3024,5 +3024,61 @@ public class TelegramService(
     {
         await telegramGroupTopicRepository.UpdateEntity(telegramGroupTopic);
         await telegramBotRepository.SaveChanges(1);
+    }
+
+    public async Task SendTransactionsWaitingQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user?.Id);
+
+        List<TransactionDto> transactions = await transactionService.SendTransactionWaitingAsync(agent.Id);
+
+        if (transactions.Count == 0)
+            throw new AppException("تراکنش برسی نشده در صف ندارید 😇");
+        
+        foreach (TransactionDto transaction in transactions)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: $"""
+                       ⭕️ یک پرداخت جدید انجام شده است .
+                       افزایش موجودی
+                       👤 شناسه کاربر:`\{transaction.ChatId}`\
+                       🛒 کد پیگیری پرداخت: {transaction.TransactionCode}
+                       ⚜️ نام کاربری: {transaction.Username}
+                       💸 مبلغ پرداختی: {transaction.Price:N0} تومان
+                       توضیحات:
+                       ✍️ در صورت درست بودن رسید پرداخت را تایید نمایی
+                       """,
+                replyMarkup: TelegramHelper.TransactionButtons(transaction),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendDeletedServiceInQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+        
+        User? user = await GetUserByChatIdAsync(chatId);
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user?.Id);
+        
+        List<MarzbanUserDto> marzbanUsers = await marzbanService.ListMarzbanUsersDeletedInQue(agent.Id);
+
+        if (marzbanUsers.Count == 0)
+            throw new AppException("هیچ درسخواست حدف سرویس وجود ندارد 😇");
+        
+        foreach (MarzbanUserDto marzbanUser in marzbanUsers)
+        {
+            SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: subescribeStatus.GenerateServiceDeletionRequestMessage(marzbanUser.TelegramUsername,marzbanUser.ChatId,"متسفانه پیغام در دست رس نیست ❌"),
+                replyMarkup: TelegramHelper.MainDeleteServiceButton(marzbanUser.Id),
+                cancellationToken: cancellationToken);
+        }
     }
 }
