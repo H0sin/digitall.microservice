@@ -1273,7 +1273,7 @@ public class MarzbanServies(
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb;
+            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail?.ProductPrice ??  0 / 2) / remainingLimitGb) * remainingGb : 0;
 
             long dayPrice = orderDetail.ProductPrice / 2;
 
@@ -1534,6 +1534,27 @@ public class MarzbanServies(
             throw;
         }
     }
+
+    public async Task<List<MarzbanUserDto>> ListMarzbanUsersDeletedInQue(long agentId)
+    {
+        List<User> users = await userRepository
+            .GetQuery()
+            .Where(x => x.AgentId == agentId)
+            .ToListAsync();
+
+        var marzbanUsers = await marzbanUserRepository
+            .GetQuery(true)
+            .Where(x => x.IsDelete == true)
+            .ToListAsync();
+
+        var result = from marzbanUser in marzbanUsers
+            join user in users on marzbanUser.UserId equals user.Id into userGroup
+            from user in userGroup.DefaultIfEmpty()
+            select new MarzbanUserDto(marzbanUser, user);
+
+        return result.ToList();
+    }
+
 
     public async Task<MarzbanUserDto?> UpdateMarzbanUserAsync(RenewalMarzbanUserDto user, long serverId, long userId)
     {

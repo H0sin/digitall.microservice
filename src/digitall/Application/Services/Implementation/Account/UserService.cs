@@ -439,6 +439,9 @@ public class UserService(
         }
     }
 
+    public IQueryable<User> GetAgentUsers(long agentId)
+        => userRepository.GetQuery().Where(x => x.AgentId == agentId);
+
     public async Task<AddUserResult> AddUserAsync(AddUserDto user, long userId)
     {
         if (await userRepository.GetQuery().AnyAsync(x => x.Mobile == user.Mobile))

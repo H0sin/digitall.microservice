@@ -188,6 +188,26 @@ public static class BotOnMessageReceived
 
                         break;
 
+                    case TelegramHelper.SendTransactionWaitingMessageButtonText:
+                        await telegramService
+                            .SendTransactionsWaitingQueAsync(
+                                botClient, new()
+                                {
+                                    Data = "send_list_waiting_transaction",
+                                    Message = message
+                                }, cancellationToken);
+                        break;
+                    
+                    case TelegramHelper.SendDeleteServiceWaitingMessageButtonText:
+                        await telegramService
+                            .SendDeletedServiceInQueAsync(
+                                botClient, new()
+                                {
+                                    Data = "send_list_waiting_Deleted",
+                                    Message = message
+                                }, cancellationToken);
+                        break;
+
                     default:
                         action = message?.Text switch
                         {

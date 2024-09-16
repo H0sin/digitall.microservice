@@ -8,6 +8,7 @@ namespace Application.Services.Interface.Account;
 
 public interface IUserService
 {
+    IQueryable<User> GetAgentUsers(long agentId);
     Task<AddUserResult> AddUserAsync(AddUserDto user, long userId);
     Task<LoginUserResult> LoginAsync(LoginUserDto login);
     Task<LoginUserResult> LoginByEmailAsync(string email,string password);

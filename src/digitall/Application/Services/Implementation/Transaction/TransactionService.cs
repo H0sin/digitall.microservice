@@ -77,13 +77,24 @@ public class TransactionService(
 
 
     public async Task<List<TransactionDto>> GetAllTransactionByUserIdAsync(long userId)
-    {
-        return await transactionRepository
+        => await transactionRepository
             .GetQuery()
             .Where(x => x.CreateBy == userId)
             .Select(x => new TransactionDto(x))
             .ToListAsync();
-    }
+
+
+    public async Task<List<TransactionDto>> SendTransactionWaitingAsync(long agentId)
+        => await transactionRepository
+            .GetQuery()
+            .Include(x => x.TransactionDetail)
+            .Where(x => x.TransactionDetail.AgentId == agentId & x.TransactionStatus == TransactionStatus.Waiting)
+            .Join(userService.GetAgentUsers(agentId),
+                transaction => transaction.CreateBy,
+                user => user.Id,
+                (transaction, user) =>
+                    new TransactionDto(transaction, user))
+            .ToListAsync();
 
     public async Task IncreaseUserAsync(AddTransactionDto transaction, long userId, long agentId)
     {
@@ -194,14 +205,15 @@ public class TransactionService(
             AgentDto? agent = await agentService.GetAgentByIdAsync(transactionDetail.AgentId);
             UserDto? user = await userService.GetUserByIdAsync(agent.AgentAdminId);
 
-            
+
             long remainingBalance = user.Balance - transe.Price;
-        
+
             if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
                 throw new AppException(
                     "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
-            
-            if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted & agent?.NegativeChargeCeiling == 0)
+
+            if (transe.Price > (user?.Balance ?? 0) && transaction.TransactionStatus == TransactionStatus.Accepted &
+                agent?.NegativeChargeCeiling == 0)
                 throw new BadRequestException("مبلغ شارژ درخواستی بیشتر از موجودی حساب شما است!");
 
             if (transaction.TransactionStatus == TransactionStatus.Accepted &&
@@ -225,7 +237,7 @@ public class TransactionService(
                     Title = "کسر به دلیل قبول تراکنش",
                     TransactionStatus = TransactionStatus.Accepted,
                     TransactionDetailId = transe.TransactionDetailId ?? 0,
-                    AccountName = agent.User?.TelegramUsername ?? agent.User?.UserFullName() ?? "",
+                    AccountName = agent?.User?.TelegramUsername ?? agent?.User?.UserFullName() ?? "",
                 });
 
                 await transactionRepository.SaveChanges(userId);

@@ -947,4 +947,22 @@ public interface ITelegramService
     /// </summary>
     /// <param name="telegramGroupTopic"></param>
     Task UpdateCreatedTopicAsync(TelegramGroupTopics telegramGroupTopic);
+
+    /// <summary>
+    /// send list transaction services
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendTransactionsWaitingQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list deleted service in que
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendDeletedServiceInQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }
