@@ -3038,7 +3038,7 @@ public class TelegramService(
 
         if (transactions.Count == 0)
             throw new AppException("تراکنش برسی نشده در صف ندارید 😇");
-        
+
         foreach (TransactionDto transaction in transactions)
         {
             await botClient!.SendTextMessageAsync(
@@ -3062,21 +3062,22 @@ public class TelegramService(
         CancellationToken cancellationToken)
     {
         long chatId = callbackQuery.Message!.Chat.Id;
-        
+
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user?.Id);
-        
+
         List<MarzbanUserDto> marzbanUsers = await marzbanService.ListMarzbanUsersDeletedInQue(agent.Id);
 
         if (marzbanUsers.Count == 0)
             throw new AppException("هیچ درسخواست حدف سرویس وجود ندارد 😇");
-        
+
         foreach (MarzbanUserDto marzbanUser in marzbanUsers)
         {
             SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
-                text: subescribeStatus.GenerateServiceDeletionRequestMessage(marzbanUser.TelegramUsername,marzbanUser.ChatId,"متسفانه پیغام در دست رس نیست ❌"),
+                text: subescribeStatus.GenerateServiceDeletionRequestMessage(marzbanUser.TelegramUsername,
+                    marzbanUser.ChatId, "متسفانه پیغام در دست رس نیست ❌"),
                 replyMarkup: TelegramHelper.MainDeleteServiceButton(marzbanUser.Id),
                 cancellationToken: cancellationToken);
         }
