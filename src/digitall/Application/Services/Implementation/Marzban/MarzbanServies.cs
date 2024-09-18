@@ -1289,9 +1289,7 @@ public class MarzbanServies(
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = orderDetail.ProductPrice != 0
-                ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb
-                : 0;
+            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb : 0;
             long dayPrice = orderDetail.ProductPrice / 2;
 
             if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
