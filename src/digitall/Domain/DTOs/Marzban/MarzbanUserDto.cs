@@ -81,6 +81,7 @@ public class MarzbanUserDto
         AddedHolderInbound = marzbanUser.AddedHolderInbound;
         Volume = marzbanUser.Volume;
         ServiceTime = marzbanUser.ServiceTime;
+        OrderDeatilId = marzbanUser.OrderDetailId;
     }
 
     public MarzbanUserDto(MarzbanUser? marzbanUser, User? user)
@@ -110,12 +111,13 @@ public class MarzbanUserDto
         ServiceTime = marzbanUser.ServiceTime;
         TelegramUsername = user?.TelegramUsername;
         ChatId = user?.ChatId ?? 0;
+        OrderDeatilId = marzbanUser.OrderDetailId;
     }
 
+    public long OrderDeatilId { get; set; }
     public long ChatId { get; set; }
-
     public string? TelegramUsername { get; set; }
-
     public int? ServiceTime { get; set; }
     public int? Volume { get; set; }
+    public long OrderId { get; set; }
 }

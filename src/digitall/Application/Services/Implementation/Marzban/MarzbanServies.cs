@@ -512,6 +512,7 @@ public class MarzbanServies(
                 x.ServiceTime = vpn.MarzbanVpnTemplateId is not null ? template.Days : vpn.TotalDay;
                 x.Volume = vpn.MarzbanVpnTemplateId is not null ? template.Gb : vpn.TotalGb;
                 x.OrderDetailId = orders.First().OrderDetails.First().Id;
+                x.OrderId = orders.First().Id;
                 x.UserId = userId;
                 x.MarzbanServerId = marzbanServer.Id;
                 x.MarzbanVpnId = marzbanVpn.Id;
@@ -658,6 +659,7 @@ public class MarzbanServies(
             marzbanUsers.ForEach(x =>
             {
                 x.OrderDetailId = orders.First().OrderDetails.First().Id;
+                x.OrderId = orders.First().Id;
                 x.UserId = userId;
                 x.MarzbanServerId = marzbanServer.Id;
                 x.MarzbanVpnId = marzbanVpn.Id;
@@ -849,6 +851,8 @@ public class MarzbanServies(
         response.UserId = marzbanUser.UserId;
         response.Volume = marzbanUser.Volume;
         response.ServiceTime = marzbanUser.ServiceTime;
+        response.OrderDeatilId = marzbanUser.OrderDetailId;
+        response.OrderId = marzbanUser.OrderId;
 
         return marzbanUser switch
         {
@@ -902,6 +906,8 @@ public class MarzbanServies(
         mu.AddedHolderInbound = user.AddedHolderInbound;
         mu.Volume = user.Volume;
         mu.ServiceTime = user.ServiceTime;
+        mu.OrderDetailId = user.OrderDeatilId;
+        mu.OrderId = user.OrderId;
 
         await marzbanUserRepository.UpdateEntity(mu);
         await marzbanUserRepository.SaveChanges(userId);
@@ -1041,32 +1047,34 @@ public class MarzbanServies(
             DateTimeOffset newTieme = currentTime.AddDays((template?.Days ?? vpn.TotalDay) + (totalDays ?? 0));
             long unixTimeSeconds = newTieme.ToUnixTimeSeconds();
 
-            List<Domain.Entities.Order.Order> orders = new()
+            OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDeatilId);
+
+            // List<Domain.Entities.Order.Order> orders = new()
+            // {
+            //     new Domain.Entities.Order.Order()
+            //     {
+            //         Description = "تمدید Vpn" + vpn.Title,
+            //         UserId = userId,
+            //         IsPaid = true,
+            //         TracingCode = 1,
+            //         PaymentDate = DateTime.Now,
+            //         OrderDetails = new List<OrderDetail>()
+            //         {
+            //            
+            //         }
+            //     }
+            // };
+            var newOrderDetail = new OrderDetail()
             {
-                new Domain.Entities.Order.Order()
-                {
-                    Description = "تمدید Vpn" + vpn.Title,
-                    UserId = userId,
-                    IsPaid = true,
-                    TracingCode = 1,
-                    PaymentDate = DateTime.Now,
-                    OrderDetails = new List<OrderDetail>()
-                    {
-                        new()
-                        {
-                            Count = vpn.Count,
-                            OrderDeatilType = OrderDeatilType.Vpn,
-                            ProductPrice = totalPrice
-                        }
-                    }
-                }
+                Count = vpn.Count,
+                OrderDeatilType = OrderDeatilType.Vpn,
+                ProductPrice = totalPrice,
+                OrderId = orderDetail.OrderId,
             };
 
-            await orderRepository.AddEntities(orders);
-            await orderRepository.SaveChanges(userId);
+            await orderDetailRepository.AddEntity(newOrderDetail);
 
-            long orderDetailId = orders.First().OrderDetails.First().Id;
-
+            await orderDetailRepository.SaveChanges(userId);
 
             foreach (var i in incomes)
             {
@@ -1077,7 +1085,7 @@ public class MarzbanServies(
 
                 await agentService.AddAgentsIncomesDetailAsync(new AgentsIncomesDetail()
                 {
-                    OrderDetailId = orderDetailId,
+                    OrderDetailId = newOrderDetail.Id,
                     Profit = i.Balance,
                     AgentId = i.AgentId,
                     UserId = i.UserId,
@@ -1169,8 +1177,9 @@ public class MarzbanServies(
             DateTimeOffset dateTime =
                 DateTimeOffset.FromUnixTimeSeconds(marzbanUser.Expire != null ? unixTimestamp : unixTimeSeconds);
             DateTimeOffset currentDate = DateTimeOffset.UtcNow;
-            TimeSpan difference = currentDate - dateTime;
+            TimeSpan difference = dateTime - currentDate;
             marzbanUser.ServiceTime = (int)difference.TotalDays;
+
             await UpdateMarzbanUserAsync(marzbanUser, userId);
             await transaction.CommitAsync();
             return response;
@@ -1269,16 +1278,18 @@ public class MarzbanServies(
             if (string.IsNullOrEmpty(token))
                 throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
+            Domain.Entities.Order.Order? order = await orderRepository
+                .GetQuery()
+                .Include(x => x.OrderDetails.OrderByDescending(x => x.Id))
+                .SingleOrDefaultAsync(x => x.Id == marzbanUser.OrderId);
 
-            OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDetailId);
+            OrderDetail? orderDetail = order?.OrderDetails.FirstOrDefault();
 
             long byteSize = 1073741824;
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = orderDetail.ProductPrice != 0
-                ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb
-                : 0;
+            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb : 0;
             long dayPrice = orderDetail.ProductPrice / 2;
 
             if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
@@ -1293,8 +1304,7 @@ public class MarzbanServies(
                 TimeSpan remainingTimeSpan = expireDate - utcNow;
                 int remainingDays = remainingTimeSpan.Days;
                 DateTime createdAtDate = marzbanUser.ModifiedDate;
-                TimeSpan totalDuration = expireDate - createdAtDate;
-                dayPrice = ((orderDetail.ProductPrice / 2) / marzbanUser.ServiceTime ?? 0) * remainingDays;
+                dayPrice = (dayPrice / marzbanUser.ServiceTime ?? 0) * remainingDays;
             }
 
             List<AgentsIncomesDetail> agentsIncomesDetail = await agentsIncomesDetailRepository
