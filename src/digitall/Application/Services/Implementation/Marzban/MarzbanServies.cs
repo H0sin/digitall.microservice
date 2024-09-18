@@ -63,6 +63,7 @@ public class MarzbanServies(
                 .SingleOrDefaultAsync(x => x.ServerIp == marzban.ServerIp) is not null
         ) throw new ExistsException("سرور مرزبانی با این ip وجود دارد");
 
+
         string token = await GetMarzbanServerTokenAsync(marzban._CreateMarzban());
 
         if (string.IsNullOrEmpty(token)) throw new NotFoundException("سرور در دست رس نیست");
