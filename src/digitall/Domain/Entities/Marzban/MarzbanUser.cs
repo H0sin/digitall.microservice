@@ -32,4 +32,5 @@ public class MarzbanUser : BaseEntity
     public bool AddedHolderInbound { get; set; } = false;
     public int? ServiceTime { get; set; }
     public int? Volume { get; set; }
+    public long OrderId { get; set; }
 }
