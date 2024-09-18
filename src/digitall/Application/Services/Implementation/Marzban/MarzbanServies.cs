@@ -847,6 +847,8 @@ public class MarzbanServies(
         response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
         response.Id = marzbanUser.Id;
         response.UserId = marzbanUser.UserId;
+        response.Volume = marzbanUser.Volume;
+        response.ServiceTime = marzbanUser.ServiceTime;
 
         return marzbanUser switch
         {
@@ -1274,7 +1276,9 @@ public class MarzbanServies(
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb : 0;
+            long gbPrice = orderDetail.ProductPrice != 0
+                ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb
+                : 0;
             long dayPrice = orderDetail.ProductPrice / 2;
 
             if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
@@ -1318,7 +1322,6 @@ public class MarzbanServies(
                             agentIncomeDetail.Profit), userId);
                 }
             }
-
 
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;
@@ -1550,9 +1553,9 @@ public class MarzbanServies(
             .ToListAsync();
 
         var result = from marzbanUser in marzbanUsers
-                     join user in users on marzbanUser.UserId equals user.Id into userGroup
-                     from user in userGroup.DefaultIfEmpty()
-                     select new MarzbanUserDto(marzbanUser, user);
+            join user in users on marzbanUser.UserId equals user.Id into userGroup
+            from user in userGroup.DefaultIfEmpty()
+            select new MarzbanUserDto(marzbanUser, user);
 
         return result.ToList();
     }
