@@ -1273,8 +1273,7 @@ public class MarzbanServies(
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail?.ProductPrice ??  0 / 2) / remainingLimitGb) * remainingGb : 0;
-
+            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb : 0;
             long dayPrice = orderDetail.ProductPrice / 2;
 
             if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
@@ -1302,8 +1301,10 @@ public class MarzbanServies(
 
             long price = gbPrice + dayPrice;
 
-            if (marzbanUserFromServer.Status != null & marzbanUserFromServer.Status == "active" &
-                marzbanUserFromServer.Status == "disabled")
+            if (marzbanUserFromServer.Status == "limited" | marzbanUserFromServer.Status == "expired")
+                price = 0;
+
+            if (price != 0)
             {
                 foreach (var agentIncomeDetail in agentsIncomesDetail)
                 {
@@ -1315,9 +1316,8 @@ public class MarzbanServies(
                         NotificationTemplate.DecreaseForDeleteService(userBalance.Id, marzbanUser.Username,
                             agentIncomeDetail.Profit), userId);
                 }
-
-                price = 0;
             }
+
 
             User? user = await userRepository.GetEntityById(marzbanUser.UserId);
             user.Balance += price;
@@ -1333,10 +1333,9 @@ public class MarzbanServies(
             await notificationService.AddNotificationAsync(new()
             {
                 Message = $"""
-                           سرویس ✅ {marzbanUser.Username}
-                           با موفقیت حذف شد ✅
-                            و مبلغ{price:N0}
-                            به موجودی شما اضافه شد ✅
+                           ✨ سرویس {marzbanUser.Username} با موفقیت حذف شد ✅
+                           💰 مبلغ {price:N0} تومان به موجودی شما اضافه شد ✅
+                           ممنون که از سرویس ما استفاده کردید! 🎉
                            """,
                 UserId = marzbanUser.UserId,
             }, userId);
@@ -1441,6 +1440,8 @@ public class MarzbanServies(
         response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
         response.Id = marzbanUser.Id;
         response.UserId = marzbanUser.UserId;
+        response.ServiceTime = marzbanUser.ServiceTime;
+        response.Volume = marzbanUser.Volume;
 
         return marzbanUser switch
         {
@@ -1548,9 +1549,9 @@ public class MarzbanServies(
             .ToListAsync();
 
         var result = from marzbanUser in marzbanUsers
-            join user in users on marzbanUser.UserId equals user.Id into userGroup
-            from user in userGroup.DefaultIfEmpty()
-            select new MarzbanUserDto(marzbanUser, user);
+                     join user in users on marzbanUser.UserId equals user.Id into userGroup
+                     from user in userGroup.DefaultIfEmpty()
+                     select new MarzbanUserDto(marzbanUser, user);
 
         return result.ToList();
     }
