@@ -1330,7 +1330,7 @@ public class TelegramService(
 
         User? user = await GetUserByChatIdAsync(chatId);
         bool request = await agentService.HaveRequestAgentAsync(user!.Id);
-        
+
         if (user.Balance < 300000)
         {
             await botClient.SendTextMessageAsync(
@@ -1349,15 +1349,13 @@ public class TelegramService(
 
 
                       📞 نیاز به کمک دارید؟ با تیم پشتیبانی ما در ارتباط باشید تا هرگونه سوال و مشکل شما را حل کنیم.
-                      
+
                       """,
-                replyMarkup:TelegramHelper.NoBalanceForAgentRequestButton(),
+                replyMarkup: TelegramHelper.NoBalanceForAgentRequestButton(),
                 cancellationToken: cancellationToken
             );
         }
-
-
-        if (request)
+        else if (request)
         {
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,

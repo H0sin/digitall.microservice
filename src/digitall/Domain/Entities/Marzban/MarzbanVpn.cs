@@ -35,10 +35,10 @@ public class MarzbanVpn : BaseEntity
     [Display(Name = "قیمت هر روز")]
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public long DayPrice { get; set; }
-    
+
     [Display(Name = "وضعیت حجم و زمان دلخواه")]
-    public bool Desired { get; set; }   
-    
+    public bool Desired { get; set; }
+
     public bool Test_Active { get; set; } = false;
     [Display(Name = "تعداد روز تست")] public int Test_Days { get; set; } = 1;
     [Display(Name = "حجم تست")] public int Test_TotalMg { get; set; } = 1;
@@ -50,4 +50,5 @@ public class MarzbanVpn : BaseEntity
     public long MarzbanServerId { get; set; }
     public MarzbanServer? MarzbanServer { get; set; }
     public ICollection<MarzbanVpnTemplate>? MarzbanVpnTemplate { get; set; }
+    public ICollection<MarzbanUser> MarzbanUsers { get; set; }
 }

@@ -41,7 +41,7 @@ public class UserInformationDto
         ⭕️ محدودیت اکانت تست : {TestAccountLimit}
         ⭕️ شماره موبایل : {Mobile ?? "ندارد"}
         ⭕️ موجودی کاربر : {Balance:N0}
-         ⭕️ کل سود فورش :{SumAgentIncomes:N0}
+         ⭕️ کل سود فروش :{SumAgentIncomes:N0}
         ⭕️ تعداد خرید کل کاربر : {TotalPurchaseCount}
         ⭕️ مبلغ کل پرداختی : {TotalPaymentAmount:N0}
         ⭕️ جمع کل خرید : {TotalPurchaseAmount:N0}

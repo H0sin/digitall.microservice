@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Enums.Marzban;
 using Domain.Common;
 using Domain.Entities.Order;
@@ -9,10 +10,14 @@ namespace Domain.Entities.Marzban;
 public class MarzbanUser : BaseEntity
 {
     public long MarzbanServerId { get; set; }
-    public long MarzbanVpnId { get; set; }
+
+    public MarzbanVpn? MarzbanVpn { get; set; }
+
+    [ForeignKey(nameof(MarzbanVpn))] public long MarzbanVpnId { get; set; }
 
     [MaxLength(500, ErrorMessage = "username")]
     public string? Username { get; set; }
+
     public long? Expire { get; set; }
     public long? Data_Limit { get; set; }
     public long UserId { get; set; }
@@ -24,7 +29,7 @@ public class MarzbanUser : BaseEntity
     public string? Subscription_Url { get; set; } = "";
     public long? OnHoldExpireDuration { get; set; }
     public string? OnHoldTimeout { get; set; }
-    public string? Status { get; set; } 
+    public string? Status { get; set; }
     public long? Used_Traffic { get; set; }
     public long? Lifetime_Used_Traffic { get; set; }
     public DateTime? Created_At { get; set; }

@@ -299,7 +299,7 @@ public class AgentService(
             _ => true
         };
     }
-    
+
     public async Task<AgentInformationDto?> GetAgentInformationAsync(long userId)
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository
@@ -322,8 +322,10 @@ public class AgentService(
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .ToListAsync();
 
-        int? countAgentLevel_1 = countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 1)?.Count ?? 0;
-        int? countAgentLevel_2 = countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 2)?.Count ?? 0;
+        int? countAgentLevel_1 =
+            countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 1)?.Count ?? 0;
+        int? countAgentLevel_2 =
+            countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 2)?.Count ?? 0;
 
         var profitSum = await agentsIncomesDetailRepository
             .GetQuery()
@@ -331,7 +333,7 @@ public class AgentService(
             .SumAsync(x => x.Profit);
 
         // long sale = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x=>x.Profit);
-        
+
         return new()
         {
             AdminName = admin.UserFullName(),
@@ -342,8 +344,7 @@ public class AgentService(
             BrandAddress = agent.BrandAddress,
             BrandName = agent.BrandName,
             PersianBrandName = agent.PersianBrandName,
-            CountUser = await agentRepository.GetQuery()
-                .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
+            CountUser = await userRepository.GetQuery().Where(x => x.AgentId == agent.Id).CountAsync(),
             Profit = profitSum,
             Sale = profitSum,
             CountAgentLevel_1 = countAgentLevel_1,
