@@ -827,9 +827,8 @@ public class MarzbanServies(
     {
         return await marzbanUserRepository
             .GetQuery(delete)
-            .Include(x=> x.MarzbanVpn)
             .Where(x => x.UserId == userId)
-            .Select(x => new MarzbanUserDto(x,x.MarzbanVpn))
+            .Select(x => new MarzbanUserDto(x))
             .ToListAsync();
     }
 
