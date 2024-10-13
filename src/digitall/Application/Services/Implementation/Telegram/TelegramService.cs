@@ -2736,14 +2736,20 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
         User? user = await GetUserByChatIdAsync(chatId);
-        
+
+        Message message = await botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: "اطلاعات در حال پردازش است، لطفاً چند لحظه صبر کنید...",
+            cancellationToken: cancellationToken);
+
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
-        await botClient!.SendTextMessageAsync(
+        await botClient!.EditMessageTextAsync(
             chatId: chatId,
+            messageId: message.MessageId,
             text: agentInformation?.Information_Text() ?? "NO RESULT",
             cancellationToken: cancellationToken);
-        
+
         await Task.CompletedTask;
     }
 
