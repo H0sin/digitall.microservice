@@ -365,7 +365,7 @@ public class TelegramHelper
 
         foreach (var entity in filter.Entities)
         {
-            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(entity.Username ?? "NOUSERNAME",
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(entity.Username ?? "NONAME",
                 $"subscribe_info?id={entity.Id}&vpnId={entity.MarzbanVpnId}")));
         }
 
@@ -438,6 +438,18 @@ public class TelegramHelper
 
         buttons.Add(CreateList2Button(
             InlineKeyboardButton.WithCallbackData("افزایش موجودی 💵", "inventory_increase"), BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup NoBalanceForAgentRequestButton()
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList2Button(
+            InlineKeyboardButton.WithCallbackData("افزایش موجودی 💵", "inventory_increase"), Supports));
+
+        buttons.Add(CreateList1Button(BackToHome));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -669,7 +681,7 @@ public class TelegramHelper
     public static string SendUserInformation(User? user) => $"""
                                                              🗂 اطلاعات حساب کاربری شما :
 
-                                                             👤 نام: {user.TelegramUsername ?? "NOUSERNAME"}
+                                                             👤 نام: {user.TelegramUsername ?? "NOT_USERNAME"}
                                                              📱 شماره تماس : {user.Mobile ?? "ثبت نشده "}
                                                              ⌚️زمان ثبت نام : {PersianDateTimeHelper.GetPersianDateTime(user.CreateDate)}
                                                              💡 شناسه کاربری: {user.ChatId}

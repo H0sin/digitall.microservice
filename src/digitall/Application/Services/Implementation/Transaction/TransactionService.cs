@@ -228,7 +228,7 @@ public class TransactionService(
                 {
                     Description = $"""
                                    پذیرفتن  تراکنش کاربر
-                                   شناسه تلگرامی کاربر:@{child.TelegramUsername ?? "NOUSERNAME"}
+                                   شناسه تلگرامی کاربر:@{child.TelegramUsername ?? "NOT_USERNAME"}
                                    ایدی عددی کاربر:{child.ChatId}
                                    """,
                     TransactionTime = DateTime.Now,

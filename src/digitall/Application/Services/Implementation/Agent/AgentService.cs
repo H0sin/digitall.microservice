@@ -133,7 +133,7 @@ public class AgentService(
 
         await notificationService.AddNotificationAsync(
             NotificationTemplate.NewRequestForAgent(parent.AgentAdminId, user.ChatId ?? 0,
-                user!.TelegramUsername ?? "NOUSERNAME",
+                user!.TelegramUsername ?? "NOT_USERNAME",
                 request.Phone,
                 request.Description ?? "", user!.TelegramUsername ?? "",
                 buttonJsons), userId);
