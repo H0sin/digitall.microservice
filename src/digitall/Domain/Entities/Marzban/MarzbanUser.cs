@@ -11,9 +11,8 @@ public class MarzbanUser : BaseEntity
 {
     public long MarzbanServerId { get; set; }
 
-    public MarzbanVpn? MarzbanVpn { get; set; }
-
-    public long? MarzbanVpnId { get; set; }
+    public MarzbanVpn? MarzbanVpn { get; set; } = null;
+    public long? MarzbanVpnId { get; set; } = null;
 
     [MaxLength(500, ErrorMessage = "username")]
     public string? Username { get; set; }
