@@ -115,6 +115,7 @@ public static class BotOnMessageReceived
                         await
                             telegramService.SendTextUpdatePaymentForAgentOptionAsync(
                                 botClient, new() { Message = message }, cancellationToken, telegramUser);
+
                         break;
 
                     case TelegramHelper.RepresentationStatisticsButtonText:

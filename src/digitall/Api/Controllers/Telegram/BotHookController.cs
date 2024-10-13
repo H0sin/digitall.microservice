@@ -57,7 +57,7 @@ public class BotHookController(
             _botClient = botClientFactory.GetOrAdd(token);
 
             await HandleUpdateAsync(update, new CancellationToken());
-            await Task.CompletedTask;
+            Response.StatusCode = 200;
         }
         catch (Exception e)
         {
