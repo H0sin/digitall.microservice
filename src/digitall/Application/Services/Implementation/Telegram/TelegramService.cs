@@ -220,6 +220,27 @@ public class TelegramService(
         return bot;
     }
 
+    public async Task StopTelegramBotAsync(long id)
+    {
+        var bot = await telegramBotRepository.GetEntityById(id);
+        ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
+
+        await botClient.DeleteWebhookAsync();
+    }
+    
+    public async Task StartTelegramBotAsync(long id)
+    {
+        var bot = await telegramBotRepository.GetEntityById(id);
+        ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
+        var webhookAddress = $"{bot?.HostAddress}{bot?.Route}";
+        
+        await botClient.SetWebhookAsync(
+            url: webhookAddress,
+            allowedUpdates: Array.Empty<UpdateType>(),
+            secretToken: bot!.SecretToken,
+            cancellationToken: default);
+    }
+
     public async Task<List<TelegramBot>?> GetAllTelegramBotAsync()
     {
         return await telegramBotRepository
@@ -2734,7 +2755,6 @@ public class TelegramService(
     public async Task SendAgentInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
         long chatId = callbackQuery.Message!.Chat.Id;
         User? user = await GetUserByChatIdAsync(chatId);
 
@@ -2745,13 +2765,13 @@ public class TelegramService(
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
-        await botClient!.EditMessageTextAsync(
+        await Task.CompletedTask;
+
+        await botClient.EditMessageTextAsync(
             chatId: chatId,
             messageId: message.MessageId,
             text: agentInformation?.Information_Text() ?? "NO RESULT",
             cancellationToken: cancellationToken);
-
-        await Task.CompletedTask;
     }
 
     public async Task SendTextSearchUserByChatAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
