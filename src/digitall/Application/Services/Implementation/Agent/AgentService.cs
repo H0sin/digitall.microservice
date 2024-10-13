@@ -330,7 +330,7 @@ public class AgentService(
             .Where(x => x.AgentId == agent.Id)
             .SumAsync(x => x.Profit);
 
-        long sale = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x=>x.Profit);
+        // long sale = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x=>x.Profit);
         
         return new()
         {
@@ -345,7 +345,7 @@ public class AgentService(
             CountUser = await agentRepository.GetQuery()
                 .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
             Profit = profitSum,
-            Sale = sale,
+            Sale = profitSum,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,
         };
