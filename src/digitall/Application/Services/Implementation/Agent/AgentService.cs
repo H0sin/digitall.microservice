@@ -305,10 +305,6 @@ public class AgentService(
         Domain.Entities.Agent.Agent? agent = await agentRepository
             .GetQuery()
             .AsNoTracking()
-            .Include(x => x.AgentsIncomesDetail)
-            .ThenInclude(x => x.OrderDetail)
-            .Include(x => x.TransactionDetail)
-            .ThenInclude(x => x.Transactions)
             .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
 
         if (agent == null)
@@ -334,6 +330,8 @@ public class AgentService(
             .Where(x => x.AgentId == agent.Id)
             .SumAsync(x => x.Profit);
 
+        long sale = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x=>x.Profit);
+        
         return new()
         {
             AdminName = admin.UserFullName(),
@@ -347,7 +345,7 @@ public class AgentService(
             CountUser = await agentRepository.GetQuery()
                 .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
             Profit = profitSum,
-            Sale = agent.AgentsIncomesDetail?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
+            Sale = sale,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,
         };

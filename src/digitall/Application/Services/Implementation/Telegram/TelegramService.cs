@@ -2542,7 +2542,7 @@ public class TelegramService(
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendUserPercent;
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
-
+        
         await botClient!.SendTextMessageAsync(
             chatId,
             $"""
