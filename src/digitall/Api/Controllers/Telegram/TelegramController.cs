@@ -29,4 +29,28 @@ public class TelegramController(
     {
         return Ok(await telegramService.AddTelegramBotAsync(bot, User.GetId()));
     }
+
+    /// <summary>
+    /// stop telegram bot
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPut("{id}")]
+    public async Task<ApiResult> StopTelegramBot(long id)
+    {
+        await telegramService.StopTelegramBotAsync(id);
+        return Ok();
+    }
+
+    /// <summary>
+    /// start telegram bot
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPut("{id}")]
+    public async Task<ApiResult> StartTelegramBot(long id)
+    {
+        await telegramService.StartTelegramBotAsync(id);
+        return Ok();
+    }
 }

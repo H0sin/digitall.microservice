@@ -54,6 +54,20 @@ public interface ITelegramService
     Task<AddTelegramBotDto> AddTelegramBotAsync(AddTelegramBotDto bot, long userId);
 
     /// <summary>
+    /// stop telegram bot async
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task StopTelegramBotAsync(long id);
+
+    /// <summary>
+    /// stop telegram bot async
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task StartTelegramBotAsync(long id);
+    
+    /// <summary>
     /// get all bot for started
     /// </summary>
     /// <returns></returns>
