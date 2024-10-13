@@ -31,6 +31,7 @@ public class SubescribeStatus
 
         public long MarzbanUserId { get; set; }
         public long VpnId { get; set; }
+        public string VpnName { get; set; }
 
         public string GetPersianDate(DateTime? dateTime)
         {
@@ -84,7 +85,7 @@ public class SubescribeStatus
         {
             return $"وضعیت سرویس: {Status}\n" +
                    $"👤 نام سرویس: {Username}\n" +
-                   $"🌍 لوکیشن سرویس: {Location}\n" +
+                   $"🌍 نوع سرویس: {VpnName}\n" +
                    $"🖇 کد سرویس: {ServiceCode}\n" +
                    $"🔋 حجم سرویس: {FormatVolume(TotalVolume)} \n" +
                    $"📥 حجم مصرفی: {FormatVolume(UsedVolume)} \n" +
@@ -115,8 +116,9 @@ public class SubescribeStatus
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
             MarzbanUserId = marzbanUser.Id;
             VpnId = marzbanUser.MarzbanVpnId;
+            VpnName = marzbanUser.MarzbanVpnName ?? "در دست رس نیست";
         }
-        
+
         public ServiceStatus(MarzbanUser? marzbanUser)
         {
             Status = marzbanUser.Status switch

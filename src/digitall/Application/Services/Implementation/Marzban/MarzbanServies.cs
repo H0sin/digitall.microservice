@@ -481,7 +481,7 @@ public class MarzbanServies(
                     Percent = i.Percent,
                 }, userId);
 
-                i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
+                i.TelegramUserName = u.TelegramUsername ?? "NOT_USERNAME";
                 i.chatId = u.ChatId;
 
                 IOrderedEnumerable<CalculatorUserIncome> newIncomes = incomes.OrderByDescending(x => x.AgentId);
@@ -493,7 +493,7 @@ public class MarzbanServies(
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.IncomeFromPaymentAsync(
                         income: i,
-                        userName: user.TelegramUsername ?? "NOUSERNAME",
+                        userName: user.TelegramUsername ?? "NOT_USERNAME",
                         chatId: user.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,
@@ -827,8 +827,9 @@ public class MarzbanServies(
     {
         return await marzbanUserRepository
             .GetQuery(delete)
+            .Include(x=> x.MarzbanVpn)
             .Where(x => x.UserId == userId)
-            .Select(x => new MarzbanUserDto(x))
+            .Select(x => new MarzbanUserDto(x,x.MarzbanVpn))
             .ToListAsync();
     }
 
@@ -1092,7 +1093,7 @@ public class MarzbanServies(
                     Percent = i.Percent,
                 }, userId);
 
-                i.TelegramUserName = u.TelegramUsername ?? "NOUSERNAME";
+                i.TelegramUserName = u.TelegramUsername ?? "NOT_USERNAME";
                 i.chatId = u.ChatId;
 
                 IOrderedEnumerable<CalculatorUserIncome> newIncomes = incomes.OrderByDescending(x => x.AgentId);
@@ -1104,7 +1105,7 @@ public class MarzbanServies(
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.IncomeFromPaymentAsync(
                         income: i,
-                        userName: user.TelegramUsername ?? "NOUSERNAME",
+                        userName: user.TelegramUsername ?? "NOT_USERNAME",
                         chatId: user.ChatId ?? 0,
                         price: totalPrice,
                         userbalance: user.Balance,

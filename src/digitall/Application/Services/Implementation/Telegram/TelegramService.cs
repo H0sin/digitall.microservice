@@ -163,7 +163,7 @@ public class TelegramService(
                 NotificationTemplate
                     .StartedBotNotification(
                         agent?.AgentAdminId ?? AgentItems.Agents.First().AgentAdminId,
-                        newUser.TelegramUsername ?? "NOUSERNAME",
+                        newUser.TelegramUsername ?? "NOT_USERNAME",
                         newUser.CardToCardPayment,
                         newUser.Id,
                         newUser.ChatId ?? 0),
@@ -227,13 +227,13 @@ public class TelegramService(
 
         await botClient.DeleteWebhookAsync();
     }
-    
+
     public async Task StartTelegramBotAsync(long id)
     {
         var bot = await telegramBotRepository.GetEntityById(id);
         ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
         var webhookAddress = $"{bot?.HostAddress}{bot?.Route}";
-        
+
         await botClient.SetWebhookAsync(
             url: webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
@@ -840,7 +840,7 @@ public class TelegramService(
 
         DeleteMarzbanUserDto delete = new()
         {
-            Username = user.TelegramUsername ?? "NOUSERNAME",
+            Username = user.TelegramUsername ?? "NOT_USERNAME",
             Message = callbackQuery.Message.Text,
             UserId = user.Id,
             ChatId = user.ChatId ?? 0,
@@ -1066,7 +1066,7 @@ public class TelegramService(
                 callbackQuery?.Message?.Caption ?? callbackQuery.Message?.Text,
                 user.ChatId ?? 0,
                 user.Id,
-                user.TelegramUsername ?? "NOUSERNAME",
+                user.TelegramUsername ?? "NOT_USERNAME",
                 DateTime.Now,
                 file is not null ? PathExtension.TicketAvatarOriginServer(webHostEnvironment) + formFile.FileName : null
             ), user!.Id);
@@ -1141,7 +1141,7 @@ public class TelegramService(
                 Message = $"""
                             ⚠️ خطا در پرداخت
                            کاربری با شناسه چت : `\{chatId}`\
-                            نام کاربری : @{user.TelegramUsername ?? "NOUSERNAME"}
+                            نام کاربری : @{user.TelegramUsername ?? "NOT_USERNAME"}
                            قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل اینکه مبلغ از موجودی شما بیشتر بود،
                            تراکنش انجام نشد
                            """,
@@ -1165,7 +1165,7 @@ public class TelegramService(
                 Message = $"""
                             ⚠️ خطا در پرداخت
                            کاربری با شناسه چت : `\{chatId}`\
-                            نام کاربری : @{user.TelegramUsername ?? "NOUSERNAME"}
+                            نام کاربری : @{user.TelegramUsername ?? "NOT_USERNAME"}
                            قصد داشت تراکنشی با مبلغ {price:N0} تومان انجام دهد، اما به دلیل اینکه مبلغ از موجودی شما بیشتر بود،
                            تراکنش انجام نشد
                            """,
@@ -1331,7 +1331,31 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
         bool request = await agentService.HaveRequestAgentAsync(user!.Id);
 
-        if (request)
+        if (user.Balance < 300000)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: """
+                      🌟 کاربر گرامی! 🌟
+
+                      برای ثبت درخواست نمایندگی در ربات فروش VPN تلگرام، لطفاً حداقل ۳۰۰,۰۰۰ تومان به موجودی کیف پول خود اضافه کنید تا بتوانید از خدمات نمایندگی و قیمت‌های عمده بهره‌مند شوید.
+
+                      💼 مزایای نمایندگی:
+
+                      📈 قیمت‌های رقابتی برای خرید عمده
+                      🤝 پشتیبانی ویژه از نمایندگان
+                      🚀 دسترسی به جدیدترین سرویس‌ها و به‌روزرسانی‌ها
+
+
+
+                      📞 نیاز به کمک دارید؟ با تیم پشتیبانی ما در ارتباط باشید تا هرگونه سوال و مشکل شما را حل کنیم.
+
+                      """,
+                replyMarkup: TelegramHelper.NoBalanceForAgentRequestButton(),
+                cancellationToken: cancellationToken
+            );
+        }
+        else if (request)
         {
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
@@ -1340,7 +1364,7 @@ public class TelegramService(
         }
         else
         {
-            telegramUser!.State = TelegramMarzbanVpnSessionState.AwaitingSendPhone;
+            telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPhone;
 
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
@@ -2337,7 +2361,7 @@ public class TelegramService(
             text: $"""
                    درصد سود دریافتی شما
                    از نماینده
-                   به {agent.PersianBrandName ?? agent.BrandName ?? "NOUSERNAME"}
+                   به {agent.PersianBrandName ?? agent.BrandName ?? "NOT_USERNAME"}
                    {specialPercent} درصد
                     تغییر پیدا کرد🔢
                    """,
@@ -2542,7 +2566,7 @@ public class TelegramService(
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendUserPercent;
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
-        
+
         await botClient!.SendTextMessageAsync(
             chatId,
             $"""

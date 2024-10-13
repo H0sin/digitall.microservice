@@ -52,8 +52,39 @@ public class MarzbanUserDto
     public long UserId { get; set; }
     public bool AddedHolderInbound { get; set; }
 
+    public string? MarzbanVpnName { get; set; }
+    
     public MarzbanUserDto()
     {
+    }
+
+    public MarzbanUserDto(MarzbanUser? marzbanUser,MarzbanVpn? marzbanVpn)
+    {
+        Id = marzbanUser.Id;
+        Username = marzbanUser.Username;
+        Expire = marzbanUser.Expire;
+        Data_Limit = marzbanUser.Data_Limit;
+        Sub_Updated_At = marzbanUser.Sub_Updated_At;
+        Sub_Last_User_Agent = marzbanUser.Sub_Last_User_Agent;
+        Online_At = marzbanUser.Online_At;
+        On_Hold_Expire_Duration = marzbanUser.OnHoldExpireDuration;
+        OnHoldTimeout = marzbanUser.OnHoldTimeout;
+        Username = marzbanUser.Username;
+        Status = marzbanUser.Status;
+        Used_Traffic = marzbanUser.Used_Traffic;
+        Lifetime_Used_Traffic = marzbanUser.Lifetime_Used_Traffic;
+        Created_At = marzbanUser.Created_At;
+        Links = marzbanUser.Links;
+        Subscription_Url = marzbanUser.Subscription_Url;
+        MarzbanVpnId = marzbanUser.MarzbanVpnId;
+        MarzbanServerId = marzbanUser.MarzbanServerId;
+        UserId = marzbanUser.UserId;
+        IsDelete = marzbanUser.IsDelete;
+        AddedHolderInbound = marzbanUser.AddedHolderInbound;
+        Volume = marzbanUser.Volume;
+        ServiceTime = marzbanUser.ServiceTime;
+        OrderDeatilId = marzbanUser.OrderDetailId;
+        MarzbanVpnName = marzbanVpn?.Name;
     }
 
     public MarzbanUserDto(MarzbanUser? marzbanUser)
