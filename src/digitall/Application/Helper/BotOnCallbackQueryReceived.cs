@@ -250,74 +250,84 @@ public static class BotOnCallbackQueryReceived
 
             bool containsEnglishCharacters = e.Message.Any(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z');
 
-            switch (e.Message)
+            if (e.Message == TelegramHelper.SendTextGiveEngilishBrandName)
             {
-                case "موجودی شما کافی نیست":
-                    List<InlineKeyboardButton> increase = new()
-                    {
-                        InlineKeyboardButton.WithCallbackData("\ud83d\udcb0 افزایش موجودی", "inventory_increase")
-                    };
-
-                    telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
-                    await botClient.SendTextMessageAsync(
-                        chatId: callbackQuery!.Message!.Chat.Id,
-                        text: e.Message,
-                        replyMarkup: new InlineKeyboardMarkup(increase),
-                        cancellationToken: cancellationToken);
-                    break;
-
-                default:
-                    telegramUser.State = TelegramMarzbanVpnSessionState.None;
-                    if (containsEnglishCharacters)
-                    {
-                        var errorDetails = $"""
-                                            🛠️ گزارش باگ جدید
-                                            ❌❌❌❌❌❌❌
-                                            👤 کاربری که دچار خطا شده: {curent_user.UserFullName()}
-                                            💬 شناسه کاربریش: {curent_user.ChatId}
-                                            ❗ عنوان خطا: {e.Message}
-                                            📜 جزیات خطا: {e.InnerException?.Message ?? "مشخص نیست"}
-                                            📍 مکان خطا: {e.StackTrace ?? "مشخص نیست"}
-                                            ❌❌❌❌❌❌❌
-                                            """;
-
-
-                        await notificationService.AddNotificationAsync(new AddNotificationDto()
+                await botClient.SendTextMessageAsync(
+                    chatId: callbackQuery!.Message!.Chat.Id,
+                    text: e.Message,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                switch (e.Message)
+                {
+                    case "موجودی شما کافی نیست":
+                        List<InlineKeyboardButton> increase = new()
                         {
-                            Message = errorDetails,
-                            NotificationType = NotificationType.BogsReports,
-                            UserId = curent_user.Id,
-                        }, curent_user.Id);
+                            InlineKeyboardButton.WithCallbackData("\ud83d\udcb0 افزایش موجودی", "inventory_increase")
+                        };
 
-                        var userErrorMessage = $"""
-                                                ⚠️ متاسفانه مشکلی در هنگام پردازش درخواست شما پیش آمده است.
+                        telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
-                                                🚫 ما عمیقاً از این موضوع پوزش می‌طلبیم و به سرعت در حال بررسی این مشکل هستیم. لطفاً چند دقیقه صبر کنید و دوباره تلاش کنید.
-
-                                                🔄 اگر این مشکل ادامه پیدا کرد، پیشنهاد می‌کنیم ربات را دوباره استارت کنید تا شاید مشکل برطرف شود.
-
-                                                /start
-
-                                                🔧 در صورتی که مشکل همچنان باقی ماند، لطفاً با پشتیبانی تماس بگیرید تا بتوانیم به شما کمک کنیم.
-
-                                                🙏 با تشکر از شکیبایی و درک شما.
-                                                """;
-
-                        await botClient.SendTextMessageAsync(
-                            chatId: callbackQuery!.Message!.Chat.Id,
-                            text: userErrorMessage,
-                            cancellationToken: cancellationToken);
-                    }
-                    else
-                    {
                         await botClient.SendTextMessageAsync(
                             chatId: callbackQuery!.Message!.Chat.Id,
                             text: e.Message,
+                            replyMarkup: new InlineKeyboardMarkup(increase),
                             cancellationToken: cancellationToken);
-                    }
+                        break;
 
-                    break;
+                    default:
+                        telegramUser.State = TelegramMarzbanVpnSessionState.None;
+                        if (containsEnglishCharacters)
+                        {
+                            var errorDetails = $"""
+                                                🛠️ گزارش باگ جدید
+                                                ❌❌❌❌❌❌❌
+                                                👤 کاربری که دچار خطا شده: {curent_user.UserFullName()}
+                                                💬 شناسه کاربریش: {curent_user.ChatId}
+                                                ❗ عنوان خطا: {e.Message}
+                                                📜 جزیات خطا: {e.InnerException?.Message ?? "مشخص نیست"}
+                                                📍 مکان خطا: {e.StackTrace ?? "مشخص نیست"}
+                                                ❌❌❌❌❌❌❌
+                                                """;
+
+
+                            await notificationService.AddNotificationAsync(new AddNotificationDto()
+                            {
+                                Message = errorDetails,
+                                NotificationType = NotificationType.BogsReports,
+                                UserId = curent_user.Id,
+                            }, curent_user.Id);
+
+                            var userErrorMessage = $"""
+                                                    ⚠️ متاسفانه مشکلی در هنگام پردازش درخواست شما پیش آمده است.
+
+                                                    🚫 ما عمیقاً از این موضوع پوزش می‌طلبیم و به سرعت در حال بررسی این مشکل هستیم. لطفاً چند دقیقه صبر کنید و دوباره تلاش کنید.
+
+                                                    🔄 اگر این مشکل ادامه پیدا کرد، پیشنهاد می‌کنیم ربات را دوباره استارت کنید تا شاید مشکل برطرف شود.
+
+                                                    /start
+
+                                                    🔧 در صورتی که مشکل همچنان باقی ماند، لطفاً با پشتیبانی تماس بگیرید تا بتوانیم به شما کمک کنیم.
+
+                                                    🙏 با تشکر از شکیبایی و درک شما.
+                                                    """;
+
+                            await botClient.SendTextMessageAsync(
+                                chatId: callbackQuery!.Message!.Chat.Id,
+                                text: userErrorMessage,
+                                cancellationToken: cancellationToken);
+                        }
+                        else
+                        {
+                            await botClient.SendTextMessageAsync(
+                                chatId: callbackQuery!.Message!.Chat.Id,
+                                text: e.Message,
+                                cancellationToken: cancellationToken);
+                        }
+
+                        break;
+                }
             }
         }
     }

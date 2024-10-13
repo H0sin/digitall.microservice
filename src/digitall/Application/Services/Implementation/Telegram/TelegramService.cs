@@ -2734,6 +2734,7 @@ public class TelegramService(
     public async Task SendAgentInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
+        await Task.CompletedTask;
         long chatId = callbackQuery.Message!.Chat.Id;
         User? user = await GetUserByChatIdAsync(chatId);
 
