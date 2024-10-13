@@ -50,5 +50,4 @@ public class MarzbanVpn : BaseEntity
     public long MarzbanServerId { get; set; }
     public MarzbanServer? MarzbanServer { get; set; }
     public ICollection<MarzbanVpnTemplate>? MarzbanVpnTemplate { get; set; }
-    public ICollection<MarzbanUser>? MarzbanUsers { get; set; } = null;
 }

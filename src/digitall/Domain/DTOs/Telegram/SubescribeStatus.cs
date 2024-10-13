@@ -139,7 +139,7 @@ public class SubescribeStatus
             LastConnection = marzbanUser.Sub_Updated_At;
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
             MarzbanUserId = marzbanUser.Id;
-            VpnId = marzbanUser.MarzbanVpnId ?? 0;
+            VpnId = marzbanUser.MarzbanVpnId;
         }
 
         public string GenerateServiceDeletionRequestMessage(string telegramUsername, long chatId, string message)
