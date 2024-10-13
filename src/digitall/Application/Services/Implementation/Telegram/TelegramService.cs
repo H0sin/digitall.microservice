@@ -669,7 +669,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
-        if (vpnId == 0) vpnId = marzbanUser.MarzbanVpnId;
+        if (vpnId == 0) vpnId = marzbanUser?.MarzbanVpnId ?? 0;
         SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
 
         telegramUser.UserSubscribeId = id;
