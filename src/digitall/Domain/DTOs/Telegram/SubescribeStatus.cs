@@ -115,7 +115,7 @@ public class SubescribeStatus
             LastConnection = marzbanUser.Sub_Updated_At;
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
             MarzbanUserId = marzbanUser.Id;
-            VpnId = marzbanUser.MarzbanVpnId;
+            VpnId = marzbanUser.MarzbanVpnId ?? 0;
             VpnName = marzbanUser.MarzbanVpnName ?? "در دست رس نیست";
         }
 
@@ -139,7 +139,7 @@ public class SubescribeStatus
             LastConnection = marzbanUser.Sub_Updated_At;
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
             MarzbanUserId = marzbanUser.Id;
-            VpnId = marzbanUser.MarzbanVpnId;
+            VpnId = marzbanUser.MarzbanVpnId ?? 0;
         }
 
         public string GenerateServiceDeletionRequestMessage(string telegramUsername, long chatId, string message)

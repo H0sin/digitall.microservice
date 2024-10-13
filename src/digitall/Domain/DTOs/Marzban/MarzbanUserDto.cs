@@ -47,7 +47,7 @@ public class MarzbanUserDto
     [JsonProperty("inbounds")] public object Inbounds { get; set; } = new();
 
     public bool IsDelete { get; set; }
-    public long MarzbanVpnId { get; set; }
+    public long? MarzbanVpnId { get; set; }
     public long MarzbanServerId { get; set; }
     public long UserId { get; set; }
     public bool AddedHolderInbound { get; set; }

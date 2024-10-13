@@ -13,7 +13,7 @@ public class MarzbanUser : BaseEntity
 
     public MarzbanVpn? MarzbanVpn { get; set; }
 
-    [ForeignKey(nameof(MarzbanVpn))] public long MarzbanVpnId { get; set; }
+    public long? MarzbanVpnId { get; set; }
 
     [MaxLength(500, ErrorMessage = "username")]
     public string? Username { get; set; }
