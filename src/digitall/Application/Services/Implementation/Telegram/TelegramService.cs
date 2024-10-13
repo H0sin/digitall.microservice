@@ -111,6 +111,8 @@ public class TelegramService(
             text: TelegramHelper.BackToHomeMessage,
             replyMarkup: TelegramHelper.CreateMainMenu(user!),
             cancellationToken: cancellationToken);
+
+        await Task.CompletedTask;
     }
 
     public async Task<AgentDto?> CreateUserAfterStartedBot(long botId, Message message, User? user)
@@ -2734,12 +2736,15 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
         User? user = await GetUserByChatIdAsync(chatId);
+        
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: agentInformation?.Information_Text() ?? "NO RESULT",
             cancellationToken: cancellationToken);
+        
+        await Task.CompletedTask;
     }
 
     public async Task SendTextSearchUserByChatAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,

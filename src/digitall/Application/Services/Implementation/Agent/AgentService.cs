@@ -299,15 +299,16 @@ public class AgentService(
             _ => true
         };
     }
-
+    
     public async Task<AgentInformationDto?> GetAgentInformationAsync(long userId)
     {
         Domain.Entities.Agent.Agent? agent = await agentRepository
             .GetQuery()
-            .Include(x => x.AgentsIncomesDetail)!
+            .AsNoTracking()
+            .Include(x => x.AgentsIncomesDetail)
             .ThenInclude(x => x.OrderDetail)
             .Include(x => x.TransactionDetail)
-            .ThenInclude(x => x!.Transactions)
+            .ThenInclude(x => x.Transactions)
             .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
 
         if (agent == null)
@@ -315,30 +316,29 @@ public class AgentService(
             return null;
         }
 
-        User? admin = await userRepository.GetEntityById(agent!.AgentAdminId);
+        User? admin = await userRepository.GetEntityById(agent.AgentAdminId);
 
-        int? countAgentLevel_1 = await agentRepository
-            .GetQuery()
-            .Where(a => a.AgentPath != null &&
-                        a.AgentPath.IsDescendantOf(agent
-                            .AgentPath) && // فرض بر این است که IsDescendantOf متد مربوط به HierarchyId است
-                        a.AgentPath.GetLevel() == agent.AgentPath!.GetLevel() + 1) // بررسی سطح پایین‌تر
-            .CountAsync();
 
-        int? countAgentLevel_2 = await agentRepository
+        var countLevels = await agentRepository
             .GetQuery()
-            .Where(a => a.AgentPath != null &&
-                        a.AgentPath.IsDescendantOf(agent
-                            .AgentPath) && // فرض بر این است که IsDescendantOf متد مربوط به HierarchyId است
-                        a.AgentPath.GetLevel() == agent.AgentPath!.GetLevel() + 2) // بررسی سطح پایین‌تر
-            .CountAsync();
+            .Where(a => a.AgentPath != null && a.AgentPath.IsDescendantOf(agent.AgentPath))
+            .GroupBy(a => a.AgentPath.GetLevel())
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        int? countAgentLevel_1 = countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 1)?.Count ?? 0;
+        int? countAgentLevel_2 = countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 2)?.Count ?? 0;
+
+        var profitSum = await agentsIncomesDetailRepository
+            .GetQuery()
+            .Where(x => x.AgentId == agent.Id)
+            .SumAsync(x => x.Profit);
 
         return new()
         {
             AdminName = admin.UserFullName(),
             AgentPercent = agent.AgentPercent,
             UserPercent = agent.UserPercent,
-            // TelegramBotId = agent.TelegramBotId,
             AgentAdminId = agent.AgentAdminId,
             AgentCode = agent.AgentCode,
             BrandAddress = agent.BrandAddress,
@@ -346,11 +346,10 @@ public class AgentService(
             PersianBrandName = agent.PersianBrandName,
             CountUser = await agentRepository.GetQuery()
                 .Where(x => x.AgentAdminId == agent.Id).CountAsync(),
-            Profit = await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agent.Id).SumAsync(x => x.Profit),
-            Sale = agent!.AgentsIncomesDetail?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
+            Profit = profitSum,
+            Sale = agent.AgentsIncomesDetail?.Sum(x => x.OrderDetail.ProductPrice) ?? 0,
             CountAgentLevel_1 = countAgentLevel_1,
             CountAgentLevel_2 = countAgentLevel_2,
-            // BotId = agent.TelegramBotId
         };
     }
 
