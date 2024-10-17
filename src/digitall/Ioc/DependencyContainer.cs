@@ -59,13 +59,17 @@ using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
 using Application.Services.Implementation.Notification;
 using Application.Services.Implementation.Telegram;
+using Application.Services.Implementation.Wireguard;
 using Application.Services.Interface.Docker;
 using Application.Services.Interface.Telegram;
+using Application.Services.Interface.Wireguard;
+using Data.Repositories;
 using Data.Repositories.Notification;
 using Data.Repositories.Telegram;
 using Data.Repositories.Vpn;
 using Domain.IRepositories.Notification;
 using Domain.IRepositories.Telegram;
+using Domain.IRepositories.Wireguard;
 
 namespace Ioc;
 
@@ -105,14 +109,18 @@ public static class DependencyContainer
         services.AddScoped<IAgentOptionRepository, AgentOptionRepository>();
         services.AddScoped<IAgentRequestRepository, AgentRequestRepository>();
         services.AddScoped<IAgentsIncomesDetailRepository, AgentsIncomesDetailRepository>();
-        services.AddScoped<ITelegramGroupTopicRepository,TelegramGroupTopicRepository>();
-        
+        services.AddScoped<ITelegramGroupTopicRepository, TelegramGroupTopicRepository>();
+        services.AddScoped<IWireguardVpnRepository, WireguardVpnRepository>();
+        services.AddScoped<IWireguardServerRepository, WireguardServerRepository>();
+        services.AddScoped<IPeerRepository, PeerRepository>();
+        services.AddScoped<IWireguardVpnTemplateRepository, WireguardVpnTemplateRepository>();
+
         #endregion
 
         #region services
-        
+
         services.AddMemoryCache();
-        
+
         services.AddScoped(typeof(ISendNotificationService<>), typeof(SendSmsService<>));
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAgentService, AgentService>();
@@ -131,9 +139,10 @@ public static class DependencyContainer
         services.AddScoped<ITelegramService, TelegramService>();
         services.AddScoped<IDockerService, DockerService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IWireguardServices, WireguardService>();
 
         #endregion
-        
+
         return services;
     }
 }

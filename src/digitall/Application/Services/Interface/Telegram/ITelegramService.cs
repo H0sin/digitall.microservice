@@ -12,6 +12,121 @@ namespace Application.Services.Interface.Telegram;
 public interface ITelegramService
 {
     /// <summary>
+    /// show wireguard service information
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task ShowPeerInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list my products
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendListMyProductsAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send product list
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendProductListAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send product
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendProductTemplatesAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list wireguard templates
+    /// vpn by vpn id in callbackQuery get
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendListWireguardVpnTemplateAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list wireguard templates price
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendWireguardVpnGbAndPriceAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send wireguard factor
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendWireguardServiceFactorVpnAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken,
+        TelegramUser telegramUser);
+
+    /// <summary>
+    /// send wireguard subscriber
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendWireguardSubscriptionAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// send list product have test
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendListProductHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send product have test
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendProductTemplatesHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list wireguard account test
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendWireguardAccountTest(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
     /// added user if not exist
     /// </summary>
     /// <param name="botId"></param>
@@ -66,7 +181,7 @@ public interface ITelegramService
     /// <param name="id"></param>
     /// <returns></returns>
     Task StartTelegramBotAsync(long id);
-    
+
     /// <summary>
     /// get all bot for started
     /// </summary>
@@ -953,7 +1068,8 @@ public interface ITelegramService
     /// <param name="cancellationToken"></param>
     /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task SendMessageAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,
+    Task SendMessageAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken,
         TelegramUser? telegramUser);
 
     /// <summary>
@@ -969,7 +1085,8 @@ public interface ITelegramService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SendTransactionsWaitingQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task SendTransactionsWaitingQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// send list deleted service in que
@@ -978,5 +1095,115 @@ public interface ITelegramService
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SendDeletedServiceInQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task SendDeletedServiceInQueAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list my products
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMyProductsAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send list wireguard services async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    Task SendListWireguardServicesAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, string? name = null);
+
+    /// <summary>
+    /// get wireguard services name for filter async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task GiveWireguardServiceNameForFilterAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser? telegramUser);
+
+    /// <summary>
+    /// send file peer async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendPeerConfigFileAsync(TelegramBotClient botClient, CallbackQuery? callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// send peer qr async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendPeerQrAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    
+    /// <summary>
+    /// send delete wireguard account async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    
+    /// <summary>
+    /// delete wireguard account async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task DeleteWireguardAccountAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    
+    /// <summary>
+    /// delete main wireguard account async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task MainDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// not delete wireguard account async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task NotDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// active wireguard services async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task ActiveWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// disabled wireguard services async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task DisabledWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }

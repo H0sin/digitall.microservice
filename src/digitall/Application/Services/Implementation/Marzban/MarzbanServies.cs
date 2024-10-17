@@ -1073,7 +1073,6 @@ public class MarzbanServies(
             };
 
             await orderDetailRepository.AddEntity(newOrderDetail);
-
             await orderDetailRepository.SaveChanges(userId);
 
             foreach (var i in incomes)

@@ -14,9 +14,7 @@ public class Vpn : BaseEntity
     #endregion
 
     #region relation
-
-    public Product.Product? Product { get; set; }
-
+    
     public ICollection<VpnCountry>? VpnCountries { get; set; }
 
     #endregion

@@ -5,8 +5,10 @@ using Application.Services.Interface.Telegram;
 using Application.Sessions;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Product;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.DTOs.Wireguard;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
 using Telegram.Bot;
@@ -46,7 +48,7 @@ public class TelegramHelper
     public const string SendTransactionWaitingMessageButtonText = "تراکنش هایه برسی نشده 💵";
     public const string SendDeleteServiceWaitingMessageButtonText = "سرویس های در صف حذف ❌";
 
-    public static readonly InlineKeyboardMarkup ButtonForMessage = new InlineKeyboardMarkup(new[]
+    private static readonly InlineKeyboardMarkup ButtonForMessage = new InlineKeyboardMarkup(new[]
     {
         new InlineKeyboardButton[]
         {
@@ -68,7 +70,7 @@ public class TelegramHelper
         InlineKeyboardButton.WithCallbackData("خرید اشتراک 🔒", "list_vpn");
 
     private static readonly InlineKeyboardButton MyServices =
-        InlineKeyboardButton.WithCallbackData("سرویس های من 🎁", "my_services");
+        InlineKeyboardButton.WithCallbackData("محصولات من🎁", "my_product");
 
     private static readonly InlineKeyboardButton RepresentationRequest =
         InlineKeyboardButton.WithCallbackData("در خواست نمایندگی ♻️", "agent_request");
@@ -82,6 +84,8 @@ public class TelegramHelper
     private static readonly InlineKeyboardButton SiteInformation = InlineKeyboardButton.WithCallbackData(
         "کلمه عبور و نام کاربری سایت 🔒", "web_information");
 
+    private static readonly InlineKeyboardButton BuyProduct =
+        InlineKeyboardButton.WithCallbackData("خرید محصول 🛒", "products");
 
     private static readonly InlineKeyboardButton InviteLink =
         InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 🤝",
@@ -96,6 +100,127 @@ public class TelegramHelper
         $"transactions");
 
     #region buttons method
+
+    public static InlineKeyboardMarkup CreateListVpnWiregardButton(List<WireguardVpnDto> vpns)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (WireguardVpnDto vpn in vpns)
+        {
+            buttons.Add(
+                CreateList1Button(
+                    InlineKeyboardButton.WithCallbackData(vpn?.Name, "create_test_wireguard?id=" + vpn.Id)));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup? SendListProductsHaveTest(List<ProductDto> products)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var product in products)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(product.ProductName,
+                $"product_test?category={product.CategoryType}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup CreateWirguardFactorButton(long id, long vpnId, long peerId)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        if (peerId != 0)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("پرداخت و تمدید سرویس 💰",
+                $"buy_wireguard_subscribe" +
+                $"?templateId={id}" +
+                $"&vpnId={vpnId}" +
+                $"&peerId={peerId}")));
+        }
+        else
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("پرداخت و دریافت سرویس 💰",
+                $"buy_wireguard_subscribe" +
+                $"?templateId={id}" +
+                $"&vpnId={vpnId}" +
+                $"&peerId={peerId}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup CreateListGbAndPriceButton(List<WireguardVpnTemplatesDto> templates, long days,
+        long peerId = 0)
+    {
+        templates = templates.Where(x => x.Days == days).OrderBy(x => x.Gb).ToList();
+
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var template in templates)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(
+                $"{template.Gb} گیگ {template.Price:N0} تومان",
+                "factor_wireguard_subscribe?id=" + template.Id + "&vpnId=" + template.WireguardVpnId + "&peerId=" +
+                peerId)));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup CreateListVpnButton(List<WireguardVpnDto> vpns)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (WireguardVpnDto vpn in vpns)
+        {
+            buttons.Add(
+                CreateList1Button(
+                    InlineKeyboardButton.WithCallbackData(vpn?.Name, "list_wireguard_template?id=" + vpn.Id)));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup? SendListMyProducts(List<ProductDto> products)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var product in products)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(product.ProductName,
+                $"my_product_?category={product.CategoryType}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup? SendListProducts(List<ProductDto> products)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var product in products)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(product.ProductName,
+                $"product?category={product.CategoryType}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
 
     public static ReplyKeyboardMarkup? CreateListUserGroupingSendMessageButton()
         => new(new[]
@@ -186,7 +311,7 @@ public class TelegramHelper
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
-        buttons.Add(CreateList2Button(TestFree, BuySubscribe));
+        buttons.Add(CreateList2Button(TestFree, BuyProduct));
         buttons.Add(CreateList2Button(MyServices, Supports));
         buttons.Add(CreateList2Button(RepresentationRequest, Wallet));
         buttons.Add(CreateList1Button(SiteInformation));
@@ -206,7 +331,7 @@ public class TelegramHelper
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
-        buttons.Add(CreateList2Button(TestFree, BuySubscribe));
+        buttons.Add(CreateList2Button(TestFree, BuyProduct));
         buttons.Add(CreateList2Button(MyServices, Supports));
 
         buttons.Add(CreateList1Button(SiteInformation));
@@ -258,6 +383,51 @@ public class TelegramHelper
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
     }
+
+    public static InlineKeyboardMarkup CreateListVpnTemplateButton(List<WireguardVpnTemplatesDto> templates,
+        long peerId = 0)
+    {
+        var groupedTemplates = templates.GroupBy(x => x.Days);
+
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var group in groupedTemplates)
+        {
+            var firstTemplate = group.First();
+
+            string text = group.Key switch
+            {
+                31 => "یک ماه",
+                61 => "دو ماه",
+                91 => "سه ماه",
+                121 => "چهار ماه",
+                151 => "پنج ماه",
+                181 => "شش ماه",
+                211 => "هفت ماه",
+                241 => "هشت ماه",
+                271 => "نه ماه",
+                301 => "ده ماه",
+                331 => "یازده ماه",
+                361 => "یک سال",
+                _ => firstTemplate.Days + " روزه "
+            };
+
+
+            buttons.Add(
+                CreateList1Button(
+                    InlineKeyboardButton.WithCallbackData(text,
+                        $"send_wireguard_price_template" +
+                        $"?id={firstTemplate.Id}" +
+                        $"&vpnId={firstTemplate.WireguardVpnId}" +
+                        $"&peerId={peerId}" +
+                        $"&days={firstTemplate.Days}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
 
     public InlineKeyboardMarkup CreateListVpnTemplateButton(List<MarzbanVpnTemplateDto> templates, long subscribeId = 0)
     {
@@ -359,6 +529,44 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
+    public static InlineKeyboardMarkup CreateRenewalWireguardButtons(long peerId, long vpnId)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList2Button(
+            InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_wireguard_services"),
+            InlineKeyboardButton.WithCallbackData("بازگشت به سرویس 🏠",
+                $"peer_info?id={peerId}&vpnId={vpnId}")));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup CreateListServices(FilterPeer filter, int page)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var entity in filter.Entities)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(entity.Name ?? "NONAME",
+                $"peer_info?id={entity.Id}")));
+        }
+
+        if (page != 1)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("قبلی",
+                $"my_wireguard_services?page={page - 1}")));
+
+        if (page * filter.TakeEntity < filter.AllEntitiesCount)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("بعدی",
+                $"my_wireguard_services?page={page + 1}")));
+
+        buttons.Add(CreateList1Button(
+            InlineKeyboardButton.WithCallbackData("جستو جو سرویس \ud83d\udd0d", "search_list_wg_service")));
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
     public static InlineKeyboardMarkup CreateListServices(FilterMarzbanUser filter, int page)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
@@ -381,6 +589,35 @@ public class TelegramHelper
                 InlineKeyboardButton.WithCallbackData("جستو جو سرویس \ud83d\udd0d", "search_list_service")));
 
         buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup SendWireguardServiceInformationButton(long id, long vpnId, string status)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList2Button(InlineKeyboardButton.WithCallbackData("فایل 📁", $"peer_file?id={id}"),
+            InlineKeyboardButton.WithCallbackData("qr(کانفیگ) 🔗", $"peer_link?id={id}")));
+
+        buttons.Add(
+            CreateList1Button(InlineKeyboardButton.WithCallbackData("حذف سرویس ❌", $"delete_wg_service?id={id}")));
+
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("تمدید سرویس 💊",
+            $"list_wireguard_template" +
+            $"?id={vpnId}&" +
+            $"peerId={id}")));
+
+        if (status == "disabled")
+            buttons.Add(
+                CreateList1Button(InlineKeyboardButton.WithCallbackData("فعال کردن 🤞", $"active_wg_service?id={id}")));
+        else
+            buttons.Add(
+                CreateList1Button(
+                    InlineKeyboardButton.WithCallbackData(" غیر فعال کردن ❌", $"disabled_wg_service?id={id}")));
+
+        buttons.Add(CreateList1Button(
+            InlineKeyboardButton.WithCallbackData("بازگشت به لیست سرویس‌ها 🏠", "my_wireguard_services")));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -941,6 +1178,20 @@ public class TelegramHelper
                 telegramUser.State = TelegramMarzbanVpnSessionState.None;
                 break;
 
+            case TelegramMarzbanVpnSessionState.AwaitingSendWireguardServiceName:
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = "my_services",
+                };
+
+                await telegramService.SendListWireguardServicesAsync(botClient, callbackQuery, cancellationToken,
+                    message.Text);
+
+                telegramUser.State = TelegramMarzbanVpnSessionState.None;
+                break;
+
             case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteMarzbanUser:
 
                 callbackQuery = new CallbackQuery()
@@ -951,6 +1202,18 @@ public class TelegramHelper
                 };
 
                 await telegramService.DeleteMarzbanUserAsync(botClient, callbackQuery, cancellationToken, telegramUser);
+                break;
+
+            case TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteWireguardAccount:
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = "delete_wg_service",
+                };
+
+                await telegramService.DeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken,
+                    telegramUser);
                 break;
 
             case TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage:

@@ -49,7 +49,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         var query = _dbSet.AsQueryable();
         if (disableTracking) query = query.AsNoTracking();
 
-        if (!string.IsNullOrWhiteSpace(includeString)) query.Include(includeString);
+        if (!string.IsNullOrWhiteSpace(includeString)) query = query.Include(includeString);
 
         if (predicate != null) query = query.Where(predicate);
 

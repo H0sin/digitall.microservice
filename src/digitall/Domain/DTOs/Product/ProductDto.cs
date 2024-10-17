@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Category;
 
 namespace Domain.DTOs.Product;
 
@@ -20,6 +21,7 @@ public class ProductDto
     [Display(Name = "توضیحات")]
     [MaxLength(1000, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? Description { get; set; }
-
     public string? ProductImage { get; set; }
+    
+    public CategoryType CategoryType { get; set; }
 }
