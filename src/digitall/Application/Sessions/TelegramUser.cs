@@ -96,10 +96,12 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendMessageForUser,
     AwaitingSendMessageForAllUser,
     AwaitingSendServiceName,
+    AwaitingSendWireguardServiceName,
     AwaitingSendDescriptionForDeleteMarzbanUser,
     AwaitingForwardMessage,
     AwaitingSendListButtons,
     AwaitingSendMessageText,
+    AwaitingSendDescriptionForDeleteWireguardAccount
 }
 
 public static class BotSessions

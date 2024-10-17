@@ -18,6 +18,7 @@ using Domain.Entities.Subscription;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Entities.Vpn;
+using Domain.Entities.Wireguard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,10 @@ public class DigitallDbContext : DbContext
     public DbSet<TelegramTopic> TelegramTopics { get; set; }
     public DbSet<TelegramGroup> TelegramGroups { get; set; }
     public DbSet<TelegramGroupTopics> TelegramGroupTopics { get; set; }
+    public DbSet<WireguardServer> WireguardServers { get; set; }
+    public DbSet<WireguardVpn> WireguardVpn { get; set; }
+    public DbSet<WireguardVpnTemplate> WireguardVpnTemplates { get; set; }
+    public DbSet<Peer> Peers { get; set; }
 
     #endregion
 

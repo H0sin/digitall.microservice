@@ -37,9 +37,79 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "active_wg_service":
+                    await telegramService.ActiveWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
+                case "disabled_wg_service":
+                    await telegramService.DisabledWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
+                case "delete_wg_service":
+                    await telegramService.SendTextDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser!);
+                    break;
+                
+                case "peer_file":
+                    await telegramService.SendPeerConfigFileAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
+                case "peer_link":
+                    await telegramService.SendPeerQrAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
                 case "start":
                     await telegramService.StartedTelegramBotAsync(botClient, callbackQuery.Message, cancellationToken,
                         telegramUser!);
+                    break;
+
+                case "peer_info":
+                    await telegramService.ShowPeerInformation(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "my_product":
+                    await telegramService.SendListMyProductsAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "my_product_":
+                    await telegramService.SendMyProductsAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "products":
+                    await telegramService.SendProductListAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "product":
+                    await telegramService.SendProductTemplatesAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "list_wireguard_template":
+                    await telegramService.SendListWireguardVpnTemplateAsync(botClient, callbackQuery,
+                        cancellationToken);
+                    break;
+
+                case "send_wireguard_price_template":
+                    await telegramService.SendWireguardVpnGbAndPriceAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "create_test_wireguard":
+                    await telegramService.SendWireguardAccountTest(botClient, callbackQuery, cancellationToken,
+                        telegramUser!);
+                    break;
+
+                case "factor_wireguard_subscribe":
+                    await telegramService.SendWireguardServiceFactorVpnAsync(botClient, callbackQuery,
+                        cancellationToken, telegramUser!);
+                    break;
+
+                case "buy_wireguard_subscribe":
+                    await telegramService.SendWireguardSubscriptionAsync(botClient, callbackQuery,
+                        cancellationToken, telegramUser!);
+                    break;
+
+                case "product_test":
+                    await telegramService.SendProductTemplatesHaveTestAsync(botClient, callbackQuery,
+                        cancellationToken);
                     break;
 
                 case "back_to_home":
@@ -47,7 +117,7 @@ public static class BotOnCallbackQueryReceived
                     break;
 
                 case "test_free":
-                    await telegramService.SendListVpnHaveTestAsync(botClient, callbackQuery, cancellationToken);
+                    await telegramService.SendListProductHaveTestAsync(botClient, callbackQuery, cancellationToken);
                     break;
 
                 case "create_test_config":
@@ -89,8 +159,18 @@ public static class BotOnCallbackQueryReceived
                     await telegramService.SendSubscriptionLinkAsync(botClient, callbackQuery, cancellationToken);
                     break;
 
+                case "my_wireguard_services":
+                    await telegramService.SendListWireguardServicesAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
                 case "search_list_service":
                     await telegramService.GiveServiceNameForFilterAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
+                    break;
+
+                case "search_list_wg_service":
+                    await telegramService.GiveWireguardServiceNameForFilterAsync(botClient, callbackQuery,
+                        cancellationToken,
                         telegramUser);
                     break;
 
@@ -103,7 +183,15 @@ public static class BotOnCallbackQueryReceived
                     await telegramService.SendTextDeleteMarzbanUserAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser!);
                     break;
-
+                
+                case "deleted_wg_service":
+                    await telegramService.MainDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
+                case "not_deleted_wg_service":
+                    await telegramService.NotDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
                 case "deleted_service":
                     await telegramService.DeletedMarzbanUserServiceByAgentAsync(botClient, callbackQuery,
                         cancellationToken);

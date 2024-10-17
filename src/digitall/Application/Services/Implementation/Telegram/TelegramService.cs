@@ -7,21 +7,28 @@ using Application.Services.Interface.Agent;
 using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
 using Application.Services.Interface.Order;
+using Application.Services.Interface.Product;
 using Application.Services.Interface.Telegram;
 using Application.Services.Interface.Transaction;
+using Application.Services.Interface.Wireguard;
 using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
 using Data.DefaultData;
+using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Notification;
+using Domain.DTOs.Product;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.DTOs.Wireguard;
 using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
+using Domain.Entities.Wireguard;
+using Domain.Enums.Category;
 using Domain.Enums.Marzban;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
@@ -46,8 +53,10 @@ public class TelegramService(
     ITelegramGroupTopicRepository telegramGroupTopicRepository,
     IUserRepository userRepository,
     INotificationService notificationService,
+    IProductService productService,
     IAgentService agentService,
     IMarzbanService marzbanService,
+    IWireguardServices wireguardServices,
     ITransactionService transactionService,
     TelegramBotClientFactory botClientFactory,
     IOrderService orderService,
@@ -114,6 +123,483 @@ public class TelegramService(
 
         await Task.CompletedTask;
     }
+
+    public async Task ShowPeerInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        PeerInformationDto? peer = await wireguardServices.GetPeerInformationByIdAsync(id);
+
+        await botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: peer.GetInfo(),
+            replyMarkup: TelegramHelper.SendWireguardServiceInformationButton(peer.Id, peer.VpnId, peer.Status),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendListMyProductsAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        List<ProductDto> products = await productService.GetProductAsync();
+
+        if (products.Count <= 0)
+            throw new AppException("محصولی وجود ندارد ❌");
+
+        await botClient.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: "سرویس مورد نظر را برای مشاهده خرید هایه خود انتخاب کنید 😇",
+            replyMarkup: TelegramHelper.SendListMyProducts(products),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendProductListAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        List<ProductDto> products = await productService.GetProductAsync();
+
+        if (products.Count <= 0)
+            throw new AppException("محصولی وجود ندارد ❌");
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: "محصول خود را انتخاب کنید 🙄",
+            replyMarkup: TelegramHelper.SendListProducts(products),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendProductTemplatesAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        CategoryType? category = null;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            category = (CategoryType)Enum.Parse(typeof(CategoryType), queryParameters["category"]);
+        }
+
+        switch (category)
+        {
+            case CategoryType.V2Ray:
+                await SendListVpnAsync(botClient, callbackQuery,
+                    cancellationToken);
+                break;
+            case CategoryType.WireGuard:
+                await SendListWireGuardVpnAsync(botClient, callbackQuery, cancellationToken);
+                break;
+        }
+    }
+
+    public async Task SendListWireguardVpnTemplateAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        long peerId = 0;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["peerId"], out peerId);
+        }
+
+        WireguardVpnDto? wireguardVpn = await wireguardServices.GetWireguardVpnByIdAsync(id);
+
+        if (wireguardVpn is null | wireguardVpn?.WireguardVpnTemplates?.Count == 0)
+            throw new AppException(
+                "⚠️ متأسفانه در حال حاضر امکان ارائه سرویس وایرگارد میسر نمی‌باشد. لطفاً در فرصت دیگری مراجعه فرمایید.");
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: " نوع سرویس را انتخاب نمایید. 📌",
+            replyMarkup:
+            TelegramHelper.CreateListVpnTemplateButton(wireguardVpn.WireguardVpnTemplates.ToList(), peerId),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendWireguardVpnGbAndPriceAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        long vpnId = 0;
+        int days = 0;
+        long peerId = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["vpnId"], out vpnId);
+            Int64.TryParse(queryParameters["peerId"], out peerId);
+            Int32.TryParse(queryParameters["days"], out days);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        ICollection<WireguardVpnTemplatesDto> wireguardVpnTemplate =
+            await wireguardServices.CountingWireguardVpnTemplatePrice(vpnId, user.Id, days);
+
+        if (wireguardVpnTemplate.Count == 0)
+            throw new AppException(
+                "⚠️ متأسفانه در حال حاضر امکان ارائه سرویس وایرگارد میسر نمی‌باشد. لطفاً در فرصت دیگری مراجعه فرمایید.");
+
+        await botClient!.EditMessageTextAsync(
+            chatId,
+            messageId: callbackQuery.Message.MessageId,
+            "یکی از آیتم هایه زیر را انتخاب کنید 🤩",
+            replyMarkup: TelegramHelper.CreateListGbAndPriceButton(wireguardVpnTemplate.ToList(), days, peerId),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendWireguardServiceFactorVpnAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken,
+        TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        long vpnId = 0;
+        long peerId = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            Int64.TryParse(queryParameters["vpnId"], out vpnId);
+            Int64.TryParse(queryParameters["peerId"], out peerId);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        SubscribeFactorBotDto factor = new();
+
+        WireguardVpnTemplatesDto? template =
+            await wireguardServices.CountingWireguardVpnTemplatePriceByIdAsync(id, user.Id);
+
+        factor.Title = template?.Title + "wireguard";
+        factor.Balance = user.Balance;
+
+        factor.Days = template?.Days ?? 0;
+        factor.Gb = template.Gb;
+        factor.Price = (template.Price);
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: telegramUser?.UserSubscribeId != null ? factor.GetRenewalInfo() : factor.GetInfo(),
+            replyMarkup: TelegramHelper.CreateWirguardFactorButton(id, vpnId, peerId),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendWireguardSubscriptionAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        Message? message = null;
+
+
+        long templateId = 0;
+        long vpnId = 0;
+        int days = 0;
+        int gb = 0;
+        long peerId = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["templateId"], out templateId);
+            Int64.TryParse(queryParameters["vpnId"], out vpnId);
+            Int32.TryParse(queryParameters["days"], out days);
+            Int32.TryParse(queryParameters["gb"], out gb);
+            Int64.TryParse(queryParameters["peerId"], out peerId);
+        }
+
+        var buy = new BuyWireguardDto()
+        {
+            WireguardVpnTemplateId = templateId,
+            WireguardVpnId = vpnId,
+            PeerId = peerId
+        };
+
+        if (peerId == 0)
+        {
+            message = await botClient.SendTextMessageAsync(chatId, "در حال ساخت سرویس شما 🙏",
+                cancellationToken: cancellationToken);
+
+            BuyWireguardResponseDto response = await wireguardServices.BuyWireguardAccountAsync(buy, chatId: chatId);
+
+            byte[] qrImage = await GenerateQrCode
+                .GetQrCodeAsync(response.Config ?? "");
+
+            string caption = $"""
+                              ✅ سرویس با موفقیت ایجاد شد
+                              👤 نام کاربری سرویس: `\{response.Name.TrimEnd()}`\
+                              🌿 نام سرویس:  "خرید اشتراک wirguard
+                              ⏳ مدت زمان: {response?.Day} روز
+                              👥 حجم سرویس:{response.Gb} 
+                              """;
+
+            using (var qr = new MemoryStream(qrImage))
+            {
+                await botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
+                    messageId: callbackQuery.Message.MessageId,
+                    cancellationToken: cancellationToken);
+
+                await botClient.SendPhotoAsync(
+                    chatId: callbackQuery.Message.Chat.Id,
+                    photo: new InputFileStream(qr, response.Name),
+                    parseMode: ParseMode.MarkdownV2,
+                    caption: caption,
+                    cancellationToken: cancellationToken);
+            }
+
+            var memoryStream = new MemoryStream();
+
+            await using (var writer = new StreamWriter(memoryStream))
+            {
+                await writer.WriteAsync(response.Config);
+                await writer.FlushAsync();
+                memoryStream.Position = 0;
+
+                try
+                {
+                    await botClient.SendDocumentAsync(
+                        chatId: chatId,
+                        document: new InputFileStream(memoryStream, $"{response.Name}.conf"),
+                        caption: "⚙️ *فایل کانفیگ WireGuard*\n\n"
+                                 + "📄 این فایل را دانلود کنید و در تنظیمات WireGuard وارد کنید.\n\n"
+                                 + "1️⃣ *دانلود فایل:*\n"
+                                 + "2️⃣ *باز کردن اپلیکیشن WireGuard:*\n"
+                                 + "3️⃣ *اضافه کردن فایل کانفیگ و اتصال به VPN.*\n\n"
+                                 + "🔐 *توجه:* این فایل شامل اطلاعات حساس است، آن را با دیگران به اشتراک نگذارید.",
+                        cancellationToken: cancellationToken
+                    );
+                }
+                finally
+                {
+                    await memoryStream.DisposeAsync();
+                }
+            }
+
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
+        }
+        else
+        {
+            message = await botClient.SendTextMessageAsync(chatId, "در حال تمدید سرویس شما 🙏",
+                cancellationToken: cancellationToken);
+
+            BuyWireguardResponseDto response = await wireguardServices.RenewalWireguardAccount(buy, chatId: chatId);
+
+            await botClient.EditMessageTextAsync(
+                chatId,
+                messageId: message.MessageId,
+                """
+                🙏 با تشکر از تمدید سرویس خود.
+                ✅ تمدید شما با موفقیت انجام شد.
+                ⬅️ برای بازگشت به لیست سرویس‌های خود یا مشاهده اطلاعات، روی دکمه‌های زیر کلیک کنید.
+                """,
+                replyMarkup: TelegramHelper.CreateRenewalWireguardButtons(peerId, vpnId),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendListProductHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        List<ProductDto> products = await productService.GetProductAsync();
+
+        if (products.Count < 0)
+            throw new AppException("محصولی وجود ندارد ❌");
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: "محصول خود را برای " +
+                  "دریافت تست انتخاب کنید 🙄",
+            replyMarkup: TelegramHelper.SendListProductsHaveTest(products),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendProductTemplatesHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        CategoryType? category = null;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            category = (CategoryType)Enum.Parse(typeof(CategoryType), queryParameters["category"]);
+        }
+
+        switch (category)
+        {
+            case CategoryType.V2Ray:
+                await SendListVpnHaveTestAsync(botClient, callbackQuery,
+                    cancellationToken);
+                break;
+
+            case CategoryType.WireGuard:
+                await SendListWireGuardVpnHaveTestAsync(botClient, callbackQuery, cancellationToken);
+                break;
+        }
+    }
+
+    public async Task SendWireguardAccountTest(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+        long id = 0;
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        BuyWireguardResponseDto response = await wireguardServices.BuyWireguardAccountTestAsync(id, chatId: chatId);
+
+        byte[] qrImage = await GenerateQrCode
+            .GetQrCodeAsync(response.Config ?? "");
+
+        string caption = $"""
+                          ✅ سرویس با موفقیت ایجاد شد
+                          👤 نام کاربری سرویس: `\{response.Name.TrimEnd()}`\
+                          🌿 نام سرویس:  "خرید اشتراک wirguard
+                          ⏳ مدت زمان : {response?.Day} روز
+                           👥 حجم سرویس :{response.Gb} Mb
+                          """;
+
+        using (var qr = new MemoryStream(qrImage))
+        {
+            await botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
+                messageId: callbackQuery.Message.MessageId,
+                cancellationToken: cancellationToken);
+
+            await botClient.SendPhotoAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                photo: new InputFileStream(qr, response.Name),
+                parseMode: ParseMode.MarkdownV2,
+                caption: caption,
+                cancellationToken: cancellationToken);
+        }
+
+        var memoryStream = new MemoryStream();
+
+        await using (var writer = new StreamWriter(memoryStream))
+        {
+            await writer.WriteAsync(response.Config);
+            await writer.FlushAsync();
+            memoryStream.Position = 0;
+
+            try
+            {
+                await botClient.SendDocumentAsync(
+                    chatId: chatId,
+                    document: new InputFileStream(memoryStream, $"{response.Name}.conf"),
+                    caption: "⚙️ *فایل کانفیگ WireGuard*\n\n"
+                             + "📄 این فایل را دانلود کنید و در تنظیمات WireGuard وارد کنید.\n\n"
+                             + "1️⃣ *دانلود فایل:*\n"
+                             + "2️⃣ *باز کردن اپلیکیشن WireGuard:*\n"
+                             + "3️⃣ *اضافه کردن فایل کانفیگ و اتصال به VPN.*\n\n"
+                             + "🔐 *توجه:* این فایل شامل اطلاعات حساس است، آن را با دیگران به اشتراک نگذارید.",
+                    cancellationToken: cancellationToken
+                );
+            }
+            finally
+            {
+                await memoryStream.DisposeAsync();
+            }
+        }
+
+        await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
+    }
+
+    private async Task SendListWireGuardVpnHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        ICollection<WireguardVpnDto> wireguardVpns = await wireguardServices.GetWireguardVpnsHaveTest();
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: " موقعیت سرویس را انتخاب نمایید. 📌",
+            replyMarkup: TelegramHelper.CreateListVpnWiregardButton(wireguardVpns.ToList()),
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task SendListWireGuardVpnAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        List<WireguardVpnDto> wireguardVpn = await wireguardServices.GetWireguardVpnAsync();
+
+        if (wireguardVpn.Count == 0)
+            throw new AppException(
+                "⚠️ متأسفانه در حال حاضر امکان ارائه سرویس وایرگارد میسر نمی‌باشد. لطفاً در فرصت دیگری مراجعه فرمایید.");
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: " نوع سرویس را انتخاب نمایید. 📌",
+            replyMarkup: TelegramHelper.CreateListVpnButton(wireguardVpn),
+            cancellationToken: cancellationToken);
+    }
+
 
     public async Task<AgentDto?> CreateUserAfterStartedBot(long botId, Message message, User? user)
     {
@@ -627,7 +1113,7 @@ public class TelegramService(
         filter.Page = page;
         filter.Username = username;
 
-        FilterMarzbanUser users = await marzbanService.FilterMarzbanUsersAsync(filter);
+        await marzbanService.FilterMarzbanUsersAsync(filter);
 
         try
         {
@@ -834,7 +1320,6 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentDto? agent = await agentService.GetAgentByUserIdAsync(user!.Id);
-
 
         global::Telegram.Bot.Types.User me = await botClient!.GetMeAsync(cancellationToken: cancellationToken);
 
@@ -3133,9 +3618,389 @@ public class TelegramService(
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
                 text: subescribeStatus.GenerateServiceDeletionRequestMessage(marzbanUser.TelegramUsername,
-                    marzbanUser.ChatId, "متسفانه پیغام در دست رس نیست ❌"),
+                    marzbanUser.ChatId, "متاسفانه پیغام در دست رس نیست ❌"),
                 replyMarkup: TelegramHelper.MainDeleteServiceButton(marzbanUser.Id),
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public async Task SendMyProductsAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        CategoryType? category = null;
+
+        string? callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData!.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            category = (CategoryType)Enum.Parse(typeof(CategoryType), queryParameters["category"]);
+        }
+
+        switch (category)
+        {
+            case CategoryType.V2Ray:
+                await SendListServicesAsync(botClient, callbackQuery, cancellationToken);
+                break;
+
+            case CategoryType.WireGuard:
+                await SendListWireguardServicesAsync(botClient, callbackQuery, cancellationToken, "");
+                break;
+        }
+    }
+
+    public async Task SendListWireguardServicesAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, string? name)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        int page = 1;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["page"], out page);
+        }
+
+        if (page == 0) page = 1;
+
+        FilterPeer filter = new FilterPeer();
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        filter.UserId = user.Id;
+        filter.Page = page;
+        filter.Name = name;
+
+        await wireguardServices.FilterPeerAsync(filter);
+
+        try
+        {
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: TelegramHelper.ListServicesMessage,
+                replyMarkup: TelegramHelper.CreateListServices(filter, page),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: TelegramHelper.ListServicesMessage,
+                replyMarkup: TelegramHelper.CreateListServices(filter, page),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task GiveWireguardServiceNameForFilterAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser? telegramUser)
+    {
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendWireguardServiceName;
+
+        await botClient.SendTextMessageAsync(
+            chatId: callbackQuery.Message!.Chat.Id,
+            text: "لطفا اسم سرویس خود را ارسال کنید",
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendPeerConfigFileAsync(TelegramBotClient botClient, CallbackQuery? callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        var user = await GetUserByChatIdAsync(chatId);
+
+        (string, string) details = await wireguardServices.SendConnectionDetailsAsync(id, user.Id);
+
+        var memoryStream = new MemoryStream();
+
+        await using (var writer = new StreamWriter(memoryStream))
+        {
+            await writer.WriteAsync(details.Item1);
+            await writer.FlushAsync();
+            memoryStream.Position = 0;
+
+            try
+            {
+                await botClient.SendDocumentAsync(
+                    chatId: chatId,
+                    document: new InputFileStream(memoryStream, $"{details.Item2}.conf"),
+                    caption: "⚙️ *فایل کانفیگ WireGuard*\n\n"
+                             + "📄 این فایل را دانلود کنید و در تنظیمات WireGuard وارد کنید.\n\n"
+                             + "1️⃣ *دانلود فایل:*\n"
+                             + "2️⃣ *باز کردن اپلیکیشن WireGuard:*\n"
+                             + "3️⃣ *اضافه کردن فایل کانفیگ و اتصال به VPN.*\n\n"
+                             + "🔐 *توجه:* این فایل شامل اطلاعات حساس است، آن را با دیگران به اشتراک نگذارید.",
+                    cancellationToken: cancellationToken
+                );
+            }
+            finally
+            {
+                await memoryStream.DisposeAsync();
+            }
+        }
+    }
+
+    public async Task SendPeerQrAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        var user = await GetUserByChatIdAsync(chatId);
+
+        (string, string) details = await wireguardServices.SendConnectionDetailsAsync(id, user.Id);
+
+        string caption = $"""
+                          👤 نام کاربری سرویس: `\{details.Item2}`\
+                          """;
+
+        byte[] qrImage = await GenerateQrCode
+            .GetQrCodeAsync(details.Item1);
+
+        using var qr = new MemoryStream(qrImage);
+
+        await botClient.SendPhotoAsync(
+            chatId: callbackQuery.Message.Chat.Id,
+            photo: new InputFileStream(qr, details.Item2),
+            parseMode: ParseMode.MarkdownV2,
+            caption: caption,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendTextDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        int id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        bool has = await wireguardServices.HaveDeletedWireguardServicesInDeleteQue(user.Id);
+
+        if (has)
+        {
+            throw new AppException("شما یک درخواست برسی نشده در صف دارید ❌");
+        }
+
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteWireguardAccount;
+        telegramUser.UserSubscribeId = id;
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: TelegramHelper.DeleteServiceText,
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task DeleteWireguardAccountAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        telegramUser.State = TelegramMarzbanVpnSessionState.None;
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        AgentDto? agent = await agentService.GetAgentByUserIdAsync(user!.Id);
+
+        DeleteWireguardServiceDto delete = new()
+        {
+            Username = user.TelegramUsername ?? "NOT_USERNAME",
+            Message = callbackQuery.Message.Text,
+            UserId = user.Id,
+            ChatId = user.ChatId ?? 0,
+            AgentAdminId = agent!.AgentAdminId,
+            PeerId = telegramUser.UserSubscribeId ?? 0,
+        };
+
+        await wireguardServices.RequestDeletedWireguardService(delete);
+
+        await botClient!.SendTextMessageAsync(
+            chatId: chatId,
+            text: """
+                  درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
+                  درصورت تایید سرویس شما حذف میشود ❌
+                  تا وقتی این سرویس در حال برسی است نمیتوانید
+                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  """,
+            replyMarkup: TelegramHelper.ButtonBackToHome(),
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task MainDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        try
+        {
+            await wireguardServices.MainDeleteWireguardService(id, user.Id);
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: callbackQuery.Message.Text,
+                replyMarkup: "درخواست حذف تایید شد ✅",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await wireguardServices.ChangeDeletedStatus(id, false, user.Id);
+            await botClient.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: callbackQuery.Message.Text,
+                replyMarkup: "این درخواست حذف منقضی شده است ❌",
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task NotDeleteWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        try
+        {
+            await wireguardServices.ChangeDeletedStatus(id, false, user.Id);
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: callbackQuery.Message.Text,
+                replyMarkup: "درخواست حذف تایید نشد ✅",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.EditMessageTextAsync(
+                chatId, callbackQuery.Message.MessageId,
+                e.Message,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task ActiveWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        await wireguardServices.ActiveWireguardAccount(id);
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: "سرویس شما با موفقیت فعال شد ✅",
+            cancellationToken: cancellationToken);
+
+        await ShowPeerInformation(botClient, new CallbackQuery()
+        {
+            Message = callbackQuery.Message,
+            From = callbackQuery.From,
+            Data = $"peer_info?id={id}"
+        }, cancellationToken);
+    }
+
+    public async Task DisabledWireguardAccountAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        await wireguardServices.ActiveWireguardAccount(id);
+
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            text: "سرویس شما با موفقیت غیر فعال شد ✅",
+            messageId: callbackQuery.Message.MessageId,
+            cancellationToken: cancellationToken);
+
+        await ShowPeerInformation(botClient, new CallbackQuery()
+        {
+            Message = callbackQuery.Message,
+            From = callbackQuery.From,
+            Data = $"peer_info?id={id}"
+        }, cancellationToken);
     }
 }

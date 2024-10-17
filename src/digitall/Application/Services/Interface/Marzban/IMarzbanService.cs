@@ -17,7 +17,7 @@ public interface IMarzbanService
     /// </summary>
     /// <returns></returns>
     Task<List<GetMarzbanServerDto>> GetListMarzbanServcerAsync();
-    
+
     /// <summary>
     /// for add marzban server
     /// </summary>
@@ -259,7 +259,7 @@ public interface IMarzbanService
     /// list marzban users
     /// </summary>
     /// <returns></returns>
-    Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId,bool? delete = false);
+    Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId, bool? delete = false);
 
     /// <summary>
     /// get marzban user information
@@ -291,7 +291,7 @@ public interface IMarzbanService
     /// <param name="marzbanUser"></param>
     /// <param name="marzbanServer"></param>
     /// <returns></returns>
-    Task UpdateMarzbanUserHolderInboundAsync(MarzbanUser? marzbanUser,MarzbanServer? marzbanServer);
+    Task UpdateMarzbanUserHolderInboundAsync(MarzbanUser? marzbanUser, MarzbanServer? marzbanServer);
 
     /// <summary>
     /// reveval marzban user
@@ -386,8 +386,8 @@ public interface IMarzbanService
     /// <param name="beforeday"></param>
     /// <param name="afterday"></param>
     /// <returns></returns>
-    Task DeleteMarzbanUserExpire(MarzbanServer? marzbanServer,long? beforeday, long? afterday);
-    
+    Task DeleteMarzbanUserExpire(MarzbanServer? marzbanServer, long? beforeday, long? afterday);
+
     /// <summary>
     /// send list marzban services deleted in que
     /// </summary>

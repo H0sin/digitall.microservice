@@ -36,13 +36,28 @@ public static class NotificationTemplate
             UserId = userId,
             Buttons = new()
             {
-                new("عدم تایید حذف سرویس", $"not_deleted_service?id={serviceId}"),
-                new("حذف سرویس", $"deleted_service?id={serviceId}")
+                new("عدم تایید حذف سرویس 🚫", $"not_deleted_service?id={serviceId}"),
+                new("حذف سرویس 🗑", $"deleted_service?id={serviceId}")
             },
             Expire = DateTime.Now.AddHours(2),
             NotificationType = NotificationType.DeletedReports
         };
 
+
+    public static AddNotificationDto SendDeleteWireguardAccountNotificationForAgent(long userId, string message,
+        long peerId) =>
+        new()
+        {
+            Message = message,
+            UserId = userId,
+            Buttons = new()
+            {
+                new("عدم تایید حذف سرویس 🚫", $"not_deleted_wg_service?id={peerId}"),
+                new("حذف سرویس 🗑", $"deleted_wg_service?id={peerId}")
+            },
+            Expire = DateTime.Now.AddHours(2),
+            NotificationType = NotificationType.DeletedReports
+        };
 
     public static AddNotificationDto Welcome(long? userId = 0, string message = "خوش آمدید")
     {
@@ -63,13 +78,13 @@ public static class NotificationTemplate
     {
         string name = userName != null ? "@" + userName : "@NOT_USERNAME";
         string message = $"""
-                         📣 یک کاربر درخواست نمایندگی ثبت کرده است. لطفاً اطلاعات زیر را بررسی و وضعیت را مشخص کنید:
-                         آیدی عددی:`\{chatId}`\
-                         نام کاربری: {name}
-                         شماره تماس: {phone}
-                         توضیحات: {description}
-                         """;
-        
+                          📣 یک کاربر درخواست نمایندگی ثبت کرده است. لطفاً اطلاعات زیر را بررسی و وضعیت را مشخص کنید:
+                          آیدی عددی:`\{chatId}`\
+                          نام کاربری: {name}
+                          شماره تماس: {phone}
+                          توضیحات: {description}
+                          """;
+
         return new AddNotificationDto()
         {
             Expire = DateTime.Now.AddHours(24),
@@ -128,17 +143,17 @@ public static class NotificationTemplate
     {
         string status = transaction.TransactionStatus == TransactionStatus.Accepted
             ? $"""
-                ✅ تراکنش شما با کد
-                {transaction.TransactionCode}
-                با موفقیت پذیرفته شد! 🎉
-                💰 مبلغ {transaction.Price:N0} تومان به موجودی حساب شما افزوده شد.
-                """
+               ✅ تراکنش شما با کد
+               {transaction.TransactionCode}
+               با موفقیت پذیرفته شد! 🎉
+               💰 مبلغ {transaction.Price:N0} تومان به موجودی حساب شما افزوده شد.
+               """
             : $"""
-                ❌ متأسفانه تراکنش شما با کد
-                {transaction.TransactionCode}
-                رد شده است. 😔
-                لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید. 📞
-                """;
+               ❌ متأسفانه تراکنش شما با کد
+               {transaction.TransactionCode}
+               رد شده است. 😔
+               لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید. 📞
+               """;
 
         return new AddNotificationDto()
         {

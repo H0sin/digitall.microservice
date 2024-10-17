@@ -32,8 +32,6 @@ public class Product : BaseEntity
     #region reletion
 
     [ForeignKey(nameof(CategoryId))] public Category.Category? Category { get; set; }
-
-    public Vpn.Vpn Vpn { get; set; }
-
+    
     #endregion
 }

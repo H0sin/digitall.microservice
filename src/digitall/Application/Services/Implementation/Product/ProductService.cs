@@ -49,7 +49,6 @@ public class ProductService(
 
         Domain.Entities.Product.Product newProduct = new()
         {
-            Vpn = vpn,
             CategoryId = product.CategoryId,
             Description = product.Description,
             ProductName = product.ProductName,
@@ -102,9 +101,18 @@ public class ProductService(
 
     #region get
 
-    public Task<List<ProductDto>> GetProductAsync()
+    public async Task<List<ProductDto>> GetProductAsync()
     {
-        throw new NotImplementedException();
+        return await productRepository.GetQuery()
+            .Include(x => x.Category)
+            .Select(x => new ProductDto()
+            {
+                CategoryType = x.Category.CategoryType,
+                ProductName = x.ProductName,
+                Description = x.Description,
+                Price = x.Price,
+                Id = x.Id
+            }).ToListAsync();
     }
 
     public async Task<List<ProductDto>> GetProductByCategoryIdAsync(long categoryId)
