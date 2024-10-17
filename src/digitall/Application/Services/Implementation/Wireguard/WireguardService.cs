@@ -78,19 +78,24 @@ public class WireguardService(
                 .GetAsync(x => x.WireguardVpnId == vpnId);
         }
 
-        var priceTasks = templates.Select(async template => new WireguardVpnTemplatesDto
+        var updatedTemplates = new List<WireguardVpnTemplatesDto>();
+        
+        foreach (var template in templates)
         {
-            Price = await countingVpnPrice.CalculateFinalPrice(agentService, userId, template.Price),
-            Days = template.Days,
-            Title = template.Title,
-            Id = template.Id,
-            Gb = template.Gb,
-            WireguardVpnId = template.WireguardVpnId
-        });
+            var finalPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, template.Price);
 
-        var updatedTemplates = await Task.WhenAll(priceTasks);
+            updatedTemplates.Add(new WireguardVpnTemplatesDto
+            {
+                Price = finalPrice,
+                Days = template.Days,
+                Title = template.Title,
+                Id = template.Id,
+                Gb = template.Gb,
+                WireguardVpnId = template.WireguardVpnId
+            });
+        }
 
-        return updatedTemplates.ToList();
+        return updatedTemplates;
     }
 
     public async Task<WireguardVpnTemplatesDto?> CountingWireguardVpnTemplatePriceByIdAsync(long id, long userId)
