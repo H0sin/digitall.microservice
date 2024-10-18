@@ -156,7 +156,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         List<ProductDto> products = await productService.GetProductAsync();
-        
+
 
         if (products.Count <= 0)
             throw new AppException("محصولی وجود ندارد ❌");
@@ -1342,7 +1342,7 @@ public class TelegramService(
                   درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
                   درصورت تایید سرویس شما حذف میشود ❌
                   تا وقتی این سرویس در حال برسی است نمیتوانید
-                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  درخواست حذف سرویس جدیدی ارسال کنید ⚠️
                   """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
@@ -2901,7 +2901,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         string engilishBrand = TelegramHelper.CheckBrandName(callbackQuery.Message.Text);
-        
+
         if (!EnglishText.IsValidUsername(callbackQuery.Message.Text))
             await botClient!.SendTextMessageAsync(
                 chatId: callbackQuery.Message.Chat.Id,
@@ -3865,7 +3865,7 @@ public class TelegramService(
                   درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
                   درصورت تایید سرویس شما حذف میشود ❌
                   تا وقتی این سرویس در حال برسی است نمیتوانید
-                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  درخواست حذف سرویس جدیدی ارسال کنید ⚠️
                   """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);

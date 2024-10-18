@@ -1491,7 +1491,7 @@ public class MarzbanServies(
             List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
 
             if (!users.Any(x => x.Id == marzbanUser.UserId))
-                throw new AppException("شما مجاز به عدم حدف نیستید");
+                throw new AppException("شما مجاز به عدم حذف نیستید");
 
             marzbanUser.IsDelete = false;
 

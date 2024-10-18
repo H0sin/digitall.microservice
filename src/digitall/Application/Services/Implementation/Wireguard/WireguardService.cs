@@ -363,7 +363,8 @@ public class WireguardService(
         try
         {
             #region variable
-
+            
+            
             WireguardVpn? wireguardVpn = null;
             User? user = null;
             AgentDto? agent = null;
@@ -384,8 +385,8 @@ public class WireguardService(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-            await userRepository.UpdateEntity(user);
-            await userRepository.SaveChanges(userId ?? 1);
+            if (user?.FinalCountTestMarzbanAccount > 2)
+                throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
             if (isAgent == null)
                 agent = await agentService.GetAgentByUserIdAsync(user.Id);
@@ -500,6 +501,10 @@ public class WireguardService(
             var peerConfig = await request.SendAsync(getRequest);
 
             if (!peerConfig.IsSuccess) throw new AppException("متاسفانه مشکلی در هنگام ساخت سرویس وایرگارد پیش آمد");
+
+            user.FinalCountTestMarzbanAccount += 1;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
 
             await transaction.CommitAsync();
 
