@@ -94,6 +94,7 @@ public class PeerInformationDto
                $"💾 حجم کل: {FormatVolume(TotalVolume)}\n" +
                $"⬇️ حجم دانلود: {FormatVolume(DownloadVolume)}\n" +
                $"⬆️ حجم آپلود: {FormatVolume(UploadVolume)}\n" +
+               $"🔋 حجم کل مصرفی: {FormatVolume(UploadVolume + DownloadVolume)}\n" +
                $"🕒 زمان شروع: {startTime}\n" +
                $"⏳ زمان انقضا: {activeUntilDate}\n";
     }
