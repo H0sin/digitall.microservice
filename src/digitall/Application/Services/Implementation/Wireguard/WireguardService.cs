@@ -820,7 +820,7 @@ public class WireguardService(
                 long? expireUnixTimestamp = peerConfig.ExpireTime;
 
                 DateTime expireDate = DateTimeOffset
-                    .FromUnixTimeSeconds(expireUnixTimestamp ?? new DateTimeOffset(utcNow).ToUnixTimeSeconds())
+                    .FromUnixTimeMilliseconds(expireUnixTimestamp ?? new DateTimeOffset(utcNow).ToUnixTimeSeconds())
                     .UtcDateTime;
 
                 TimeSpan remainingTimeSpan = expireDate - utcNow;
