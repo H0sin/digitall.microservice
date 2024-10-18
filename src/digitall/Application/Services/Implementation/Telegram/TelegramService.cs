@@ -157,6 +157,7 @@ public class TelegramService(
 
         List<ProductDto> products = await productService.GetProductAsync();
 
+
         if (products.Count <= 0)
             throw new AppException("محصولی وجود ندارد ❌");
 
@@ -1341,7 +1342,7 @@ public class TelegramService(
                   درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
                   درصورت تایید سرویس شما حذف میشود ❌
                   تا وقتی این سرویس در حال برسی است نمیتوانید
-                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  درخواست حذف سرویس جدیدی ارسال کنید ⚠️
                   """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
@@ -2866,7 +2867,7 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
 
-        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPersianBrandName;
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName;
 
         User? user = await GetUserByChatIdAsync(chatId);
 
@@ -2900,28 +2901,35 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         string engilishBrand = TelegramHelper.CheckBrandName(callbackQuery.Message.Text);
+
         if (!EnglishText.IsValidUsername(callbackQuery.Message.Text))
-            throw new AppException(TelegramHelper.SendTextGiveEngilishBrandName);
+            await botClient!.SendTextMessageAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                text: TelegramHelper.SendTextGiveEngilishBrandName,
+                cancellationToken: cancellationToken
+            );
+        else
+        {
+            User? user = await GetUserByChatIdAsync(chatId);
 
-        User? user = await GetUserByChatIdAsync(chatId);
+            AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-        AgentDto agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+            // agent.PersianBrandName = telegramUser.PersionBrandName;
+            agent.BrandName = engilishBrand;
 
-        agent.PersianBrandName = telegramUser.PersionBrandName;
-        agent.BrandName = engilishBrand;
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
-        telegramUser.State = TelegramMarzbanVpnSessionState.None;
+            await agentService.UpdateAgentAsync(agent, user.Id);
 
-        await agentService.UpdateAgentAsync(agent, user.Id);
-
-        await botClient!.SendTextMessageAsync(
-            chatId: callbackQuery.Message.Chat.Id,
-            text: """
-                  نام نمایندگی با موفقیت تغییر کرد ✅
-                  """,
-            replyMarkup: TelegramHelper.ButtonBackToHome(),
-            cancellationToken: cancellationToken
-        );
+            await botClient!.SendTextMessageAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                text: """
+                      نام نمایندگی با موفقیت تغییر کرد ✅
+                      """,
+                replyMarkup: TelegramHelper.ButtonBackToHome(),
+                cancellationToken: cancellationToken
+            );
+        }
     }
 
     public async Task SendTextForUpdateAgentCardDetailInformationAsync(ITelegramBotClient? botClient,
@@ -3857,7 +3865,7 @@ public class TelegramService(
                   درخواست حذف سرویس برای پشتیبانی ارسال شد ✅
                   درصورت تایید سرویس شما حذف میشود ❌
                   تا وقتی این سرویس در حال برسی است نمیتوانید
-                  درخواست حدف سرویس جدیدی ارسال کنید ⚠️
+                  درخواست حذف سرویس جدیدی ارسال کنید ⚠️
                   """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
@@ -3988,7 +3996,7 @@ public class TelegramService(
             Int64.TryParse(queryParameters["id"], out id);
         }
 
-        await wireguardServices.ActiveWireguardAccount(id);
+        await wireguardServices.DisabledWireguardAccount(id);
 
         await botClient!.EditMessageTextAsync(
             chatId: chatId,

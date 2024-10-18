@@ -37,27 +37,33 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "set_branding_name":
+                    await telegramService.UpdateAgentBrandingNameAsync(
+                        botClient, callbackQuery, cancellationToken, telegramUser);
+                    break;
+                
                 case "active_wg_service":
                     await telegramService.ActiveWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "disabled_wg_service":
                     await telegramService.DisabledWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "delete_wg_service":
-                    await telegramService.SendTextDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken,
+                    await telegramService.SendTextDeleteWireguardAccountAsync(botClient, callbackQuery,
+                        cancellationToken,
                         telegramUser!);
                     break;
-                
+
                 case "peer_file":
                     await telegramService.SendPeerConfigFileAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "peer_link":
                     await telegramService.SendPeerQrAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "start":
                     await telegramService.StartedTelegramBotAsync(botClient, callbackQuery.Message, cancellationToken,
                         telegramUser!);
@@ -183,15 +189,15 @@ public static class BotOnCallbackQueryReceived
                     await telegramService.SendTextDeleteMarzbanUserAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser!);
                     break;
-                
+
                 case "deleted_wg_service":
                     await telegramService.MainDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "not_deleted_wg_service":
                     await telegramService.NotDeleteWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "deleted_service":
                     await telegramService.DeletedMarzbanUserServiceByAgentAsync(botClient, callbackQuery,
                         cancellationToken);
@@ -338,7 +344,7 @@ public static class BotOnCallbackQueryReceived
 
             bool containsEnglishCharacters = e.Message.Any(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z');
 
-            if (e.Message == TelegramHelper.SendTextGiveEngilishBrandName)
+            if (e.Message.Trim() == TelegramHelper.SendTextGiveEngilishBrandName.Trim())
             {
                 await botClient.SendTextMessageAsync(
                     chatId: callbackQuery!.Message!.Chat.Id,

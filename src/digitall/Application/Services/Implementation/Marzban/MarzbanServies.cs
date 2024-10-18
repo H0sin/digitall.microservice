@@ -22,6 +22,7 @@ using Domain.Entities.Order;
 using Domain.Entities.Transaction;
 using Domain.Enums;
 using Domain.Enums.Marzban;
+using Domain.Enums.Notification;
 using Domain.Enums.Order;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -329,8 +330,6 @@ public class MarzbanServies(
 
             MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanVpn.MarzbanServerId);
 
-            // using Percent percent = new(agentService, this);
-
             CountingVpnPrice countingVpnPrice = new CountingVpnPrice();
 
             MarzbanVpnTemplateDto? template = await
@@ -409,14 +408,28 @@ public class MarzbanServies(
             if (marzbanVpn.Shadowsocks.Count > 0)
                 proxies.Add("shadowsocks", new { });
 
+
+            if (isAgent != null)
+            {
+                if (string.IsNullOrEmpty(isAgent.BrandName) ||
+                    isAgent.BrandName.Contains("none") | isAgent.BrandName.Length < 2)
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.SetBrandName(isAgent.AgentAdminId), userId);
+            }
+            else if (string.IsNullOrEmpty(agent.BrandName) ||
+                     agent.BrandName.Contains("none") | agent.BrandName.Length < 2)
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.SetBrandName(agent.AgentAdminId), userId);
+
             for (int i = 0; i < vpn.Count; i++)
             {
+                string username = isAgent != null
+                    ? isAgent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99)
+                    : agent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99);
+
                 users.Add(new()
                 {
-                    Username = isAgent != null
-                        ? isAgent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99)
-                        : agent.BrandName + "_" + (marzbanServer.Users + i + 1) + "_" + new Random().Next(10, 99),
-                    // Expire = unixTimestamp.ToString(),
+                    Username = username,
                     Data_Limit_Reset_Strategy = "no_reset",
                     Inbounds = inbounds,
                     Note = (user.ChatId ?? user.Id) +
@@ -615,6 +628,19 @@ public class MarzbanServies(
                 proxies.Add("vless", new { });
             if (marzbanVpn.Shadowsocks.Count > 0)
                 proxies.Add("shadowsocks", new { });
+
+
+            if (isAgent != null)
+            {
+                if (string.IsNullOrEmpty(isAgent.BrandName) ||
+                    isAgent.BrandName.Contains("none") | isAgent.BrandName.Length < 2)
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.SetBrandName(isAgent.AgentAdminId), userId);
+            }
+            else if (string.IsNullOrEmpty(agent.BrandName) ||
+                     agent.BrandName.Contains("none") | agent.BrandName.Length < 2)
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.SetBrandName(agent.AgentAdminId), userId);
 
             users.Add(new()
             {
@@ -1049,21 +1075,6 @@ public class MarzbanServies(
 
             OrderDetail? orderDetail = await orderDetailRepository.GetEntityById(marzbanUser.OrderDeatilId);
 
-            // List<Domain.Entities.Order.Order> orders = new()
-            // {
-            //     new Domain.Entities.Order.Order()
-            //     {
-            //         Description = "تمدید Vpn" + vpn.Title,
-            //         UserId = userId,
-            //         IsPaid = true,
-            //         TracingCode = 1,
-            //         PaymentDate = DateTime.Now,
-            //         OrderDetails = new List<OrderDetail>()
-            //         {
-            //            
-            //         }
-            //     }
-            // };
             var newOrderDetail = new OrderDetail()
             {
                 Count = vpn.Count,
@@ -1288,7 +1299,9 @@ public class MarzbanServies(
             long remaining_data = (marzbanUserFromServer.Data_Limit ?? 0) - (marzbanUserFromServer.Used_Traffic ?? 0);
             long remainingGb = remaining_data / byteSize;
             long remainingLimitGb = (marzbanUserFromServer.Data_Limit ?? 0) / byteSize;
-            long gbPrice = orderDetail.ProductPrice != 0 ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb : 0;
+            long gbPrice = orderDetail.ProductPrice != 0
+                ? ((orderDetail.ProductPrice / 2) / remainingLimitGb) * remainingGb
+                : 0;
             long dayPrice = orderDetail.ProductPrice / 2;
 
             if (marzbanUserFromServer.Expire != null & marzbanUser.ServiceTime != null & marzbanUser.ServiceTime != 0)
@@ -1478,7 +1491,7 @@ public class MarzbanServies(
             List<UserDto> users = await agentService.GetAgentUserAsync(parent.Id);
 
             if (!users.Any(x => x.Id == marzbanUser.UserId))
-                throw new AppException("شما مجاز به عدم حدف نیستید");
+                throw new AppException("شما مجاز به عدم حذف نیستید");
 
             marzbanUser.IsDelete = false;
 

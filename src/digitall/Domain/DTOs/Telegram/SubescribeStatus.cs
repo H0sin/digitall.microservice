@@ -116,7 +116,7 @@ public class SubescribeStatus
             LastLinkGeneration = marzbanUser.Sub_Updated_At;
             MarzbanUserId = marzbanUser.Id;
             VpnId = marzbanUser.MarzbanVpnId ?? 0;
-            VpnName = marzbanUser.MarzbanVpnName ?? "در دست رس نیست";
+            VpnName = marzbanUser.MarzbanVpnName ?? "در دسترس نیست";
         }
 
         public ServiceStatus(MarzbanUser? marzbanUser)

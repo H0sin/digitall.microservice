@@ -79,7 +79,7 @@ public class WireguardService(
         }
 
         var updatedTemplates = new List<WireguardVpnTemplatesDto>();
-        
+
         foreach (var template in templates)
         {
             var finalPrice = await countingVpnPrice.CalculateFinalPrice(agentService, userId, template.Price);
@@ -179,7 +179,25 @@ public class WireguardService(
             long? count = await peerRepository.GetQuery().Where(x => x.WireguardVpnId == buy.WireguardVpnId)
                 .CountAsync();
 
+
+            #region check name
+
+            if (isAgent != null)
+            {
+                if (string.IsNullOrEmpty(isAgent.BrandName) ||
+                    isAgent.BrandName.Contains("none") | isAgent.BrandName.Length < 2)
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.SetBrandName(isAgent.AgentAdminId), user.Id);
+            }
+            else if (string.IsNullOrEmpty(agent.BrandName) ||
+                     agent.BrandName.Contains("none") | agent.BrandName.Length < 2)
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.SetBrandName(agent.AgentAdminId), user.Id);
+
+
             string name = isAgent != null ? isAgent.BrandName + "_" + (count + 1) : agent.BrandName + "_" + (count + 1);
+
+            #endregion
 
             var request = new WireguardApiRequest();
 
@@ -228,7 +246,7 @@ public class WireguardService(
                     retry++;
                 }
             }
-            
+
             Domain.Entities.Order.Order order = new()
             {
                 Description = "wireguard : " + name,
@@ -242,7 +260,7 @@ public class WireguardService(
                     {
                         Count = 1,
                         OrderDeatilType = OrderDeatilType.Wireguard,
-                        ProductPrice = 123123
+                        ProductPrice = template.Price
                     }
                 }
             };
@@ -345,7 +363,8 @@ public class WireguardService(
         try
         {
             #region variable
-
+            
+            
             WireguardVpn? wireguardVpn = null;
             User? user = null;
             AgentDto? agent = null;
@@ -366,8 +385,8 @@ public class WireguardService(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-            await userRepository.UpdateEntity(user);
-            await userRepository.SaveChanges(userId ?? 1);
+            if (user?.FinalCountTestMarzbanAccount > 2)
+                throw new AppException("تعداد تست های دریافتی شما تمام شده است");
 
             if (isAgent == null)
                 agent = await agentService.GetAgentByUserIdAsync(user.Id);
@@ -375,7 +394,24 @@ public class WireguardService(
             long? count = await peerRepository.GetQuery().Where(x => x.WireguardVpnId == id)
                 .CountAsync();
 
+            #region check name
+
+            if (isAgent != null)
+            {
+                if (string.IsNullOrEmpty(isAgent.BrandName) ||
+                    isAgent.BrandName.Contains("none") | isAgent.BrandName.Length < 2)
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.SetBrandName(isAgent.AgentAdminId), user.Id);
+            }
+            else if (string.IsNullOrEmpty(agent.BrandName) ||
+                     agent.BrandName.Contains("none") | agent.BrandName.Length < 2)
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.SetBrandName(agent.AgentAdminId), user.Id);
+
+
             string name = isAgent != null ? isAgent.BrandName + "_" + (count + 1) : agent.BrandName + "_" + (count + 1);
+
+            #endregion
 
             var request = new WireguardApiRequest();
 
@@ -465,6 +501,10 @@ public class WireguardService(
             var peerConfig = await request.SendAsync(getRequest);
 
             if (!peerConfig.IsSuccess) throw new AppException("متاسفانه مشکلی در هنگام ساخت سرویس وایرگارد پیش آمد");
+
+            user.FinalCountTestMarzbanAccount += 1;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
 
             await transaction.CommitAsync();
 
