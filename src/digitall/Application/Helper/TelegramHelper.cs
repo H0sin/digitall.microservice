@@ -1,4 +1,5 @@
-﻿using Application.Extensions;
+﻿using System.Text.RegularExpressions;
+using Application.Extensions;
 using Application.Services.Implementation.Telegram;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Telegram;
@@ -98,6 +99,10 @@ public class TelegramHelper
     private static readonly InlineKeyboardButton Transactions = InlineKeyboardButton.WithCallbackData(
         "لیست تراکنش ها 💸",
         $"transactions");
+
+    private static readonly InlineKeyboardButton SpecialBot = InlineKeyboardButton.WithCallbackData(
+        "دریافت ربات اختصاصی 🤖",
+        $"special_bot");
 
     #region buttons method
 
@@ -307,13 +312,23 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup CreateStartMenu(User? user)
+    public static InlineKeyboardMarkup RepresentationRequestButtons()
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList1Button(RepresentationRequest));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup CreateStartMenu(User? user, bool has_bot = false)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
         buttons.Add(CreateList2Button(TestFree, BuyProduct));
         buttons.Add(CreateList2Button(MyServices, Supports));
         buttons.Add(CreateList2Button(RepresentationRequest, Wallet));
+
         buttons.Add(CreateList1Button(SiteInformation));
 
         if (user is not null & user is { IsAgent: true })
@@ -324,10 +339,12 @@ public class TelegramHelper
         else
             buttons.Add(CreateList1Button(Transactions));
 
+        // if (has_bot) buttons.Add(CreateList1Button(SpecialBot));
+
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup CreateMainMenu(User user)
+    public static InlineKeyboardMarkup CreateMainMenu(User user, bool has_bot = false)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
@@ -347,6 +364,7 @@ public class TelegramHelper
             buttons.Add(CreateList1Button(Transactions));
         }
 
+        if (!has_bot) buttons.Add(CreateList1Button(SpecialBot));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -665,6 +683,15 @@ public class TelegramHelper
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
         buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("بازگشت 🌍", callbackQuery)));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup IncreaseBalance()
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("افزایش موجودی 💵", "inventory_increase")));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -1007,6 +1034,15 @@ public class TelegramHelper
                                                                                🔐 کلمه عبور جدید: {password}
                                                                                """;
 
+    public static string ActiveBotText = """
+                                           🎉 ربات اختصاصی شما با موفقیت ساخته شد! از این به بعد می‌توانید از امکانات ویژه ربات اختصاصی خود استفاده کنید.
+                                             
+                                         1. پیام‌های خرید و تمدید سفارش‌ها مستقیماً از طریق ربات اختصاصی شما ارسال خواهند شد.
+                                         2. شما می‌توانید به راحتی با مشتریان خود در ارتباط باشید و تمامی اطلاع‌رسانی‌ها را از طریق ربات خود انجام دهید.
+
+                                         ✨ حالا ربات شما آماده استفاده است و می‌توانید از تمامی امکانات آن بهره ببرید. اگر سوالی دارید یا به مشکلی برخوردید، تیم پشتیبانی ما همیشه در کنار شماست! 😊
+                                         """;
+
     public static string ChangeCardToCardText(bool action) => action switch
     {
         true => "شماره کارت برای این کاربر قابل رویت شد ✅",
@@ -1061,6 +1097,19 @@ public class TelegramHelper
         switch (telegramUser.State)
         {
             #region awaiting send service name
+
+            case TelegramMarzbanVpnSessionState.AwaitingSendTelegramBotToken:
+
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = $"active_telegram_bot",
+                };
+
+                await telegramService.ActiveTelegramBotAsync(botClient!, callbackQuery,
+                    cancellationToken, telegramUser);
+                break;
 
             case TelegramMarzbanVpnSessionState.AwaitingSendListButtons:
                 callbackQuery = new CallbackQuery()
@@ -1446,6 +1495,15 @@ public class TelegramHelper
     public static long CheckPrice(User user, TransactionDetailDto transactionDetail, string? message)
     {
         long price = 0;
+
+        long max = user.Balance < 0
+            ? transactionDetail.MaximumAmountForAgent + (-user.Balance)
+            : transactionDetail.MaximumAmountForAgent;
+
+        long min = user.Balance < 0
+            ? transactionDetail.MinimalAmountForAgent + (-user.Balance)
+            : transactionDetail.MinimalAmountForAgent;
+
         Int64.TryParse(message, out price);
 
         if (price == 0 || price <= 0)
@@ -1456,12 +1514,11 @@ public class TelegramHelper
 
         if (user.IsAgent)
         {
-            if (transactionDetail!.MaximumAmountForAgent < price |
-                transactionDetail.MinimalAmountForAgent > price)
+            if (max < price | min > price)
             {
                 string exText = $"""
                                  ❌ خطا
-                                 💬 مبلغ باید حداقل {transactionDetail.MinimalAmountForAgent:N0} تومان و حداکثر {transactionDetail!.MaximumAmountForAgent:N0} تومان باشد
+                                 💬 مبلغ باید حداقل {min:N0} تومان و حداکثر {max:N0} تومان باشد
                                  """;
 
                 throw new AppException(exText);
@@ -1551,6 +1608,51 @@ public class TelegramHelper
                                    """);
 
         return messageText;
+    }
+
+    #endregion
+
+    #region utilitils
+
+    public static (string?, string?, long) GetTelegramInformation(string input)
+    {
+        string tokenPattern = @"\d+:[A-Za-z0-9_-]{35}";
+
+        Match tokenMatch = Regex.Match(input, tokenPattern);
+
+        string? token = null;
+        string? botLink = null;
+        long botId = 0;
+
+        if (tokenMatch.Success)
+        {
+            token = tokenMatch.Value;
+        }
+
+        string botLinkPattern = @"t\.me/\w+";
+        Match botLinkMatch = Regex.Match(input, botLinkPattern);
+        if (botLinkMatch.Success)
+        {
+            botLink = botLinkMatch.Value;
+        }
+
+        if (token != null)
+        {
+            Int64.TryParse(token.Split(":")[0], out botId);
+        }
+
+        if (token == null || botLink == null || botId == 0)
+        {
+            throw new ApplicationException(
+                "❗ خطا: لطفاً متنی که بات فادر برای شما ارسال کرده است را ارسال کنید. متن باید شبیه به مثال زیر باشد:\n\n" +
+                "✅ Done! Congratulations on your new bot. You will find it at t.me/yourbotusername. ...\n\n" +
+                "Use this token to access the HTTP API:\n" +
+                "123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno\n" +
+                "Keep your token secure and store it safely, it can be used by anyone to control your bot.\n\n" +
+                "For a description of the Bot API, see this page: https://core.telegram.org/bots/api");
+        }
+
+        return (token, botLink, botId);
     }
 
     #endregion

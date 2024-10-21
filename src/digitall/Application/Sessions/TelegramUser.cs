@@ -101,7 +101,8 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingForwardMessage,
     AwaitingSendListButtons,
     AwaitingSendMessageText,
-    AwaitingSendDescriptionForDeleteWireguardAccount
+    AwaitingSendDescriptionForDeleteWireguardAccount,
+    AwaitingSendTelegramBotToken
 }
 
 public static class BotSessions
