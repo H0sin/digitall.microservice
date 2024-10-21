@@ -37,11 +37,16 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "special_bot":
+                    await telegramService.RequestForSpecialBotAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
+                    break;
+                
                 case "set_branding_name":
                     await telegramService.UpdateAgentBrandingNameAsync(
                         botClient, callbackQuery, cancellationToken, telegramUser);
                     break;
-                
+
                 case "active_wg_service":
                     await telegramService.ActiveWireguardAccountAsync(botClient, callbackQuery, cancellationToken);
                     break;

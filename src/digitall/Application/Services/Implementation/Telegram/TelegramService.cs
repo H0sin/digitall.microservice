@@ -38,6 +38,7 @@ using Domain.IRepositories.Telegram;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -59,6 +60,7 @@ public class TelegramService(
     IWireguardServices wireguardServices,
     ITransactionService transactionService,
     TelegramBotClientFactory botClientFactory,
+    IConfiguration configuration,
     IOrderService orderService,
     IWebHostEnvironment webHostEnvironment)
     : ITelegramService
@@ -98,6 +100,17 @@ public class TelegramService(
         User? user = await userRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.ChatId == chatId, cancellationToken: cancellationToken);
 
+        bool has_bot = false;
+
+        if (user.IsAgent)
+        {
+            AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+            has_bot =
+                await telegramBotRepository.GetQuery()
+                    .AnyAsync(x => x.AgentId == agent.Id, cancellationToken: cancellationToken);
+        }
+
         if (callbackQuery.Message.MessageId != 0)
         {
             try
@@ -109,7 +122,7 @@ public class TelegramService(
                 await botClient.SendTextMessageAsync(
                     chatId: chatId,
                     text: TelegramHelper.BackToHomeMessage,
-                    replyMarkup: TelegramHelper.CreateMainMenu(user!),
+                    replyMarkup: TelegramHelper.CreateMainMenu(user!, has_bot),
                     cancellationToken: cancellationToken);
                 return;
             }
@@ -118,7 +131,7 @@ public class TelegramService(
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.BackToHomeMessage,
-            replyMarkup: TelegramHelper.CreateMainMenu(user!),
+            replyMarkup: TelegramHelper.CreateMainMenu(user!, has_bot),
             cancellationToken: cancellationToken);
 
         await Task.CompletedTask;
@@ -688,7 +701,11 @@ public class TelegramService(
     {
         TelegramBot telegramBot = bot._GenerateTelegramBot();
 
-        if (await telegramBotRepository.GetQuery().AnyAsync(x => x.Token == bot.Token))
+        User? user = await userRepository.GetEntityById(userId);
+
+        if (await telegramBotRepository
+                .GetQuery()
+                .AnyAsync(x => x.Token == bot.Token | x.CreateBy == user.Id))
             throw new ExistsException("این بات از قبل ثبت شده است");
 
         ITelegramBotClient botClient = botClientFactory.GetOrAdd(bot?.Token!);
@@ -703,6 +720,11 @@ public class TelegramService(
             allowedUpdates: Array.Empty<UpdateType>(),
             secretToken: bot!.SecretToken,
             cancellationToken: default);
+
+        user.BotId = bot.BotId;
+
+        await userRepository.UpdateEntity(user);
+        await userRepository.SaveChanges(user.Id);
 
         return bot;
     }
@@ -4010,5 +4032,115 @@ public class TelegramService(
             From = callbackQuery.From,
             Data = $"peer_info?id={id}"
         }, cancellationToken);
+    }
+
+    public async Task RequestForSpecialBotAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        if (!user.IsAgent)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text:
+                "برای داشتن ربات اختصاصی، ابتدا باید نماینده شوید! 🌟 لطفا درخواست نمایندگی بدهید تا از امکانات ویژه و قیمت‌های عمده بهره‌مند شوید. 💼💰",
+                replyMarkup: TelegramHelper.RepresentationRequestButtons(),
+                cancellationToken: cancellationToken);
+        }
+
+        long ordersPrice = await orderService.GetAllUserOrderPriceAsync(user.Id);
+
+        if (ordersPrice > 2000000 | user.Balance > 1000000)
+        {
+            telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendTelegramBotToken;
+            await botClient.SendTextMessageAsync(chatId: chatId, text: """
+                                                                       🎉 ربات اختصاصی شما در حال ساخته شدن است! لطفاً مراحل زیر را به صورت جامع دنبال کنید:
+                                                                           
+                                                                       1. ابتدا به ربات ساز (BotFather) بروید. ربات ساز یک ابزار رسمی تلگرام برای ساخت و مدیریت ربات‌های تلگرامی است. برای ورود به ربات ساز، روی لینک زیر کلیک کنید:
+                                                                          🔗 [لینک به ربات ساز](https://t.me/BotFather)
+
+                                                                       2. در ربات ساز، دستور /start را ارسال کنید و سپس دستور /newbot را انتخاب کنید. با این کار، ربات ساز از شما می‌خواهد که نام و نام کاربری (username) ربات خود را تعیین کنید. نام کاربری باید به "bot" ختم شود و یکتا باشد.
+
+                                                                       3. پس از ساخت ربات، ربات ساز یک پیغام برای شما ارسال می‌کند که حاوی توکن (Token) ربات است. این توکن برای مدیریت ربات شما ضروری است. لطفاً این توکن را کپی کنید.
+
+                                                                       4. حالا به همین صفحه برگردید و توکن ربات خود را اینجا ارسال کنید. با ارسال توکن، ربات شما برای استفاده فعال خواهد شد.
+
+                                                                       5. ⏳ لطفاً توجه داشته باشید که پس از ارسال توکن، فرآیند ساخت و راه‌اندازی ربات شما حدود ۵ دقیقه زمان می‌برد. در این مدت لطفاً هیچ عملیات دیگری در ربات انجام ندهید تا مراحل راه‌اندازی به درستی انجام شوند.
+
+                                                                       6. پس از ۵ دقیقه، شما می‌توانید از ربات خود استفاده کنید و از امکانات مختلف آن بهره‌مند شوید. 😊
+
+                                                                       اگر در هر مرحله‌ای سوالی داشتید یا به مشکلی برخوردید، تیم پشتیبانی ما آماده‌ی کمک به شماست!
+                                                                       """, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text:
+                "برای داشتن ربات اختصاصی، باید حداقل 1 میلیون تومان اعتبار داشته باشید! 🌟 لطفا اعتبار خود را افزایش دهید. 💼💰",
+                replyMarkup: TelegramHelper.IncreaseBalance(),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task ActiveTelegramBotAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        try
+        {
+            long chatId = callbackQuery.Message!.Chat.Id;
+
+            User? user = await GetUserByChatIdAsync(chatId);
+
+            AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+            
+            if(agent == null)
+                throw new AppException("شما نماینده نیستید");
+
+            var (token, botLink, botId) = TelegramHelper.GetTelegramInformation(callbackQuery.Message.Text ?? "");
+
+            AddTelegramBotDto telegram = new AddTelegramBotDto()
+            {
+                AgentId = agent.Id,
+                BotId = botId,
+                Token = token,
+                Name = callbackQuery.From.FirstName + callbackQuery.From.LastName,
+                Description = "create in bot",
+                Link = "https://" + botLink,
+                Route = "/" + token,
+                HostAddress = configuration.GetValue<string>("Telegram:HostAddress"),
+                SecretToken = "",
+                PersionName = callbackQuery.From.FirstName + callbackQuery.From.LastName,
+            };
+
+            await AddTelegramBotAsync(telegram, user.Id);
+
+            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithUrl("برو به بات خودم 😍", telegram.Link)
+                }
+            });
+
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
+
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: TelegramHelper.ActiveBotText,
+                replyMarkup: inlineKeyboard,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: e.Message,
+                replyMarkup: TelegramHelper.ButtonBackToHome(),
+                cancellationToken: cancellationToken);
+        }
     }
 }
