@@ -4079,8 +4079,10 @@ public class TelegramService(
         {
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
-                text:
-                "برای داشتن ربات اختصاصی، باید حداقل 1 میلیون تومان اعتبار داشته باشید! 🌟 لطفا اعتبار خود را افزایش دهید. 💼💰",
+                text: """
+                      برای داشتن ربات اختصاصی، باید حداقل 1 میلیون تومان اعتبار داشته باشید! 🌟 اما نگران نباشید، 
+                      این مبلغ از موجودی شما کسر نمی‌شود و همچنان می‌توانید بعداً از این 1 میلیون تومان برای خریدهای خود استفاده کنید. 💼💰
+                      """,
                 replyMarkup: TelegramHelper.IncreaseBalance(),
                 cancellationToken: cancellationToken);
         }
@@ -4096,8 +4098,8 @@ public class TelegramService(
             User? user = await GetUserByChatIdAsync(chatId);
 
             AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
-            
-            if(agent == null)
+
+            if (agent == null)
                 throw new AppException("شما نماینده نیستید");
 
             var (token, botLink, botId) = TelegramHelper.GetTelegramInformation(callbackQuery.Message.Text ?? "");
