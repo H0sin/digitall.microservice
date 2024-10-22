@@ -32,13 +32,13 @@ public class OrderService(
 
     public async Task<long> GetAllUserOrderPriceAsync(long userId)
     { 
-        Domain.Entities.Order.Order? order = await orderRepository
+        var totalProductPrice = await orderRepository
             .GetQuery()
-            .Where(x => x.UserId == userId)
-            .Include(c => c.OrderDetails)
-            .FirstOrDefaultAsync();
-        
-        return order?.OrderDetails.Sum(x => x.ProductPrice) ?? 0;
+            .Where(o => o.UserId == userId)
+            .SelectMany(o => o.OrderDetails)
+            .SumAsync(od => od.ProductPrice);
+
+        return totalProductPrice;
     }
 
     public async Task<AddProductToOrderResult> AddProductToOrderAsync(List<AddProductToOrderDto> orders, long userId)
