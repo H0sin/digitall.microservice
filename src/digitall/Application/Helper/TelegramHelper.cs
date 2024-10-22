@@ -101,7 +101,7 @@ public class TelegramHelper
         $"transactions");
 
     private static readonly InlineKeyboardButton SpecialBot = InlineKeyboardButton.WithCallbackData(
-        "دریافت ربات اختصاصی 🤖",
+        "دریافت ربات اختصاصی (رایگان)🤖",
         $"special_bot");
 
     #region buttons method
