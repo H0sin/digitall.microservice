@@ -2909,7 +2909,9 @@ public class TelegramService(
                    """,
             cancellationToken: cancellationToken
         );
+        
         await telegramUserRepository.Update(telegramUser);
+        
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={telegramUser.Id}",
@@ -2924,7 +2926,9 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName;
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
