@@ -2,7 +2,6 @@
 using Domain.IRepositories.Telegram;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Data.Repositories.Telegram;
 
@@ -10,13 +9,9 @@ public class TelegramUserRepository(IDistributedCache _cache) : ITelegramUserRep
 {
     public async Task<TelegramUser> Update(TelegramUser user)
     {
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-        };
-
-        var jsonData = JsonSerializer.Serialize(user);
-        await _cache.SetStringAsync(user.UserChatId.ToString(), jsonData, options);
+        var jsonData = JsonConvert.SerializeObject(user);
+        
+        await _cache.SetStringAsync(user.UserChatId.ToString(), jsonData);
 
         return user;
     }
