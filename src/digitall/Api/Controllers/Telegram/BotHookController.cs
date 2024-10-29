@@ -11,6 +11,7 @@ using Application.Sessions;
 using Application.Utilities;
 using Domain.DTOs.Transaction;
 using Domain.Enums.Transaction;
+using Domain.IRepositories.Telegram;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot;
@@ -32,7 +33,7 @@ public class BotHookController(
     IServiceProvider serviceProvider,
     ITelegramService telegramService,
     TelegramBotClientFactory botClientFactory,
-    IMemoryCache memoryCache,
+    ITelegramUserRepository memoryCache,
     INotificationService notificationService
 ) : ControllerBase
 {

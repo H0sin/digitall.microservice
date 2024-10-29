@@ -324,6 +324,7 @@ public class AgentService(
 
         int? countAgentLevel_1 =
             countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 1)?.Count ?? 0;
+        
         int? countAgentLevel_2 =
             countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 2)?.Count ?? 0;
 

@@ -21,6 +21,7 @@ using Application.Utilities;
 using Quartz;
 using System.Net;
 using Application.Factory;
+using SixLabors.ImageSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddServices();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetValue<string>("CacheSettings:ConnectionString");
+});
+
 
 builder.Services.AddHttpContextAccessor();
 
