@@ -6,10 +6,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Data.Repositories.Telegram;
 
-public class TelegramUserRepository : ITelegramUserRepository
+public class TelegramUserRepository(IDistributedCache _cache) : ITelegramUserRepository
 {
-    private readonly IDistributedCache _cache;
-    
     public async Task<TelegramUser> Update(TelegramUser user)
     {
         var options = new DistributedCacheEntryOptions
