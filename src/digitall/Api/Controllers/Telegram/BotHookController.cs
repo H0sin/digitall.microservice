@@ -24,13 +24,11 @@ namespace Api.Controllers.Telegram;
 /// <summary>
 /// web hock for telegram bot
 /// </summary>
-/// <param name="serviceProvider"></param>
 /// <param name="telegramService"></param>
 /// <param name="botClientFactory"></param>
 /// <param name="memoryCache"></param>
 [ServiceFilter(typeof(ExceptionHandler))]
 public class BotHookController(
-    IServiceProvider serviceProvider,
     ITelegramService telegramService,
     TelegramBotClientFactory botClientFactory,
     ITelegramUserRepository memoryCache,
@@ -85,7 +83,7 @@ public class BotHookController(
                 .Action(
                     message,
                     _botClient!,
-                    memoryCache!,
+                    memoryCache,
                     telegramService,
                     notificationService,
                     cancellationToken
