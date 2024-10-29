@@ -2,10 +2,11 @@
 using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
-using Application.Sessions;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Notification;
+using Domain.Entities.Telegram;
 using Domain.Enums.Notification;
+using Domain.IRepositories.Telegram;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot;
@@ -18,7 +19,7 @@ public static class BotOnMessageReceived
 {
     public static async Task Action(Message message,
         ITelegramBotClient botClient,
-        IMemoryCache memoryCache,
+        ITelegramUserRepository memoryCache,
         ITelegramService telegramService,
         INotificationService notificationService,
         CancellationToken cancellationToken)
@@ -27,15 +28,7 @@ public static class BotOnMessageReceived
         {
             long chatId = message.Chat.Id;
 
-            if (memoryCache.TryGetValue(message?.Chat.Id ?? 0, out TelegramUser? telegramUser))
-            {
-            }
-            else
-            {
-                memoryCache.Set(message?.Chat.Id ?? 0, new TelegramUser(), TimeSpan.FromMinutes(10));
-                telegramUser = memoryCache.Get(message?.Chat.Id ?? 0) as TelegramUser;
-            }
-
+            var telegramUser = await memoryCache.Get(message?.Chat.Id ?? 0) ??   await memoryCache.Update(new TelegramUser()); 
 
             if (message.Photo is not { } photo & message.Text is not { } messageText)
                 await botClient.SendTextMessageAsync(chatId, "فرمت ارسالی درست نیست",
@@ -75,6 +68,7 @@ public static class BotOnMessageReceived
                             cancellationToken,
                             telegramUser);
                         break;
+
                     case TelegramHelper.ChangeBrandingNameButtonText:
                         await
                             telegramService.UpdateAgentBrandingNameAsync(
@@ -198,7 +192,7 @@ public static class BotOnMessageReceived
                                     Message = message
                                 }, cancellationToken);
                         break;
-                    
+
                     case TelegramHelper.SendDeleteServiceWaitingMessageButtonText:
                         await telegramService
                             .SendDeletedServiceInQueAsync(

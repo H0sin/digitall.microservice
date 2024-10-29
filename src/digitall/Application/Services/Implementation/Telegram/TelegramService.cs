@@ -11,11 +11,9 @@ using Application.Services.Interface.Product;
 using Application.Services.Interface.Telegram;
 using Application.Services.Interface.Transaction;
 using Application.Services.Interface.Wireguard;
-using Application.Sessions;
 using Application.Static.Template;
 using Application.Utilities;
 using Data.DefaultData;
-using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Marzban;
@@ -62,6 +60,7 @@ public class TelegramService(
     TelegramBotClientFactory botClientFactory,
     IConfiguration configuration,
     IOrderService orderService,
+    ITelegramUserRepository telegramUserRepository,
     IWebHostEnvironment webHostEnvironment)
     : ITelegramService
 {
@@ -74,6 +73,8 @@ public class TelegramService(
         telegramUser.UserSubscribeId = null;
         telegramUser.Id = 0;
 
+        await telegramUserRepository.Update(telegramUser);
+        
         User? user = await userRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.ChatId == chatId, cancellationToken: cancellationToken);
 
@@ -96,7 +97,7 @@ public class TelegramService(
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
         telegramUser.Id = 0;
         telegramUser.MessageId = 0;
-
+        
         User? user = await userRepository.GetQuery()
             .SingleOrDefaultAsync(x => x.ChatId == chatId, cancellationToken: cancellationToken);
 
@@ -134,6 +135,7 @@ public class TelegramService(
             replyMarkup: TelegramHelper.CreateMainMenu(user!, has_bot),
             cancellationToken: cancellationToken);
 
+        await telegramUserRepository.Update(telegramUser);
         await Task.CompletedTask;
     }
 
@@ -169,8 +171,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         List<ProductDto> products = await productService.GetProductAsync();
-
-
+        
         if (products.Count <= 0)
             throw new AppException("محصولی وجود ندارد ❌");
 
@@ -334,7 +335,9 @@ public class TelegramService(
         factor.Days = template?.Days ?? 0;
         factor.Gb = template.Gb;
         factor.Price = (template.Price);
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
@@ -457,6 +460,8 @@ public class TelegramService(
                 replyMarkup: TelegramHelper.CreateRenewalWireguardButtons(peerId, vpnId),
                 cancellationToken: cancellationToken);
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task SendListProductHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -578,6 +583,7 @@ public class TelegramService(
         }
 
         await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
+        await telegramUserRepository.Update(telegramUser);
     }
 
     private async Task SendListWireGuardVpnHaveTestAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -676,7 +682,7 @@ public class TelegramService(
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(user.Id);
         }
-
+        
         return agent;
     }
 
@@ -1109,7 +1115,8 @@ public class TelegramService(
         }
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
+        
         await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
     }
 
@@ -1183,7 +1190,7 @@ public class TelegramService(
 
         telegramUser.UserSubscribeId = id;
         telegramUser.MessageId = callbackQuery.Message.MessageId;
-
+        await telegramUserRepository.Update(telegramUser);
         try
         {
             await botClient!.EditMessageTextAsync(
@@ -1278,6 +1285,7 @@ public class TelegramService(
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendServiceName;
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message!.Chat.Id,
             text: "لطفا اسم سرویس خود را ارسال کنید",
@@ -1325,7 +1333,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteMarzbanUser;
         telegramUser.UserSubscribeId = id;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.DeleteServiceText,
@@ -1368,6 +1376,8 @@ public class TelegramService(
                   """,
             replyMarkup: TelegramHelper.ButtonBackToHome(),
             cancellationToken: cancellationToken);
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task DeletedMarzbanUserServiceByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -1519,7 +1529,7 @@ public class TelegramService(
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendTicketMessage;
 
         long chatId = callbackQuery.Message!.Chat.Id;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
@@ -1615,7 +1625,7 @@ public class TelegramService(
             throw new ApplicationException(" ❌❌ درگاه پرداخت غیر فعال است ❌❌");
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendPrice;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
@@ -1714,7 +1724,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendTransactionImage;
         telegramUser.Price = price;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.SendTextCardNumber(transactionDetail, price),
@@ -1796,6 +1806,8 @@ public class TelegramService(
                 text: text,
                 cancellationToken: cancellationToken);
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task UpdateTransactionStatusAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -1879,6 +1891,8 @@ public class TelegramService(
                 text: "لطفا شماره تلفن خود را برای ثبت نمایندگی ارسال کنید 📞",
                 cancellationToken: cancellationToken);
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task SendDescriptionTextForAddedAgent(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -1891,7 +1905,7 @@ public class TelegramService(
         telegramUser.Phone = phone;
         telegramUser.State =
             TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForAddAgentRequest;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "لطفا توضیحات درخواست خود را ارسال کنید 📝",
@@ -2184,6 +2198,8 @@ public class TelegramService(
                 );
             }
         }
+        
+        await telegramUserRepository.Update(telegramUser);
 
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
@@ -2383,6 +2399,8 @@ public class TelegramService(
 
             telegramUser.MessageId = message.MessageId;
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task IncreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -2405,6 +2423,8 @@ public class TelegramService(
         telegramUser.Id = id;
         telegramUser.MessageId = callbackQuery.Message.MessageId;
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!
             .SendTextMessageAsync(
                 chatId: chatId,
@@ -2436,6 +2456,8 @@ public class TelegramService(
         telegramUser.IncreasePrice = price;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForIncrease;
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "توضیحات تراکنش را ارسال کنید !",
@@ -2473,6 +2495,8 @@ public class TelegramService(
                    """,
             cancellationToken: cancellationToken);
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={child.Id}",
@@ -2500,6 +2524,8 @@ public class TelegramService(
         telegramUser.Id = id;
         telegramUser.MessageId = callbackQuery.Message.MessageId;
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!
             .SendTextMessageAsync(
                 chatId: chatId,
@@ -2523,7 +2549,9 @@ public class TelegramService(
 
         telegramUser.DecreasePrice = price;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDecrease;
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "توضیحات تراکنش را ارسال کنید !",
@@ -2561,7 +2589,9 @@ public class TelegramService(
                       از حساب کاربر کم شد و به حساب  شما واریز شد.
                    """,
             cancellationToken: cancellationToken);
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={child.Id}",
@@ -2603,7 +2633,9 @@ public class TelegramService(
         await userRepository.SaveChanges(user.Id);
 
         telegramUser.MessageId = callbackQuery.Message.MessageId;
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "کاربر غیر فعال شد ❌",
@@ -2658,7 +2690,7 @@ public class TelegramService(
             replyMarkup: null,
             cancellationToken: cancellationToken);
 
-
+        await telegramUserRepository.Update(telegramUser);
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={child.Id}",
@@ -2686,7 +2718,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendMessageForUser;
         telegramUser.Id = id;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "لطفا پیغام خود را ارسال کنید 💬",
@@ -2743,7 +2775,7 @@ public class TelegramService(
             ), userValue!.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "پیغام شما با موفقیت برای کاربر ارسال شد ✅",
@@ -2828,7 +2860,9 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendSpecialPercent;
         telegramUser.Id = id;
-
+        
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -2875,7 +2909,7 @@ public class TelegramService(
                    """,
             cancellationToken: cancellationToken
         );
-
+        await telegramUserRepository.Update(telegramUser);
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={telegramUser.Id}",
@@ -2894,7 +2928,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.BrandingInformationText(agentInformation),
@@ -2907,9 +2941,9 @@ public class TelegramService(
     {
         string persianBrand = TelegramHelper.CheckBrandName(callbackQuery.Message.Text);
 
-        telegramUser.PersionBrandName = persianBrand;
+        telegramUser.PersianBrandName = persianBrand;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendEnglishBrandName;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message.Chat.Id,
             text: TelegramHelper.SendTextGiveEngilishBrandName,
@@ -2952,6 +2986,7 @@ public class TelegramService(
                 cancellationToken: cancellationToken
             );
         }
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task SendTextForUpdateAgentCardDetailInformationAsync(ITelegramBotClient? botClient,
@@ -2961,7 +2996,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendCardNumber;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -2983,7 +3018,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendCardHolderName;
         telegramUser.CardNumber = cardnumber;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -3019,7 +3054,7 @@ public class TelegramService(
         await transactionService.UpdateTransactionDetailsAsync(transactionDetail, user!.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -3035,7 +3070,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
         TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(agent!.Id);
@@ -3058,7 +3093,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendAgentPercent;
-
+        await telegramUserRepository.Update(telegramUser);
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
@@ -3079,7 +3114,7 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendUserPercent;
-
+        await telegramUserRepository.Update(telegramUser);
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
 
         await botClient!.SendTextMessageAsync(
@@ -3116,7 +3151,7 @@ public class TelegramService(
         await agentService.UpdateAgentAsync(agent, user.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message.Chat.Id,
             text: """
@@ -3149,7 +3184,7 @@ public class TelegramService(
         await agentService.UpdateAgentAsync(agent, user.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message.Chat.Id,
             text: """
@@ -3165,7 +3200,7 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForAgent;
-
+        await telegramUserRepository.Update(telegramUser);
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
         TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(agent!.Id);
@@ -3184,7 +3219,7 @@ public class TelegramService(
         telegramUser.MaximumAmountForAgent = price;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForAgent;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message.Chat.Id,
             text: """
@@ -3223,6 +3258,7 @@ public class TelegramService(
             cancellationToken: cancellationToken);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task SendTextUpdatePaymentForUserOptionAsync(ITelegramBotClient? botClient,
@@ -3231,7 +3267,7 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendMaximumAmountForUser;
-
+        await telegramUserRepository.Update(telegramUser);
         User? user = await GetUserByChatIdAsync(chatId);
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user!.Id);
         TransactionDetailDto? transactionDetail = await transactionService.GetTransactionDetailsAsync(agent!.Id);
@@ -3250,7 +3286,7 @@ public class TelegramService(
         telegramUser.MaximumAmountForUser = price;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendMinimalAmountForUser;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: callbackQuery.Message.Chat.Id,
             text: """
@@ -3289,6 +3325,7 @@ public class TelegramService(
             cancellationToken: cancellationToken);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task SendAgentInformationAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -3319,7 +3356,7 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSearchUserByChatId;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             "ایدی عددی کاربر را ارسال کنید 🔍",
@@ -3367,7 +3404,7 @@ public class TelegramService(
 
         await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
             cancellationToken: cancellationToken);
-
+        await telegramUserRepository.Update(telegramUser);
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={telegramUser.Id}",
@@ -3407,7 +3444,7 @@ public class TelegramService(
         }
 
         telegramUser.SendMessageType = messageType;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "لیست گروه های کاربری 👥 : ",
@@ -3463,6 +3500,8 @@ public class TelegramService(
                     cancellationToken: cancellationToken);
                 break;
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task ForwardMessageForUserAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -3503,6 +3542,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: "پیغام شما با موفقیت به صف ارسال رفت ✅",
@@ -3519,6 +3559,8 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -3731,7 +3773,7 @@ public class TelegramService(
         CancellationToken cancellationToken, TelegramUser? telegramUser)
     {
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendWireguardServiceName;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient.SendTextMessageAsync(
             chatId: callbackQuery.Message!.Chat.Id,
             text: "لطفا اسم سرویس خود را ارسال کنید",
@@ -3851,7 +3893,7 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDeleteWireguardAccount;
         telegramUser.UserSubscribeId = id;
-
+        await telegramUserRepository.Update(telegramUser);
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.DeleteServiceText,
@@ -3881,6 +3923,8 @@ public class TelegramService(
 
         await wireguardServices.RequestDeletedWireguardService(delete);
 
+        await telegramUserRepository.Update(telegramUser);
+        
         await botClient!.SendTextMessageAsync(
             chatId: chatId,
             text: """
@@ -4086,6 +4130,8 @@ public class TelegramService(
                 replyMarkup: TelegramHelper.IncreaseBalance(),
                 cancellationToken: cancellationToken);
         }
+        
+        await telegramUserRepository.Update(telegramUser);
     }
 
     public async Task ActiveTelegramBotAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -4129,7 +4175,9 @@ public class TelegramService(
             });
 
             telegramUser.State = TelegramMarzbanVpnSessionState.None;
-
+            
+            await telegramUserRepository.Update(telegramUser);
+            
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
                 text: TelegramHelper.ActiveBotText,

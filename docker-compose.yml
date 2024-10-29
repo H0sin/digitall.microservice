@@ -1,6 +1,9 @@
 version: '3.4'
 
 services:
+  telegram_db:
+    image: redis:alpine
+    
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
 

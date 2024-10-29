@@ -1,9 +1,9 @@
-﻿using Application.Sessions;
-using Domain.DTOs.Agent;
+﻿using Domain.DTOs.Agent;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using TelegramUser = Domain.Entities.Telegram.TelegramUser;
 using User = Domain.Entities.Account.User;
 
 

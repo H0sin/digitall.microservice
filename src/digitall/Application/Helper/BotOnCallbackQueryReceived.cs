@@ -1,11 +1,10 @@
 ﻿using Application.Extensions;
 using Application.Services.Interface.Notification;
 using Application.Services.Interface.Telegram;
-using Application.Sessions;
 using Domain.DTOs.Notification;
+using Domain.Entities.Telegram;
 using Domain.Enums.Notification;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
+using Domain.IRepositories.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -18,21 +17,14 @@ public static class BotOnCallbackQueryReceived
     public static async Task Action(ITelegramService telegramService,
         TelegramBotClient botClient,
         CallbackQuery callbackQuery,
-        IMemoryCache memoryCache,
+        ITelegramUserRepository memoryCache,
         INotificationService notificationService,
         CancellationToken cancellationToken)
     {
         string data = callbackQuery.Data.Split('?')[0];
 
-        if (memoryCache.TryGetValue(callbackQuery.Message?.Chat.Id ?? 0, out TelegramUser? telegramUser))
-        {
-        }
-        else
-        {
-            memoryCache.Set(callbackQuery.Message?.Chat.Id ?? 0, new TelegramUser(), TimeSpan.FromMinutes(10));
-            telegramUser = memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) as TelegramUser;
-        }
-
+        var telegramUser = await memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) ??   await memoryCache.Update(new TelegramUser()); 
+        
         try
         {
             switch (data)
@@ -71,7 +63,7 @@ public static class BotOnCallbackQueryReceived
 
                 case "start":
                     await telegramService.StartedTelegramBotAsync(botClient, callbackQuery.Message, cancellationToken,
-                        telegramUser!);
+                        telegramUser);
                     break;
 
                 case "peer_info":
