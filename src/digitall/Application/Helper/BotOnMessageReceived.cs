@@ -28,15 +28,14 @@ public static class BotOnMessageReceived
         {
             long chatId = message.Chat.Id;
 
-            var telegramUser = await memoryCache.Get(message?.Chat.Id ?? 0) ??   await memoryCache.Update(new TelegramUser()); 
+            var telegramUser = await memoryCache.Get(chatId) ?? await memoryCache.Update(new TelegramUser()); 
 
             if (message.Photo is not { } photo & message.Text is not { } messageText)
                 await botClient.SendTextMessageAsync(chatId, "فرمت ارسالی درست نیست",
                     cancellationToken: cancellationToken);
 
             User? user = await telegramService.GetUserByChatIdAsync(chatId);
-
-
+            
             if (user != null && message.Text != TelegramHelper.BackToHomeButtonText &&
                 message.Text != TelegramHelper.BackListTypeOfSendMessageButtonText)
                 await TelegramHelper.MessageBasedOnStatus(botClient, telegramService, message, telegramUser, user,

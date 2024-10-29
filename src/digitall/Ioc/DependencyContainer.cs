@@ -115,6 +115,7 @@ public static class DependencyContainer
         services.AddScoped<IPeerRepository, PeerRepository>();
         services.AddScoped<IWireguardVpnTemplateRepository, WireguardVpnTemplateRepository>();
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
+        
         #endregion
 
         #region services
