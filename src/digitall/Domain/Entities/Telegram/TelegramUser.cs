@@ -30,6 +30,11 @@ public class TelegramUser
     public long Id { get; set; }
     public string? SendMessageType { get; set; }
     public string?  UserGroup { get; set; }
+
+    public TelegramUser(long userChatId)
+    {
+        UserChatId = userChatId;
+    }
 }
 
 public enum TelegramMarzbanVpnSessionState

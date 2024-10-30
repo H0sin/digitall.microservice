@@ -28,7 +28,7 @@ public static class BotOnMessageReceived
         {
             long chatId = message.Chat.Id;
 
-            var telegramUser = await memoryCache.Get(chatId) ?? await memoryCache.Update(new TelegramUser()); 
+            var telegramUser = await memoryCache.Get(chatId) ?? await memoryCache.Update(new TelegramUser(chatId)); 
 
             if (message.Photo is not { } photo & message.Text is not { } messageText)
                 await botClient.SendTextMessageAsync(chatId, "فرمت ارسالی درست نیست",

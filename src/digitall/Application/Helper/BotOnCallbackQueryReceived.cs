@@ -23,7 +23,7 @@ public static class BotOnCallbackQueryReceived
     {
         string data = callbackQuery.Data.Split('?')[0];
 
-        var telegramUser = await memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) ?? await memoryCache.Update(new TelegramUser()); 
+        var telegramUser = await memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) ?? await memoryCache.Update(new TelegramUser(callbackQuery.Message.Chat.Id)); 
         
         try
         {
