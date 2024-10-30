@@ -61,7 +61,7 @@ public class TelegramUserRepository(IDistributedCache _cache) : ITelegramUserRep
         Console.WriteLine("----------------------------------------------------");
 
 
-        if (string.IsNullOrEmpty(user))
+        if (string.IsNullOrWhiteSpace(user) | string.IsNullOrEmpty(user))
             return null;
 
         return JsonConvert.DeserializeObject<TelegramUser>(user);
