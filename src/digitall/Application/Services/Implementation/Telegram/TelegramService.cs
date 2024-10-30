@@ -2932,7 +2932,9 @@ public class TelegramService(
         User? user = await GetUserByChatIdAsync(chatId);
 
         AgentInformationDto agentInformation = await agentService.GetAgentInformationAsync(user.Id);
+        
         await telegramUserRepository.Update(telegramUser);
+        
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.BrandingInformationText(agentInformation),

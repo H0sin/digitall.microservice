@@ -25,3 +25,4 @@ volumes:
     driver: local
   images-volume:
   log-volume:  
+  
