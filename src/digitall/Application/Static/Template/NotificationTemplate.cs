@@ -616,7 +616,7 @@ public static class NotificationTemplate
             NotificationType = NotificationType.Alter,
             Buttons = new ()
             {
-                new ("تصویه حساب 🏦","inventory_increase")
+                new ("تسویه حساب 🏦","inventory_increase")
             },
         };
 }
