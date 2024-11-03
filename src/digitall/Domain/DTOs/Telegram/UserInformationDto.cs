@@ -49,7 +49,7 @@ public class UserInformationDto
         ⭕️ جمع کل خرید : {TotalPurchaseAmount:N0}
         ⭕️ تعداد زیرمجموعه کاربر : {ReferralCount}
         ⭕️ نمایش شماره کارت : {cardNumberVisibility}
-         ⭕️ سقف خرید منفی:{AmountNegative:N0}
+         ⭕️ سقف خرید منفی :{AmountNegative:N0}
          {specialPercent}
          ⭕️{agentDescription} 
         ";
