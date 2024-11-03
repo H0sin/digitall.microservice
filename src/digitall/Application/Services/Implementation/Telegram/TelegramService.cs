@@ -2329,6 +2329,7 @@ public class TelegramService(
 
         List<TransactionDto> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(currentUser.Id);
+        
         bool accessToAmountNegative = false;
 
         if (currentUser.IsAgent)
@@ -2342,7 +2343,7 @@ public class TelegramService(
             information.SumAgentIncomes = incomes.Sum(x => x.Profit);
             information.IsAgent = true;
 
-            information.AmountNegative = agent.AmountWithNegative;
+            information.AmountNegative = admin.AmountWithNegative;
 
             information.SpecialPercent = (admin.SpecialPercent != 0 & admin?.SpecialPercent != null)
                 ? admin.SpecialPercent
