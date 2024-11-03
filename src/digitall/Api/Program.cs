@@ -207,6 +207,12 @@ builder.Services.AddQuartz(q =>
                 case "DeleteMarzbanUsersExpireJob":
                     q.AddJob<DeleteMarzbanUsersExpireJob>(opts => opts.WithIdentity(jobKey));
                     break;
+                case "ActiveNegativeBalanceJob":
+                    q.AddJob<ActiveNegativeBalanceJob>(opts => opts.WithIdentity(jobKey));
+                    break;
+                case "CheckAndNotifyNegativeBalanceJob":
+                    q.AddJob<CheckAndNotifyNegativeBalanceJob>(opts => opts.WithIdentity(jobKey));
+                    break;
             }
 
             q.AddTrigger(opts => opts
