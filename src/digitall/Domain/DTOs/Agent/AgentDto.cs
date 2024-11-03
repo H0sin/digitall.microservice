@@ -24,6 +24,7 @@ public class AgentDto
         AllowNegative = agent.AllowNegative;
         AmountWithNegative = agent.AmountWithNegative;
         NegativeChargeCeiling = agent.NegativeChargeCeiling;
+        DisabledAccountTime = agent.DisabledAccountTime;
     }
 
     public AgentDto()
@@ -47,9 +48,10 @@ public class AgentDto
         AllowNegative = agent.AllowNegative;
         AmountWithNegative = agent.AmountWithNegative;
         NegativeChargeCeiling = agent.NegativeChargeCeiling;
+        DisabledAccountTime = agent.DisabledAccountTime;
     }
 
-
+    public DateTime? DisabledAccountTime { get; set; }
     public HierarchyId? AgentPath { get; set; }
     public long Id { get; set; }
     public string? BrandName { get; set; }

@@ -48,6 +48,8 @@ public class Agent : BaseEntity
     public long AmountWithNegative { get; set; } = 0;
 
     public long NegativeChargeCeiling { get; set; } = 0;
+
+    public DateTime? DisabledAccountTime { get; set; } = null;
     
     #endregion
 

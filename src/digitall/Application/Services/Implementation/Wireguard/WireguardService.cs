@@ -363,8 +363,7 @@ public class WireguardService(
         try
         {
             #region variable
-            
-            
+
             WireguardVpn? wireguardVpn = null;
             User? user = null;
             AgentDto? agent = null;
@@ -535,6 +534,11 @@ public class WireguardService(
         await filter.Paging(users);
 
         return filter;
+    }
+
+    public async Task<List<PeerDto>> GetPeersAsync(long userId)
+    {
+        return await peerRepository.GetQuery().Where(x => x.UserId == userId).Select(x => new PeerDto(x)).ToListAsync();
     }
 
     public async Task<PeerInformationDto?> GetPeerInformationByIdAsync(long id)

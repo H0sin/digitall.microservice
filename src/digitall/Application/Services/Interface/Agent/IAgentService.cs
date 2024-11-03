@@ -12,6 +12,19 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService
 {
+
+    /// <summary>
+    /// get list agent negative
+    /// </summary>
+    /// <returns></returns>
+    Task<List<AgentDto>> AgentsReachedNegativeLimit();
+    
+    /// <summary>
+    /// agents 
+    /// </summary>
+    /// <returns></returns>
+    Task<List<AgentDto>> AgentsReachedNegativeNotLimit();
+    
     /// <summary>
     /// send list agent
     /// </summary>
