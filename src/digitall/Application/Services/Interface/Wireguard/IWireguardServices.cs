@@ -72,6 +72,13 @@ public interface IWireguardServices
     Task<FilterPeer> FilterPeerAsync(FilterPeer filter);
 
     /// <summary>
+    /// get peers asynchronously.
+    /// </summary>
+    /// <param name="userId">user id</param>
+    /// <returns>list peer</returns>
+    Task<List<PeerDto>> GetPeersAsync(long userId);
+
+    /// <summary>
     /// Gets peer information by its ID.
     /// </summary>
     /// <param name="id">The ID of the peer.</param>

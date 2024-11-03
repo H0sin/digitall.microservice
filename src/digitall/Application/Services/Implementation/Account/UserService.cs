@@ -7,16 +7,23 @@ using Application.Static;
 using Application.Utilities;
 using Application.Extensions;
 using Application.Senders.Sms;
+using Application.Services.Interface.Marzban;
+using Application.Services.Interface.Wireguard;
 using Application.Static.Template;
 using Data.DefaultData;
 using Domain.Common;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Email;
+using Domain.DTOs.Marzban;
 using Domain.DTOs.Sms;
 using Domain.DTOs.Telegram;
+using Domain.DTOs.Wireguard;
 using Domain.Entities.Account;
+using Domain.Entities.Marzban;
 using Domain.Enums.Account;
+using Domain.Enums.Category;
+using Domain.Enums.Marzban;
 using Domain.Enums.Notification;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
@@ -31,7 +38,9 @@ namespace Application.Services.Implementation.Account;
 public class UserService(
     IUserRepository userRepository,
     IAgentService agentService,
-    INotificationService notificationService
+    INotificationService notificationService,
+    IWireguardServices wireguardServices,
+    IMarzbanService marzbanService
 ) : IUserService
 {
     public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
@@ -385,7 +394,7 @@ public class UserService(
 
         return UpdateUserProfileResult.Success;
     }
-    
+
     public async Task SendMobileActiveCode(string phone, long userId)
     {
         UserDto? user = await GetUserByIdAsync(userId);
@@ -437,6 +446,59 @@ public class UserService(
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
         }
+    }
+
+    public async Task DisabledAllUserAccount(long userId)
+    {
+        var services = await GetUserServices(userId);
+
+        foreach (var service in services)
+        {
+            switch (service.Item1)
+            {
+                case CategoryType.V2Ray:
+                    await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.disabled, service.Item2,
+                        userId);
+                    break;
+
+                case CategoryType.WireGuard:
+                    await wireguardServices.DisabledWireguardAccount(service.Item2);
+                    break;
+            }
+        }
+    }
+    
+    public async Task ActiveAllUserAccount(long userId)
+    {
+        var services = await GetUserServices(userId);
+
+        foreach (var service in services)
+        {
+            switch (service.Item1)
+            {
+                case CategoryType.V2Ray:
+                    await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, service.Item2,
+                        userId);
+                    break;
+
+                case CategoryType.WireGuard:
+                    await wireguardServices.ActiveWireguardAccount(service.Item2);
+                    break;
+            }
+        }
+    }
+
+    public async Task<List<(CategoryType, long)>> GetUserServices(long userId)
+    {
+        List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(userId);
+        List<PeerDto> peers = await wireguardServices.GetPeersAsync(userId);
+
+        List<(CategoryType, long)> response = new();
+
+        response.AddRange(marzbanUsers.Select(m => (CategoryType.V2Ray, m.Id)));
+        response.AddRange(peers.Select(p => (CategoryType.WireGuard, p.Id)));
+
+        return response;
     }
 
     public IQueryable<User> GetAgentUsers(long agentId)

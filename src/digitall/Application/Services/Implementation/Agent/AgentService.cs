@@ -31,6 +31,31 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    public async Task<List<AgentDto>> AgentsReachedNegativeLimit()
+    {
+        return await agentRepository.GetQuery()
+            .Join(userRepository.GetQuery(),
+                agent => agent.AgentAdminId,
+                user => user.Id,
+                (agent, user) => new { Agent = agent, User = user })
+            .Where(x => x.User.Balance < -100000 &&
+                        x.User.Balance - 100000 < x.Agent.AmountWithNegative)
+            .Select(x => new AgentDto(x.Agent))
+            .ToListAsync();
+    }
+
+    public async Task<List<AgentDto>> AgentsReachedNegativeNotLimit()
+    {
+        return await agentRepository.GetQuery()
+            .Join(userRepository.GetQuery(),
+                agent => agent.AgentAdminId,
+                user => user.Id,
+                (agent, user) => new { Agent = agent, User = user })
+            .Where(x => x.User.Balance > 0 & x.Agent.DisabledAccountTime != null)
+            .Select(x => new AgentDto(x.Agent))
+            .ToListAsync();
+    }
+
     public async Task<List<AgentsIncomesDetail>> ListAgentIncomeDetailsByAgentId(long agentId)
         => await agentsIncomesDetailRepository.GetQuery().Where(x => x.AgentId == agentId).ToListAsync();
 
@@ -324,7 +349,7 @@ public class AgentService(
 
         int? countAgentLevel_1 =
             countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 1)?.Count ?? 0;
-        
+
         int? countAgentLevel_2 =
             countLevels.SingleOrDefault(g => g.Level == agent.AgentPath.GetLevel() + 2)?.Count ?? 0;
 
@@ -363,7 +388,8 @@ public class AgentService(
         currentAgent.UserPercent = agent.UserPercent;
         currentAgent.SpecialPercent = agent.SpecialPercent;
         currentAgent.AmountWithNegative = agent.AmountWithNegative;
-        
+        currentAgent.DisabledAccountTime = agent.DisabledAccountTime;
+
         currentAgent.PersianBrandName = agent.PersianBrandName;
         currentAgent.BrandName = agent.BrandName;
 
