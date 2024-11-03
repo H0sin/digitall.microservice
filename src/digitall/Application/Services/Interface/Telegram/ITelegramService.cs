@@ -1236,4 +1236,15 @@ public interface ITelegramService
     /// <returns></returns>
     Task ActiveTelegramBotAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task ChangeAgentAmountNegative
+        (ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
 }

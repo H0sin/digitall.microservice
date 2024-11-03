@@ -360,9 +360,10 @@ public class AgentService(
             .SingleOrDefaultAsync(x => x.Id == agent.Id);
 
         currentAgent!.AgentPercent = agent.AgentPercent;
-        currentAgent!.UserPercent = agent.UserPercent;
+        currentAgent.UserPercent = agent.UserPercent;
         currentAgent.SpecialPercent = agent.SpecialPercent;
-
+        currentAgent.AmountWithNegative = agent.AmountWithNegative;
+        
         currentAgent.PersianBrandName = agent.PersianBrandName;
         currentAgent.BrandName = agent.BrandName;
 

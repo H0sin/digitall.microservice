@@ -29,6 +29,10 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "change_amount_negative":
+                    await telegramService.ChangeAgentAmountNegative(botClient, callbackQuery, cancellationToken,telegramUser);
+                    break;
+                
                 case "special_bot":
                     await telegramService.RequestForSpecialBotAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser);

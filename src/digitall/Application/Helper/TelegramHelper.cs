@@ -12,6 +12,7 @@ using Domain.DTOs.Wireguard;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
+using SixLabors.ImageSharp.Formats.Qoi;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -757,10 +758,15 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup? ManagementUserButtons(User? currentUser)
+    public static InlineKeyboardMarkup? ManagementUserButtons(User? currentUser,bool accessToAmountNegative = false)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-
+        
+        if(accessToAmountNegative)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(
+                "💲تغییر سقف خرید منفی نماینده ➖",
+                $"change_amount_negative?id={currentUser.Id}")));
+        
         buttons.Add(CreateList2Button(
             InlineKeyboardButton.WithCallbackData("افزایش موجودی ➕", $"increase_by_agent?id={currentUser.Id}"),
             InlineKeyboardButton.WithCallbackData("کاهش موجودی ➖", $"decrease_by_agent?id={currentUser.Id}")));
@@ -1097,7 +1103,20 @@ public class TelegramHelper
         switch (telegramUser.State)
         {
             #region awaiting send service name
+            
+            case TelegramMarzbanVpnSessionState.AwaitingSendAmountNegative:
 
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = $"change_amount_negative?id={telegramUser.Id}",
+                };
+
+                await telegramService.ChangeAgentAmountNegative(botClient,callbackQuery,cancellationToken,telegramUser);
+                
+                break;
+            
             case TelegramMarzbanVpnSessionState.AwaitingSendTelegramBotToken:
 
                 callbackQuery = new CallbackQuery()
@@ -1138,9 +1157,7 @@ public class TelegramHelper
 
             case TelegramMarzbanVpnSessionState.AwaitingSearchUserByChatId:
 
-                long chatId = -1;
-                Int64.TryParse(message.Text, out chatId);
-
+                Int64.TryParse(message.Text, out var chatId);
                 if (chatId == 0 || chatId <= 0)
                 {
                     await botClient!.SendTextMessageAsync(
@@ -1153,8 +1170,7 @@ public class TelegramHelper
                 }
 
                 User? currentUser = await telegramService.GetUserByChatIdAsync(chatId);
-
-
+                
                 callbackQuery = new CallbackQuery()
                 {
                     Message = message,
