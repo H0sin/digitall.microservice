@@ -24,7 +24,9 @@ public class UserInformationDto
     public bool IsAgent { get; set; }
     public long? SpecialPercent { get; set; }
     public long SumAgentIncomes { get; set; } = 0;
-
+    
+    public long AmountNegative { get; set; }
+    
     public string GetInformation()
     {
         string userState = IsBlocked ? "بلاک شده" : "فعال";
@@ -47,6 +49,7 @@ public class UserInformationDto
         ⭕️ جمع کل خرید : {TotalPurchaseAmount:N0}
         ⭕️ تعداد زیرمجموعه کاربر : {ReferralCount}
         ⭕️ نمایش شماره کارت : {cardNumberVisibility}
+         ⭕️ سقف خرید منفی:{AmountNegative:N0}
          {specialPercent}
          ⭕️{agentDescription} 
         ";

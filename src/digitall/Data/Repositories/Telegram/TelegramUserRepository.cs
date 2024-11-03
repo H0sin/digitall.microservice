@@ -19,48 +19,7 @@ public class TelegramUserRepository(IDistributedCache _cache) : ITelegramUserRep
     public async Task<TelegramUser?> Get(long key)
     {
         var user = await _cache.GetStringAsync(key.ToString());
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-
-        Console.WriteLine(user);
         
-        
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        Console.WriteLine(user);
-        
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-        Console.WriteLine("----------------------------------------------------");
-
-
         if (string.IsNullOrWhiteSpace(user) | string.IsNullOrEmpty(user))
             return null;
 
