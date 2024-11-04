@@ -52,6 +52,9 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                            {e.Message}
                            {e.Data}
                            {e.InnerException}
+                           {e}
+                           {e.Source}
+                           {e.HResult}
                            """,
                 NotificationType = NotificationType.BogsReports,
                 UserId = 1,
