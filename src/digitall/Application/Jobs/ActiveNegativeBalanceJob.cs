@@ -24,18 +24,6 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
             
             foreach (var agent in agents)
             {
-                await notificationService.AddNotificationAsync(new AddNotificationDto()
-                {
-                    Message = $"""
-                               نماینده در جاب.ActiveNegativeBalanceJob 
-                               {agent.AgentAdminId}
-                               {agent.BrandName}
-                               {agent.PersianBrandName}
-                               """,
-                    NotificationType = NotificationType.BogsReports,
-                    UserId = 1,
-                }, 1);
-                
                 await userService.ActiveAllUserAccount(agent.AgentAdminId);
                 agent.DisabledAccountTime = null;
                 await agentService.UpdateAgentAsync(agent, 1);
