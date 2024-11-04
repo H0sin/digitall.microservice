@@ -26,7 +26,7 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
             {
                 await userService.ActiveAllUserAccount(agent.AgentAdminId);
                 agent.DisabledAccountTime = null;
-                await agentService.UpdateAgentAsync(agent, 1);
+                await agentService.UpdateAgentAsync(agent, agent.AgentAdminId);
             }
         }
         catch (Exception e)
@@ -34,7 +34,7 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
                 Message = $"""
-                           هنگام اجرای job CheckAndNotifyNegativeBalanceJob به مشکل خوردیم.
+                           هنگام اجرای job ActiveNegativeBalanceJob به مشکل خوردیم.
                            {e.Message}
                            {e.Data}
                            {e.InnerException}
