@@ -26,7 +26,7 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
         {
             if (agent.DisabledAccountTime is null)
             {
-                agent.DisabledAccountTime = DateTime.Now.AddHours(72);
+                agent.DisabledAccountTime = DateTime.Now.AddHours(24);
                 await agentService.UpdateAgentAsync(agent, 1);
             }
 
