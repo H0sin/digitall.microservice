@@ -2,6 +2,8 @@
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Notification;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Notification;
+using Domain.Enums.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
@@ -12,17 +14,32 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
     public async Task Execute(IJobExecutionContext context)
     {
         await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var agentService = scope.ServiceProvider.GetRequiredService<IAgentService>();
-        var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-        List<AgentDto> agents = await agentService.AgentsReachedNegativeNotLimit();
-
-        foreach (var agent in agents)
+        try
         {
-            await userService.ActiveAllUserAccount(agent.AgentAdminId);
-            agent.DisabledAccountTime = null;
-            await agentService.UpdateAgentAsync(agent, 1);
+            var agentService = scope.ServiceProvider.GetRequiredService<IAgentService>();
+            var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+
+            List<AgentDto> agents = await agentService.AgentsReachedNegativeNotLimit();
+
+            foreach (var agent in agents)
+            {
+                await userService.ActiveAllUserAccount(agent.AgentAdminId);
+                agent.DisabledAccountTime = null;
+                await agentService.UpdateAgentAsync(agent, 1);
+            }
+        }
+        catch (Exception e)
+        {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                           هنگام اجرای job ActiveNegativeBalanceJob به مشکل خوردیم.
+                           {e.Message}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
         }
     }
 }

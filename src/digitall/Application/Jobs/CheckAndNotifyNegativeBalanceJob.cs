@@ -4,6 +4,7 @@ using Application.Services.Interface.Notification;
 using Application.Static.Template;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Notification;
+using Domain.Enums.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
@@ -17,32 +18,47 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
         var agentService = scope.ServiceProvider.GetRequiredService<IAgentService>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-
-        List<AgentDto> agents = await agentService.AgentsReachedNegativeLimit();
-
-        List<AddNotificationDto> notificationTemplates = new();
-
-        foreach (var agent in agents)
+        try
         {
-            if (agent.DisabledAccountTime is null)
+            List<AgentDto> agents = await agentService.AgentsReachedNegativeLimit();
+
+            List<AddNotificationDto> notificationTemplates = new();
+
+            foreach (var agent in agents)
             {
-                agent.DisabledAccountTime = DateTime.Now.AddHours(24);
-                await agentService.UpdateAgentAsync(agent, 1);
+                if (agent.DisabledAccountTime is null)
+                {
+                    agent.DisabledAccountTime = DateTime.Now.AddHours(24);
+                    await agentService.UpdateAgentAsync(agent, 1);
+                }
+
+                if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
+                {
+                    // todo : disabled account
+
+                    await userService.DisabledAllUserAccount(agent.AgentAdminId);
+                    // await notificationService.AddNotificationsAsync()
+                }
+
+                notificationTemplates.Add(
+                    NotificationTemplate.AlterForDisabledAccounts(agent.DisabledAccountTime ?? DateTime.Now,
+                        agent.AgentAdminId));
             }
 
-            if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
+            await notificationService.AddNotificationsAsync(notificationTemplates, 1);
+        }
+        catch (Exception e)
+        {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
-                // todo : disabled account
-
-                await userService.DisabledAllUserAccount(agent.AgentAdminId);
-                // await notificationService.AddNotificationsAsync()
-            }
-
-            notificationTemplates.Add(
-                NotificationTemplate.AlterForDisabledAccounts(agent.DisabledAccountTime ?? DateTime.Now,
-                    agent.AgentAdminId));
+                Message = $"""
+                           هنگام اجرای job CheckAndNotifyNegativeBalanceJob به مشکل خوردیم.
+                           {e.Message}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
         }
 
-        await notificationService.AddNotificationsAsync(notificationTemplates, 1);
     }
 }
