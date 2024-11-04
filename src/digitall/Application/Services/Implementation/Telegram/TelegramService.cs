@@ -1171,45 +1171,64 @@ public class TelegramService(
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         long chatId = callbackQuery!.Message!.Chat.Id;
-
-        long id = 0;
-        long vpnId = 0;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-
-        if (questionMarkIndex >= 0)
-        {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["id"], out id);
-            Int64.TryParse(queryParameters["vpnId"], out vpnId);
-        }
-
-        User? user = await GetUserByChatIdAsync(chatId);
-
-        MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
-        if (vpnId == 0) vpnId = marzbanUser?.MarzbanVpnId ?? 0;
-        SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
-
-        telegramUser.UserSubscribeId = id;
-        telegramUser.MessageId = callbackQuery.Message.MessageId;
-        await telegramUserRepository.Update(telegramUser);
         try
         {
-            await botClient!.EditMessageTextAsync(
-                chatId: chatId,
-                messageId: callbackQuery.Message.MessageId,
-                text: subescribeStatus.GetInfo(),
-                replyMarkup: TelegramHelper.SendServiceInformationButton(marzbanUser.Id, vpnId, marzbanUser.Status),
-                cancellationToken: cancellationToken);
+            long id = 0;
+            long vpnId = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+                Int64.TryParse(queryParameters["vpnId"], out vpnId);
+            }
+
+            User? user = await GetUserByChatIdAsync(chatId);
+
+            MarzbanUserDto? marzbanUser = await marzbanService.GetMarzbanUserByUserIdAsync(id, user.Id);
+            if (vpnId == 0) vpnId = marzbanUser?.MarzbanVpnId ?? 0;
+            SubescribeStatus.ServiceStatus subescribeStatus = new SubescribeStatus.ServiceStatus(marzbanUser);
+
+            telegramUser.UserSubscribeId = id;
+            telegramUser.MessageId = callbackQuery.Message.MessageId;
+            await telegramUserRepository.Update(telegramUser);
+
+            try
+            {
+                await botClient!.EditMessageTextAsync(
+                    chatId: chatId,
+                    messageId: callbackQuery.Message.MessageId,
+                    text: subescribeStatus.GetInfo(),
+                    replyMarkup: TelegramHelper.SendServiceInformationButton(marzbanUser.Id, vpnId, marzbanUser.Status),
+                    cancellationToken: cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await botClient!.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: subescribeStatus.GetInfo(),
+                    replyMarkup: TelegramHelper.SendServiceInformationButton(marzbanUser.Id, vpnId, marzbanUser.Status),
+                    cancellationToken: cancellationToken);
+            }
+      
         }
         catch (Exception e)
         {
-            await botClient!.SendTextMessageAsync(
+            await botClient.SendTextMessageAsync(
                 chatId: chatId,
-                text: subescribeStatus.GetInfo(),
-                replyMarkup: TelegramHelper.SendServiceInformationButton(marzbanUser.Id, vpnId, marzbanUser.Status),
+                text: """
+                        کاربر گرامی 🌟،
+                      
+                      🔔 به اطلاع شما می‌رسانیم که به دلیل گذشت بیش از ⏳ ۱۵ روز از زمان مقرر، دسترسی شما به سرویس مورد نظر حذف شده است.
+                      
+                      📞 برای استفاده مجدد یا دریافت اطلاعات بیشتر، لطفاً با پشتیبانی تماس بگیرید.
+                      """,
                 cancellationToken: cancellationToken);
+            
+            await SendListServicesAsync(botClient, callbackQuery, cancellationToken);
         }
     }
 
@@ -2329,7 +2348,7 @@ public class TelegramService(
 
         List<TransactionDto> transactions =
             await transactionService.GetAllTransactionByUserIdAsync(currentUser.Id);
-        
+
         bool accessToAmountNegative = false;
 
         if (currentUser.IsAgent)
@@ -4255,10 +4274,10 @@ public class TelegramService(
 
             await botClient.SendTextMessageAsync(chatId: chatId, text: "عملیات با موفقیت انجام شد",
                 cancellationToken: cancellationToken);
-            
+
             telegramUser.State = TelegramMarzbanVpnSessionState.None;
             telegramUser.Id = 0;
-            
+
             await telegramUserRepository.Update(telegramUser);
         }
     }

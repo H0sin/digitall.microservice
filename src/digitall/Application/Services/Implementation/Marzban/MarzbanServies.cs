@@ -895,7 +895,7 @@ public class MarzbanServies(
             {
                 Message = $"""
                            ActiveAllUserAccount
-                           use not found
+                           user not found
                            {e.Message}
                            {e.Data}
                            {e.InnerException}
@@ -1290,7 +1290,7 @@ public class MarzbanServies(
 
     public async Task MainDeleteMarzbanUserAsync(long marzbanUserId, long userId)
     {
-        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
@@ -1395,9 +1395,8 @@ public class MarzbanServies(
         catch (Exception e)
         {
             await transaction.RollbackAsync();
-            await marzbanUserRepository.DeleteEntity(marzbanUserId);
-            Console.WriteLine(e);
-            throw;
+            if(e.Message.Contains("found")) await marzbanUserRepository.DeleteEntity(marzbanUserId);
+            throw new ApplicationException(e.Message);
         }
     }
 
