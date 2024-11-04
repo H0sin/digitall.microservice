@@ -1213,7 +1213,6 @@ public class TelegramService(
                     replyMarkup: TelegramHelper.SendServiceInformationButton(marzbanUser.Id, vpnId, marzbanUser.Status),
                     cancellationToken: cancellationToken);
             }
-      
         }
         catch (Exception e)
         {
@@ -1221,13 +1220,13 @@ public class TelegramService(
                 chatId: chatId,
                 text: """
                         کاربر گرامی 🌟،
-                      
+
                       🔔 به اطلاع شما می‌رسانیم که به دلیل گذشت بیش از ⏳ ۱۵ روز از زمان مقرر، دسترسی شما به سرویس مورد نظر حذف شده است.
-                      
+
                       📞 برای استفاده مجدد یا دریافت اطلاعات بیشتر، لطفاً با پشتیبانی تماس بگیرید.
                       """,
                 cancellationToken: cancellationToken);
-            
+
             await SendListServicesAsync(botClient, callbackQuery, cancellationToken);
         }
     }
@@ -3419,35 +3418,45 @@ public class TelegramService(
         User? parentUser = await GetUserByChatIdAsync(chatId);
         User? user = await userRepository.GetEntityById(Id);
 
-        AddAgentDto agent = new()
+        if (user.Balance > 100000)
         {
-            AgentAdminId = user.Id,
-            BrandName = "",
-            PersianBrandName = user.UserFullName(),
-            BrandAddress = "",
-        };
-
-        await agentService.AddAgentAsync(agent, parentUser.Id);
-
-        await notificationService.AddNotificationAsync(new AddNotificationDto()
-        {
-            Message = "شما با موفقیت نماینده شدید ✅",
-            UserId = user.Id,
-            Buttons = new()
+            AddAgentDto agent = new()
             {
-                new("مدیریت پنل نمایندگی 🏢", "agency_management")
-            },
-        }, user.Id);
-        telegramUser.Id = Id;
+                AgentAdminId = user.Id,
+                BrandName = "",
+                PersianBrandName = user.UserFullName(),
+                BrandAddress = "",
+            };
 
-        await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
-            cancellationToken: cancellationToken);
-        await telegramUserRepository.Update(telegramUser);
-        await ManagementUserAsync(botClient!, new CallbackQuery()
+            await agentService.AddAgentAsync(agent, parentUser.Id);
+
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = "شما با موفقیت نماینده شدید ✅",
+                UserId = user.Id,
+                Buttons = new()
+                {
+                    new("مدیریت پنل نمایندگی 🏢", "agency_management")
+                },
+            }, user.Id);
+            telegramUser.Id = Id;
+
+            await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",
+                cancellationToken: cancellationToken);
+            await telegramUserRepository.Update(telegramUser);
+            await ManagementUserAsync(botClient!, new CallbackQuery()
+            {
+                Data = $"user_management?id={telegramUser.Id}",
+                Message = callbackQuery.Message,
+            }, cancellationToken, telegramUser);
+        }
+        else
         {
-            Data = $"user_management?id={telegramUser.Id}",
-            Message = callbackQuery.Message,
-        }, cancellationToken, telegramUser);
+            await botClient!.SendTextMessageAsync(chatId, """
+                                                          ⚠️📉 با عرض پوزش! به اطلاع می‌رسانیم که به دلیل محدودیت‌های موجود، امکان تعیین کاربران با موجودی کمتر از ۱۰۰ تومان به عنوان نماینده وجود ندارد. 🙏💬 از همکاری و درک شما سپاسگزاریم. 🌟
+                                                          """,
+                cancellationToken: cancellationToken);
+        }
     }
 
     public async Task SendMenuForSendMessageByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
