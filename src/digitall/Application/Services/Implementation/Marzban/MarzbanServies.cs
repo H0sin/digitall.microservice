@@ -890,6 +890,7 @@ public class MarzbanServies(
         }
         catch (Exception e)
         {
+            await MainDeleteMarzbanUserAsync(id,userId);
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
                 Message = $"""
@@ -1394,6 +1395,7 @@ public class MarzbanServies(
         catch (Exception e)
         {
             await transaction.RollbackAsync();
+            await marzbanUserRepository.DeleteEntity(marzbanUserId);
             Console.WriteLine(e);
             throw;
         }
