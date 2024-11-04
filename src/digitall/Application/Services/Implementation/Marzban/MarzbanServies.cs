@@ -1290,7 +1290,7 @@ public class MarzbanServies(
 
     public async Task MainDeleteMarzbanUserAsync(long marzbanUserId, long userId)
     {
-        await using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        // await using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(marzbanUserId);
@@ -1390,11 +1390,11 @@ public class MarzbanServies(
             marzbanUserRepository.DeletePermanent(marzbanUser);
             await marzbanUserRepository.SaveChanges(userId);
 
-            await transaction.CommitAsync();
+            // await transaction.CommitAsync();
         }
         catch (Exception e)
         {
-            await transaction.RollbackAsync();
+            // await transaction.RollbackAsync();
             if(e.Message.Contains("found")) await marzbanUserRepository.DeleteEntity(marzbanUserId);
             throw new ApplicationException(e.Message);
         }
