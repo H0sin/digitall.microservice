@@ -19,11 +19,23 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
         {
             var agentService = scope.ServiceProvider.GetRequiredService<IAgentService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-
+            
             List<AgentDto> agents = await agentService.AgentsReachedNegativeNotLimit();
-
+            
             foreach (var agent in agents)
             {
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
+                {
+                    Message = $"""
+                               نماینده در جاب.ActiveNegativeBalanceJob 
+                               {agent.AgentAdminId}
+                               {agent.BrandName}
+                               {agent.PersianBrandName}
+                               """,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = 1,
+                }, 1);
+                
                 await userService.ActiveAllUserAccount(agent.AgentAdminId);
                 agent.DisabledAccountTime = null;
                 await agentService.UpdateAgentAsync(agent, 1);
@@ -34,8 +46,10 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
                 Message = $"""
-                           هنگام اجرای job ActiveNegativeBalanceJob به مشکل خوردیم.
+                           هنگام اجرای job CheckAndNotifyNegativeBalanceJob به مشکل خوردیم.
                            {e.Message}
+                           {e.Data}
+                           {e.InnerException}
                            """,
                 NotificationType = NotificationType.BogsReports,
                 UserId = 1,
