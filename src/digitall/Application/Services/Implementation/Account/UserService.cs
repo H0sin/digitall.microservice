@@ -455,6 +455,16 @@ public class UserService(
 
         foreach (var service in services)
         {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                           سرویس با نوع {service.Item2.ToString()} پاک میشه 
+                           ایدی سرویس {service.Item2}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+            
             switch (service.Item1)
             {
                 case CategoryType.V2Ray:
