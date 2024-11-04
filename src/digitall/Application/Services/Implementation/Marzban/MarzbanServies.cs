@@ -860,31 +860,51 @@ public class MarzbanServies(
 
     public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
     {
-        MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
-
-        MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
-        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
-
-        MarzbanUserDto response =
-            await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
-                HttpMethod.Get);
-
-        if (marzbanUser.UserId != userId) marzbanUser = null;
-
-        response.MarzbanServerId = marzbanUser.MarzbanServerId;
-        response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
-        response.Id = marzbanUser.Id;
-        response.UserId = marzbanUser.UserId;
-        response.Volume = marzbanUser.Volume;
-        response.ServiceTime = marzbanUser.ServiceTime;
-        response.OrderDeatilId = marzbanUser.OrderDetailId;
-        response.OrderId = marzbanUser.OrderId;
-
-        return marzbanUser switch
+        try
         {
-            null => null,
-            _ => await UpdateMarzbanUserAsync(response, userId),
-        };
+            MarzbanUser? marzbanUser = await marzbanUserRepository.GetEntityById(id);
+
+            MarzbanServer marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+
+            MarzbanUserDto response =
+                await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
+                    HttpMethod.Get);
+
+            if (marzbanUser.UserId != userId) marzbanUser = null;
+
+            response.MarzbanServerId = marzbanUser.MarzbanServerId;
+            response.MarzbanVpnId = marzbanUser.MarzbanVpnId;
+            response.Id = marzbanUser.Id;
+            response.UserId = marzbanUser.UserId;
+            response.Volume = marzbanUser.Volume;
+            response.ServiceTime = marzbanUser.ServiceTime;
+            response.OrderDeatilId = marzbanUser.OrderDetailId;
+            response.OrderId = marzbanUser.OrderId;
+
+            return marzbanUser switch
+            {
+                null => null,
+                _ => await UpdateMarzbanUserAsync(response, userId),
+            };
+        }
+        catch (Exception e)
+        {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                           ActiveAllUserAccount
+                           use not found
+                           {e.Message}
+                           {e.Data}
+                           {e.InnerException}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+        }
+
+        return null;
     }
 
     public async Task<UpdateMarzbanVpnDto> UpdateMarzbanVpnAsync(UpdateMarzbanVpnDto vpnDto, long userId)

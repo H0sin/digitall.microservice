@@ -16,6 +16,7 @@ using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Email;
 using Domain.DTOs.Marzban;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Sms;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Wireguard;
@@ -467,23 +468,59 @@ public class UserService(
             }
         }
     }
-    
+
     public async Task ActiveAllUserAccount(long userId)
     {
         var services = await GetUserServices(userId);
 
         foreach (var service in services)
         {
-            switch (service.Item1)
+            try
             {
-                case CategoryType.V2Ray:
-                    await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, service.Item2,
-                        userId);
-                    break;
+                switch (service.Item1)
+                {
+                    case CategoryType.V2Ray:
+                        await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, service.Item2,
+                            userId);
+                        break;
 
-                case CategoryType.WireGuard:
-                    await wireguardServices.ActiveWireguardAccount(service.Item2);
-                    break;
+                    case CategoryType.WireGuard:
+                        await wireguardServices.ActiveWireguardAccount(service.Item2);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Contains("not found"))
+                {
+                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    await notificationService.AddNotificationAsync(new AddNotificationDto()
+                    {
+                        Message = $"""
+                                   ActiveAllUserAccount
+                                   use not found
+                                   {e.Message}
+                                   {e.Data}
+                                   {e.InnerException}
+                                   """,
+                        NotificationType = NotificationType.BogsReports,
+                        UserId = 1,
+                    }, 1);
+                }
+                else
+                {
+                    await notificationService.AddNotificationAsync(new AddNotificationDto()
+                    {
+                        Message = $"""
+                                   ActiveAllUserAccount
+                                   {e.Message}
+                                   {e.Data}
+                                   {e.InnerException}
+                                   """,
+                        NotificationType = NotificationType.BogsReports,
+                        UserId = 1,
+                    }, 1);
+                }
             }
         }
     }
