@@ -26,10 +26,22 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
 
             foreach (var agent in agents)
             {
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
+                {
+                    Message = $"""
+                               نماینده در جاب .CheckAndNotifyNegativeBalanceJob 
+                               {agent.AgentAdminId}
+                               {agent.BrandName}
+                               {agent.PersianBrandName}
+                               """,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = 1,
+                }, 1);
+                
                 if (agent.DisabledAccountTime is null)
                 {
                     agent.DisabledAccountTime = DateTime.Now.AddHours(24);
-                    await agentService.UpdateAgentAsync(agent, 1);
+                    await agentService.UpdateAgentAsync(agent, agent.AgentAdminId);
                 }
 
                 if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
@@ -54,6 +66,8 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                 Message = $"""
                            هنگام اجرای job CheckAndNotifyNegativeBalanceJob به مشکل خوردیم.
                            {e.Message}
+                           {e.Data}
+                           {e.InnerException}
                            """,
                 NotificationType = NotificationType.BogsReports,
                 UserId = 1,
