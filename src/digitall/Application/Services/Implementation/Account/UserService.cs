@@ -455,34 +455,16 @@ public class UserService(
 
         foreach (var service in services)
         {
-            try
+            switch (service.Item1)
             {
-                switch (service.Item1)
-                {
-                    case CategoryType.V2Ray:
-                        await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.disabled, service.Item2,
-                            userId);
-                        break;
+                case CategoryType.V2Ray:
+                    await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.disabled, service.Item2,
+                        userId);
+                    break;
 
-                    case CategoryType.WireGuard:
-                        await wireguardServices.DisabledWireguardAccount(service.Item2);
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                await notificationService.AddNotificationAsync(new AddNotificationDto()
-                {
-                    Message = $"""
-                               ActiveAllUserAccount
-                               user not found
-                               {e.Message}
-                               {e.Data}
-                               {e.InnerException}
-                               """,
-                    NotificationType = NotificationType.BogsReports,
-                    UserId = 1,
-                }, 1);
+                case CategoryType.WireGuard:
+                    await wireguardServices.DisabledWireguardAccount(service.Item2);
+                    break;
             }
         }
     }
@@ -493,34 +475,15 @@ public class UserService(
 
         foreach (var service in services)
         {
-            try
+            switch (service.Item1)
             {
-                switch (service.Item1)
-                {
-                    case CategoryType.V2Ray:
-                        await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, service.Item2,
-                            userId);
-                        break;
+                case CategoryType.V2Ray:
+                    await marzbanService.ChangeMarzbanUserStatusAsync(MarzbanUserStatus.active, service.Item2, userId);
+                    break;
 
-                    case CategoryType.WireGuard:
-                        await wireguardServices.ActiveWireguardAccount(service.Item2);
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                await notificationService.AddNotificationAsync(new AddNotificationDto()
-                {
-                    Message = $"""
-                               ActiveAllUserAccount
-                               use not found
-                               {e.Message}
-                               {e.Data}
-                               {e.InnerException}
-                               """,
-                    NotificationType = NotificationType.BogsReports,
-                    UserId = 1,
-                }, 1);
+                case CategoryType.WireGuard:
+                    await wireguardServices.ActiveWireguardAccount(service.Item2);
+                    break;
             }
         }
     }
@@ -531,33 +494,15 @@ public class UserService(
 
         foreach (var service in services)
         {
-            try
+            switch (service.Item1)
             {
-                switch (service.Item1)
-                {
-                    case CategoryType.V2Ray:
-                        await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
-                        break;
+                case CategoryType.V2Ray:
+                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    break;
 
-                    case CategoryType.WireGuard:
-                        await wireguardServices.MainDeleteWireguardService(service.Item2, userId);
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                await notificationService.AddNotificationAsync(new AddNotificationDto()
-                {
-                    Message = $"""
-                               ActiveAllUserAccount
-                               use not found
-                               {e.Message}
-                               {e.Data}
-                               {e.InnerException}
-                               """,
-                    NotificationType = NotificationType.BogsReports,
-                    UserId = 1,
-                }, 1);
+                case CategoryType.WireGuard:
+                    await wireguardServices.MainDeleteWireguardService(service.Item2, userId);
+                    break;
             }
         }
     }
