@@ -1245,10 +1245,27 @@ public class MarzbanServies(
         MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
         marzbanUser.Status = status.ToString();
-
-        MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
-            MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
-            HttpMethod.Put, marzbanUser);
+        try
+        {
+            MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
+                HttpMethod.Put, marzbanUser);
+        }
+        catch (Exception e)
+        {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                           {marzbanUser.Username}
+                           هنگام اجرای job ActiveNegativeBalanceJob به مشکل خوردیم.
+                           {e.Message}
+                           {e.Data}
+                           {e.InnerException}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+        }
 
         await UpdateMarzbanUserAsync(marzbanUser, userId);
 
