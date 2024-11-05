@@ -464,7 +464,7 @@ public class UserService(
                 NotificationType = NotificationType.BogsReports,
                 UserId = 1,
             }, 1);
-            
+
             switch (service.Item1)
             {
                 case CategoryType.V2Ray:
@@ -496,6 +496,61 @@ public class UserService(
 
                     case CategoryType.WireGuard:
                         await wireguardServices.ActiveWireguardAccount(service.Item2);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Contains("not found"))
+                {
+                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    await notificationService.AddNotificationAsync(new AddNotificationDto()
+                    {
+                        Message = $"""
+                                   ActiveAllUserAccount
+                                   use not found
+                                   {e.Message}
+                                   {e.Data}
+                                   {e.InnerException}
+                                   """,
+                        NotificationType = NotificationType.BogsReports,
+                        UserId = 1,
+                    }, 1);
+                }
+                else
+                {
+                    await notificationService.AddNotificationAsync(new AddNotificationDto()
+                    {
+                        Message = $"""
+                                   ActiveAllUserAccount
+                                   {e.Message}
+                                   {e.Data}
+                                   {e.InnerException}
+                                   """,
+                        NotificationType = NotificationType.BogsReports,
+                        UserId = 1,
+                    }, 1);
+                }
+            }
+        }
+    }
+
+    public async Task DeleteAllUserAccount(long userId)
+    {
+        var services = await GetUserServices(userId);
+
+        foreach (var service in services)
+        {
+            try
+            {
+                switch (service.Item1)
+                {
+                    case CategoryType.V2Ray:
+                        await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                        break;
+
+                    case CategoryType.WireGuard:
+                        await wireguardServices.MainDeleteWireguardService(service.Item2,userId);
                         break;
                 }
             }
