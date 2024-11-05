@@ -51,6 +51,14 @@ public class MarzbanServies(
 {
     public async Task DeleteMarzbanUserAsync(long id)
     {
+        await notificationService.AddNotificationAsync(new AddNotificationDto()
+        {
+            Message = $"""
+                       delete marzban user by id {id};
+                       """,
+            NotificationType = NotificationType.BogsReports,
+            UserId = 1,
+        }, 1);
         await marzbanUserRepository.DeletePermanent(id);
         await marzbanUserRepository.SaveChanges(1);
     }
@@ -1232,6 +1240,15 @@ public class MarzbanServies(
     {
         try
         {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                            change marzban user status
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+            
             MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
@@ -1249,7 +1266,16 @@ public class MarzbanServies(
         }
         catch (MarzbanException e)
         {
-            if(e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(marzbanUserId);
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                            {e.Message}
+                            {e.InnerException}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+            if (e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(marzbanUserId);
             return true;
         }
     }
