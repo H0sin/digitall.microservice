@@ -478,7 +478,7 @@ public class UserService(
                     {
                         Message = $"""
                                    ActiveAllUserAccount
-                                   use not found
+                                   user not found
                                    {e.Message}
                                    {e.Data}
                                    {e.InnerException}
