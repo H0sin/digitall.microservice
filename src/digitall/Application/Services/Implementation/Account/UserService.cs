@@ -452,7 +452,7 @@ public class UserService(
 
     public async Task DisabledAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId,MarzbanUserStatus.disabled);
+        var services = await GetUserServices(userId,MarzbanUserStatus.active);
 
         foreach (var service in services)
         {
@@ -472,7 +472,7 @@ public class UserService(
 
     public async Task ActiveAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId,MarzbanUserStatus.active);
+        var services = await GetUserServices(userId,MarzbanUserStatus.disabled);
 
         foreach (var service in services)
         {
