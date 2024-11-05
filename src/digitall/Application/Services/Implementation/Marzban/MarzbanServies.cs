@@ -896,7 +896,7 @@ public class MarzbanServies(
         }
         catch (Exception e)
         {
-            await MainDeleteMarzbanUserAsync(id,userId);
+            await MainDeleteMarzbanUserAsync(id, userId);
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
                 Message = $"""
@@ -1244,16 +1244,13 @@ public class MarzbanServies(
                 HttpMethod.Put, marzbanUser);
 
             await UpdateMarzbanUserAsync(marzbanUser, userId);
-        
-            return true;   
-        }
-        catch (Exception e)
-        {
-            if (e.Message.Contains("not found"))
-            {
-                await DeleteMarzbanUserAsync(marzbanUserId);
-            }
 
+            return true;
+        }
+        catch (MarzbanException e)
+        {
+            await DeleteMarzbanUserAsync(marzbanUserId);
+            
             return true;
         }
     }
@@ -1414,7 +1411,7 @@ public class MarzbanServies(
         catch (Exception e)
         {
             // await transaction.RollbackAsync();
-            if(e.Message.Contains("found")) await marzbanUserRepository.DeleteEntity(marzbanUserId);
+            if (e.Message.Contains("found")) await marzbanUserRepository.DeleteEntity(marzbanUserId);
             throw new ApplicationException(e.Message);
         }
     }
