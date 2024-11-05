@@ -89,7 +89,7 @@ public class MarzbanApiRequest
         return response.StatusCode switch
         {
             HttpStatusCode.OK => JsonConvert.DeserializeObject<T>(responseData),
-            HttpStatusCode.NotFound => throw new MarzbanException(HttpStatusCode.NotFound, responseData),
+            HttpStatusCode.NotFound => throw new MarzbanException(ApiResultStatusCode.NotFound, responseData),
             _ => throw new MarzbanException(responseData)
         }; 
     }
@@ -122,8 +122,13 @@ public class MarzbanApiRequest
 
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         var responseData = await response.Content.ReadAsStringAsync();
-        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(response.StatusCode, responseData);
-        return responseData;
+        return response.StatusCode switch
+        {
+            HttpStatusCode.OK => responseData,
+            HttpStatusCode.NotFound => throw new MarzbanException(ApiResultStatusCode.NotFound, responseData),
+            _ => throw new MarzbanException(responseData)
+        }; 
+        
     }
 
     public class TokenResponse
