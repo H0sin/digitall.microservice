@@ -8,6 +8,10 @@ public class MarzbanException : AppException
     public MarzbanException(HttpStatusCode statusCode) : base(ApiResultStatusCode.MarzbanError)
     {
     }
+    
+    public MarzbanException(string message) : base(message)
+    {
+    }
 
     public MarzbanException(HttpStatusCode response, string massage) : base(ApiResultStatusCode.MarzbanError,
         massage)

@@ -32,11 +32,10 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
 
                 if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
                 {
-                    // todo : disabled account
                     if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= -10080)
                         await userService.DeleteAllUserAccount(agent.AgentAdminId);
+
                     else await userService.DisabledAllUserAccount(agent.AgentAdminId);
-                    // await notificationService.AddNotificationsAsync()
                 }
 
                 await notificationService.AddNotificationAsync(
