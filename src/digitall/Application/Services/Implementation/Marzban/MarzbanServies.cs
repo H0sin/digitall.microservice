@@ -904,7 +904,7 @@ public class MarzbanServies(
             response.ServiceTime = marzbanUser.ServiceTime;
             response.OrderDeatilId = marzbanUser.OrderDetailId;
             response.OrderId = marzbanUser.OrderId;
-            response.Expire = marzbanUser.Expire;
+            // response.Expire = marzbanUser.Expire;
             
             return marzbanUser switch
             {
