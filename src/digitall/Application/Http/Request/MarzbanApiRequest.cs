@@ -29,14 +29,14 @@ public class MarzbanApiRequest
     {
         try
         {
-            // if (_marzbanServer.Token != null) return _marzbanServer.Token;
+            if (_marzbanServer.Token != null) return _marzbanServer.Token;
             
             var loginData = new Dictionary<string, string?>()
             {
                 { "username", _marzbanServer?.UserName },
                 { "password", _marzbanServer?.Password }
             };
-
+            
             var content = new FormUrlEncodedContent(loginData);
             var response =
                 await _httpClient.PostAsync(_marzbanServer?.GetFullIpAddress() + MarzbanPaths.Login, content);
@@ -46,7 +46,7 @@ public class MarzbanApiRequest
             var responseData = await response.Content.ReadAsStringAsync();
             var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(responseData);
 
-            _token = tokenResponse.access_token; // فرض می‌کنیم نام فیلد توکن `access_token` است.
+            _token = tokenResponse.access_token;
 
             return _token;
         }
