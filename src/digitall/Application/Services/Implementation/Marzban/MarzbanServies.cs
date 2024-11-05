@@ -1249,8 +1249,7 @@ public class MarzbanServies(
         }
         catch (MarzbanException e)
         {
-            await DeleteMarzbanUserAsync(marzbanUserId);
-            
+            if(e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(marzbanUserId);
             return true;
         }
     }

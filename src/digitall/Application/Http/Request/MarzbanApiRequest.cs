@@ -85,8 +85,13 @@ public class MarzbanApiRequest
 
         var response = await _httpClient.SendAsync(request);
         var responseData = await response.Content.ReadAsStringAsync();
-        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(response.StatusCode, responseData);
-        return JsonConvert.DeserializeObject<T>(responseData);
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.OK => JsonConvert.DeserializeObject<T>(responseData),
+            HttpStatusCode.NotFound => throw new MarzbanException(HttpStatusCode.NotFound, responseData),
+            _ => throw new MarzbanException(responseData)
+        }; 
     }
 
     public async Task<string> CallApiAsync(string url, HttpMethod method, object data = null,
