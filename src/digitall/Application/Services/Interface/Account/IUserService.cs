@@ -11,6 +11,7 @@ public interface IUserService
 {
     Task DisabledAllUserAccount(long userId);
     Task ActiveAllUserAccount(long userId);
+    Task DeleteAllUserAccount(long userId);
     Task<List<(CategoryType,long)>> GetUserServices(long userId);
     IQueryable<User> GetAgentUsers(long agentId);
     Task<AddUserResult> AddUserAsync(AddUserDto user, long userId);

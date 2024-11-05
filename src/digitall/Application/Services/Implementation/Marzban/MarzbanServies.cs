@@ -1224,19 +1224,32 @@ public class MarzbanServies(
 
     public async Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId)
     {
-        MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
-        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+        try
+        {
+            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
+            MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
-        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
-        marzbanUser.Status = status.ToString();
+            marzbanUser.Status = status.ToString();
 
-        MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
-            MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
-            HttpMethod.Put, marzbanUser);
+            MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+                MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
+                HttpMethod.Put, marzbanUser);
 
-        await UpdateMarzbanUserAsync(marzbanUser, userId);
-        return true;
+            await UpdateMarzbanUserAsync(marzbanUser, userId);
+        
+            return true;   
+        }
+        catch (Exception e)
+        {
+            if (e.Message.Contains("User not found"))
+            {
+                await MainDeleteMarzbanUserAsync(marzbanUserId,userId);
+            }
+
+            return true;
+        }
     }
 
     public async Task DeleteMarzbanUserAsync(DeleteMarzbanUserDto delete)

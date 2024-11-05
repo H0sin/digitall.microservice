@@ -21,7 +21,7 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
         try
         {
             List<AgentDto> agents = await agentService.AgentsReachedNegativeLimit();
-            
+
             foreach (var agent in agents)
             {
                 if (agent.DisabledAccountTime is null)
@@ -33,14 +33,15 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                 if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
                 {
                     // todo : disabled account
-
-                    await userService.DisabledAllUserAccount(agent.AgentAdminId);
+                    if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= -10080)
+                        await userService.DeleteAllUserAccount(agent.AgentAdminId);
+                    else await userService.DisabledAllUserAccount(agent.AgentAdminId);
                     // await notificationService.AddNotificationsAsync()
                 }
 
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.AlterForDisabledAccounts(agent.DisabledAccountTime ?? DateTime.Now,
-                        agent.AgentAdminId),1);
+                        agent.AgentAdminId), 1);
             }
         }
         catch (Exception e)
@@ -60,6 +61,5 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                 UserId = 1,
             }, 1);
         }
-
     }
 }
