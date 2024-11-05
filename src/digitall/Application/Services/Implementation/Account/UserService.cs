@@ -473,7 +473,7 @@ public class UserService(
             {
                 if (e.Message.Contains("not found"))
                 {
-                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
                     await notificationService.AddNotificationAsync(new AddNotificationDto()
                     {
                         Message = $"""
@@ -529,7 +529,7 @@ public class UserService(
             {
                 if (e.Message.Contains("not found"))
                 {
-                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
                     await notificationService.AddNotificationAsync(new AddNotificationDto()
                     {
                         Message = $"""
@@ -584,7 +584,7 @@ public class UserService(
             {
                 if (e.Message.Contains("not found"))
                 {
-                    await marzbanService.MainDeleteMarzbanUserAsync(service.Item2, userId);
+                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
                     await notificationService.AddNotificationAsync(new AddNotificationDto()
                     {
                         Message = $"""

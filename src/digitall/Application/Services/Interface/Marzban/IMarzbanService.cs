@@ -7,6 +7,13 @@ namespace Application.Services.Interface.Marzban;
 public interface IMarzbanService
 {
     /// <summary>
+    /// delete marzban user Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task DeleteMarzbanUserAsync(long id);
+    
+    /// <summary>
     /// list marzban server dto
     /// </summary>
     /// <returns></returns>
