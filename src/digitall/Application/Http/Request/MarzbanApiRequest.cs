@@ -85,7 +85,7 @@ public class MarzbanApiRequest
 
         var response = await _httpClient.SendAsync(request);
         var responseData = await response.Content.ReadAsStringAsync();
-
+        
         return response.StatusCode switch
         {
             HttpStatusCode.OK => JsonConvert.DeserializeObject<T>(responseData),
