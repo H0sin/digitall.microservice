@@ -1249,9 +1249,9 @@ public class MarzbanServies(
         }
         catch (Exception e)
         {
-            if (e.Message.Contains("User not found"))
+            if (e.Message.Contains("not found"))
             {
-                await MainDeleteMarzbanUserAsync(marzbanUserId,userId);
+                await DeleteMarzbanUserAsync(marzbanUserId);
             }
 
             return true;
