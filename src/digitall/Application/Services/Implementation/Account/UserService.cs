@@ -471,36 +471,18 @@ public class UserService(
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("not found"))
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
                 {
-                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   user not found
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
-                else
-                {
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
+                    Message = $"""
+                               ActiveAllUserAccount
+                               user not found
+                               {e.Message}
+                               {e.Data}
+                               {e.InnerException}
+                               """,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = 1,
+                }, 1);
             }
         }
     }
@@ -527,36 +509,18 @@ public class UserService(
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("not found"))
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
                 {
-                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   use not found
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
-                else
-                {
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
+                    Message = $"""
+                               ActiveAllUserAccount
+                               use not found
+                               {e.Message}
+                               {e.Data}
+                               {e.InnerException}
+                               """,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = 1,
+                }, 1);
             }
         }
     }
@@ -582,36 +546,18 @@ public class UserService(
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("not found"))
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
                 {
-                    await marzbanService.DeleteMarzbanUserAsync(service.Item2);
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   use not found
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
-                else
-                {
-                    await notificationService.AddNotificationAsync(new AddNotificationDto()
-                    {
-                        Message = $"""
-                                   ActiveAllUserAccount
-                                   {e.Message}
-                                   {e.Data}
-                                   {e.InnerException}
-                                   """,
-                        NotificationType = NotificationType.BogsReports,
-                        UserId = 1,
-                    }, 1);
-                }
+                    Message = $"""
+                               ActiveAllUserAccount
+                               use not found
+                               {e.Message}
+                               {e.Data}
+                               {e.InnerException}
+                               """,
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = 1,
+                }, 1);
             }
         }
     }
