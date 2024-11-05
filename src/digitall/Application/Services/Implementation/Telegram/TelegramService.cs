@@ -1064,8 +1064,7 @@ public class TelegramService(
         {
             await marzbanService.RenewalMarzbanVpnAsync(buy, user?.Id ?? 0);
         }
-        else
-            marzbanUsers = await marzbanService.BuyMarzbanVpnAsync(buy, user?.Id ?? 0);
+        else marzbanUsers = await marzbanService.BuyMarzbanVpnAsync(buy, user?.Id ?? 0);
 
         if (subscribeId == 0)
         {
