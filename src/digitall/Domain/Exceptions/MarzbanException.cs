@@ -5,7 +5,7 @@ namespace Domain.Exceptions;
 
 public class MarzbanException : AppException
 {
-    public MarzbanException(HttpStatusCode statusCode) : base(ApiResultStatusCode.MarzbanError)
+    public MarzbanException(ApiResultStatusCode statusCode) : base(ApiResultStatusCode.MarzbanError)
     {
     }
     
@@ -13,12 +13,12 @@ public class MarzbanException : AppException
     {
     }
 
-    public MarzbanException(HttpStatusCode response, string massage) : base(ApiResultStatusCode.MarzbanError,
+    public MarzbanException(ApiResultStatusCode statusCode, string massage) : base(statusCode,
         massage)
     {
     }
 
-    public MarzbanException(HttpStatusCode response, string message, object additionalData) : base(
+    public MarzbanException(ApiResultStatusCode statusCode, string message, object additionalData) : base(
         ApiResultStatusCode.MarzbanError, message,
         additionalData)
     {

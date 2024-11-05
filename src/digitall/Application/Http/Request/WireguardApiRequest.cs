@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Domain.Enums;
 using Domain.Exceptions;
 using Newtonsoft.Json;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
@@ -24,7 +25,7 @@ public class WireguardApiRequest
         var response = await httpClient.SendAsync(req);
         var responseData = await response.Content.ReadAsStringAsync();
 
-        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(response.StatusCode, responseData);
+        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(ApiResultStatusCode.MarzbanError, responseData);
 
         ResponseWireguard? obj = JsonConvert.DeserializeObject<ResponseWireguard>(responseData);
         return obj;
@@ -75,7 +76,7 @@ public class WireguardApiRequest<TResponse, TRequest>(HttpClient httpClient)
 
         var response = await httpClient.SendAsync(req);
         var responseData = await response.Content.ReadAsStringAsync();
-        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(response.StatusCode, responseData);
+        if (response.StatusCode != HttpStatusCode.OK) throw new MarzbanException(ApiResultStatusCode.MarzbanError, responseData);
 
         ResponseWireguard<TResponse>? obj = JsonConvert.DeserializeObject<ResponseWireguard<TResponse>>(responseData);
 

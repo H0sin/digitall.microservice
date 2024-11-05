@@ -213,7 +213,7 @@ public class MarzbanServies(
         string token = await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
-            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+            throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
         List<MarzbanUser>? responses = new();
 
@@ -904,7 +904,7 @@ public class MarzbanServies(
         }
         catch (MarzbanException e)
         {
-            if (e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(id);
+            if (e.ApiStatusCode == ApiResultStatusCode.NotFound) await DeleteMarzbanUserAsync(id);
 
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
@@ -1211,7 +1211,7 @@ public class MarzbanServies(
             string token = await marzbanApiRequest.LoginAsync();
 
             if (string.IsNullOrEmpty(token))
-                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+                throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
             MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
                 MarzbanPaths.UserUpdate + "/" + marzbanUser?.Username,
@@ -1271,7 +1271,7 @@ public class MarzbanServies(
             string token = await marzbanApiRequest.LoginAsync();
 
             if (string.IsNullOrEmpty(token))
-                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+                throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
             MarzbanUserDto? serverUser =
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(MarzbanPaths.UserGet + "/" + marzbanUser.Username,
@@ -1324,7 +1324,7 @@ public class MarzbanServies(
             string token = await marzbanApiRequest.LoginAsync();
 
             if (string.IsNullOrEmpty(token))
-                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+                throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
             Domain.Entities.Order.Order? order = await orderRepository
                 .GetQuery()
@@ -1430,7 +1430,7 @@ public class MarzbanServies(
             string token = await marzbanApiRequest.LoginAsync();
 
             if (string.IsNullOrEmpty(token))
-                throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+                throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
             MarzbanUserDto serverUser =
                 await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
@@ -1459,7 +1459,7 @@ public class MarzbanServies(
         string token = await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
-            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+            throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
         List<string> serverUser =
             await marzbanApiRequest.CallApiAsync<List<string>>(
@@ -1568,7 +1568,7 @@ public class MarzbanServies(
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw new MarzbanException(HttpStatusCode.BadRequest, e.Message);
+            throw new MarzbanException(ApiResultStatusCode.NotFound, e.Message);
         }
     }
 
@@ -1629,7 +1629,7 @@ public class MarzbanServies(
         string token = await marzbanApiRequest.LoginAsync();
 
         if (string.IsNullOrEmpty(token))
-            throw new MarzbanException(HttpStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
+            throw new MarzbanException(ApiResultStatusCode.NotFound, "سرور مرزبان در دست رس نیست");
 
         MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
             MarzbanPaths.UserUpdate + "/" + user.Username,
