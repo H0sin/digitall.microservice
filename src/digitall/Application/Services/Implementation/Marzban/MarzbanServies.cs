@@ -902,14 +902,14 @@ public class MarzbanServies(
                 _ => await UpdateMarzbanUserAsync(response, userId),
             };
         }
-        catch (Exception e)
+        catch (MarzbanException e)
         {
-            await MainDeleteMarzbanUserAsync(id, userId);
+            if (e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(id);
+
             await notificationService.AddNotificationAsync(new AddNotificationDto()
             {
                 Message = $"""
-                           ActiveAllUserAccount
-                           user not found
+                           marzban ex {e.Message}
                            {e.Message}
                            {e.Data}
                            {e.InnerException}
@@ -1238,64 +1238,26 @@ public class MarzbanServies(
 
     public async Task<bool> ChangeMarzbanUserStatusAsync(MarzbanUserStatus status, long marzbanUserId, long userId)
     {
-        try
-        {
-            await notificationService.AddNotificationAsync(new AddNotificationDto()
-            {
-                Message = $"""
-                            change marzban user status
-                           """,
-                NotificationType = NotificationType.BogsReports,
-                UserId = 1,
-            }, 1);
+        MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
+        MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
-            MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
-            MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
+        MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
 
-            MarzbanApiRequest marzbanApiRequest = new(marzbanServer);
+        marzbanUser.Status = status.ToString();
 
-            marzbanUser.Status = status.ToString();
+        MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
+            MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
+            HttpMethod.Put, marzbanUser);
 
-            MarzbanUserDto? response = await marzbanApiRequest.CallApiAsync<MarzbanUserDto>(
-                MarzbanPaths.UserUpdate + "/" + marzbanUser.Username,
-                HttpMethod.Put, marzbanUser);
+        await UpdateMarzbanUserAsync(marzbanUser, userId);
 
-            await UpdateMarzbanUserAsync(marzbanUser, userId);
-
-            return true;
-        }
-        catch (MarzbanException e)
-        {
-            await notificationService.AddNotificationAsync(new AddNotificationDto()
-            {
-                Message = $"""
-                            {e.Message}
-                            {e.InnerException}
-                           """,
-                NotificationType = NotificationType.BogsReports,
-                UserId = 1,
-            }, 1);
-            if (e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(marzbanUserId);
-            return true;
-        }
-        catch (Exception e)
-        {
-            await notificationService.AddNotificationAsync(new AddNotificationDto()
-            {
-                Message = $"""
-                            {e.Message}
-                            {e.InnerException}
-                           """,
-                NotificationType = NotificationType.BogsReports,
-                UserId = 1,
-            }, 1);
-            return default;
-        }
+        return true;
     }
 
     public async Task DeleteMarzbanUserAsync(DeleteMarzbanUserDto delete)
     {
-        await using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction =
+            await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
