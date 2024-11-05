@@ -872,6 +872,15 @@ public class MarzbanServies(
             .ToListAsync();
     }
 
+    public async Task<List<MarzbanUserDto>> GetMarzbanUsersByStatus(long userId, MarzbanUserStatus status)
+    {
+        return await marzbanUserRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId && x.Status == status.ToString())
+            .Select(x => new MarzbanUserDto(x))
+            .ToListAsync();
+    }
+
     public async Task<MarzbanUserDto?> GetMarzbanUserByUserIdAsync(long id, long userId)
     {
         try
@@ -1257,7 +1266,8 @@ public class MarzbanServies(
             {
                 Message = $"""
                            {marzbanUser.Username}
-                           هنگام اجرای job ActiveNegativeBalanceJob به مشکل خوردیم.
+                           هنگام اجرای ChangeMarzbanUserStatusAsync به مشکل خوردیم.
+                           {status.ToString()}
                            {e.Message}
                            {e.Data}
                            {e.InnerException}

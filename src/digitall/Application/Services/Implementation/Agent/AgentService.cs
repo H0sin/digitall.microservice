@@ -51,7 +51,7 @@ public class AgentService(
                 agent => agent.AgentAdminId,
                 user => user.Id,
                 (agent, user) => new { Agent = agent, User = user })
-            .Where(x => x.User.Balance > 0 & x.Agent.DisabledAccountTime != null)
+            .Where(x => x.User.Balance > x.Agent.AmountWithNegative & x.Agent.DisabledAccountTime != null)
             .Select(x => new AgentDto(x.Agent))
             .ToListAsync();
     }

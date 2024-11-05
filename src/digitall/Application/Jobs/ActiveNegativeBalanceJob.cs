@@ -19,14 +19,21 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
         {
             var agentService = scope.ServiceProvider.GetRequiredService<IAgentService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-            
+
             List<AgentDto> agents = await agentService.AgentsReachedNegativeNotLimit();
-            
+
             foreach (var agent in agents)
             {
                 await userService.ActiveAllUserAccount(agent.AgentAdminId);
                 agent.DisabledAccountTime = null;
                 await agentService.UpdateAgentAsync(agent, agent.AgentAdminId);
+
+                await notificationService.AddNotificationAsync(new AddNotificationDto()
+                {
+                    Message = "اکانت های شما در حال فعال سازی است",
+                    NotificationType = NotificationType.BogsReports,
+                    UserId = agent.AgentAdminId,
+                }, 1);
             }
         }
         catch (Exception e)

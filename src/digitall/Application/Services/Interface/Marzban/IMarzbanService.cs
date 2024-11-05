@@ -267,6 +267,12 @@ public interface IMarzbanService
     /// </summary>
     /// <returns></returns>
     Task<List<MarzbanUserDto>> GetMarzbanUsersAsync(long userId, bool? delete = false);
+    
+    /// <summary>
+    /// list marzban users
+    /// </summary>
+    /// <returns></returns>
+    Task<List<MarzbanUserDto>> GetMarzbanUsersByStatus(long userId,MarzbanUserStatus status);
 
     /// <summary>
     /// get marzban user information
