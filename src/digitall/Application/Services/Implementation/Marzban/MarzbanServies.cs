@@ -910,6 +910,7 @@ public class MarzbanServies(
             {
                 Message = $"""
                            marzban ex {e.Message}
+                           {e.HttpStatusCode}
                            {e.Message}
                            {e.Data}
                            {e.InnerException}
