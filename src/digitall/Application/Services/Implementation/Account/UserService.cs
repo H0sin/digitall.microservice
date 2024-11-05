@@ -22,6 +22,7 @@ using Domain.DTOs.Telegram;
 using Domain.DTOs.Wireguard;
 using Domain.Entities.Account;
 using Domain.Entities.Marzban;
+using Domain.Entities.Wireguard;
 using Domain.Enums.Account;
 using Domain.Enums.Category;
 using Domain.Enums.Marzban;
@@ -451,7 +452,7 @@ public class UserService(
 
     public async Task DisabledAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId);
+        var services = await GetUserServices(userId,MarzbanUserStatus.disabled);
 
         foreach (var service in services)
         {
@@ -471,7 +472,7 @@ public class UserService(
 
     public async Task ActiveAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId);
+        var services = await GetUserServices(userId,MarzbanUserStatus.active);
 
         foreach (var service in services)
         {
@@ -507,9 +508,12 @@ public class UserService(
         }
     }
 
-    public async Task<List<(CategoryType, long)>> GetUserServices(long userId)
+    public async Task<List<(CategoryType, long)>> GetUserServices(long userId, MarzbanUserStatus? status = null)
     {
-        List<MarzbanUserDto> marzbanUsers = await marzbanService.GetMarzbanUsersAsync(userId);
+        List<MarzbanUserDto> marzbanUsers = status is not null
+            ? await marzbanService.GetMarzbanUsersByStatus(userId, status ?? MarzbanUserStatus.active)
+            : await marzbanService.GetMarzbanUsersAsync(userId);
+        
         List<PeerDto> peers = await wireguardServices.GetPeersAsync(userId);
 
         List<(CategoryType, long)> response = new();

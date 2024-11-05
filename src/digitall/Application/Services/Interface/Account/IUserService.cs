@@ -3,6 +3,7 @@ using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Enums.Account;
 using Domain.Enums.Category;
+using Domain.Enums.Marzban;
 
 
 namespace Application.Services.Interface.Account;
@@ -12,7 +13,7 @@ public interface IUserService
     Task DisabledAllUserAccount(long userId);
     Task ActiveAllUserAccount(long userId);
     Task DeleteAllUserAccount(long userId);
-    Task<List<(CategoryType,long)>> GetUserServices(long userId);
+    Task<List<(CategoryType,long)>> GetUserServices(long userId,MarzbanUserStatus? status = null);
     IQueryable<User> GetAgentUsers(long agentId);
     Task<AddUserResult> AddUserAsync(AddUserDto user, long userId);
     Task<LoginUserResult> LoginAsync(LoginUserDto login);
