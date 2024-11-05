@@ -30,9 +30,9 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                     await agentService.UpdateAgentAsync(agent, 1);
                 }
 
-                if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= 0)
+                if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).TotalMinutes <= 0)
                 {
-                    if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).Minutes <= -10080)
+                    if (((agent.DisabledAccountTime ?? DateTime.Now) - DateTime.Now).TotalMinutes <= -10080)
                         await userService.DeleteAllUserAccount(agent.AgentAdminId);
 
                     else await userService.DisabledAllUserAccount(agent.AgentAdminId);
