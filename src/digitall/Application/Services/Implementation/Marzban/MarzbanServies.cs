@@ -49,6 +49,12 @@ public class MarzbanServies(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     IAgentService agentService) : IMarzbanService
 {
+    public async Task DeleteMarzbanUserAsync(long id)
+    {
+        await marzbanUserRepository.DeletePermanent(id);
+        await marzbanUserRepository.SaveChanges(1);
+    }
+
     public async Task<List<MarzbanServer>> ListMarzbanServerAsync()
         => await marzbanServerRepository.GetQuery().ToListAsync();
 
