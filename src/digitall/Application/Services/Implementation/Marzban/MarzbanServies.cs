@@ -1248,7 +1248,7 @@ public class MarzbanServies(
                 NotificationType = NotificationType.BogsReports,
                 UserId = 1,
             }, 1);
-            
+
             MarzbanUserDto? marzbanUser = await GetMarzbanUserByUserIdAsync(marzbanUserId, userId);
             MarzbanServer? marzbanServer = await GetMarzbanServerByIdAsync(marzbanUser.MarzbanServerId);
 
@@ -1278,11 +1278,24 @@ public class MarzbanServies(
             if (e.HttpStatusCode == HttpStatusCode.NotFound) await DeleteMarzbanUserAsync(marzbanUserId);
             return true;
         }
+        catch (Exception e)
+        {
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = $"""
+                            {e.Message}
+                            {e.InnerException}
+                           """,
+                NotificationType = NotificationType.BogsReports,
+                UserId = 1,
+            }, 1);
+            return default;
+        }
     }
 
     public async Task DeleteMarzbanUserAsync(DeleteMarzbanUserDto delete)
     {
-        using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction = await marzbanUserRepository.context.Database.BeginTransactionAsync();
         try
         {
             MarzbanUser? marzbanUser = await marzbanUserRepository.GetQuery()
