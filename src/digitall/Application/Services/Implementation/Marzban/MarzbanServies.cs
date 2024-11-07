@@ -1641,8 +1641,7 @@ public class MarzbanServies(
             .ToListAsync();
 
         var result = from marzbanUser in marzbanUsers
-            join user in users on marzbanUser.UserId equals user.Id into userGroup
-            from user in userGroup.DefaultIfEmpty()
+            join user in users on marzbanUser.UserId equals user.Id
             select new MarzbanUserDto(marzbanUser, user);
 
         return result.ToList();
