@@ -422,7 +422,7 @@ public class TelegramHelper
         {
             buttons.Add(
                 CreateList1Button(InlineKeyboardButton.WithCallbackData($"{type.Title} قیمت {type.Price:N0}",
-                    $"factor_appleId?type{type.Id}")));
+                    $"factor_appleId?type={type.Id}")));
         }
 
         buttons.Add(CreateList1Button(BackToHome));
