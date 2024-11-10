@@ -67,7 +67,7 @@ public class TelegramHelper
         InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی 🏠", "back_to_home");
 
     private static readonly InlineKeyboardButton BuyAppleId =
-        InlineKeyboardButton.WithCallbackData("خرید اپل آیدی 🏠", "buy_appleId");
+        InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", "buy_appleId");
     
     private static readonly InlineKeyboardButton TestFree =
         InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free");
@@ -295,10 +295,10 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup ButtonBuyAppleId()
+    public static InlineKeyboardMarkup ButtonBuyAppleId(long type)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-        buttons.Add(CreateList1Button(BuyAppleId));
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", $"buy_appleId?type{type}")));
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
     }
