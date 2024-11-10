@@ -244,8 +244,8 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleId();
-        
-        if(appleIdTypes.Count <= 1)
+
+        if (appleIdTypes.Count <= 1)
             await botClient!.EditMessageTextAsync(
                 chatId: chatId,
                 messageId: callbackQuery.Message.MessageId,
@@ -255,7 +255,7 @@ public class TelegramService(
                 replyMarkup:
                 TelegramHelper.CreateListAppleIdTypeTemplateButton(appleIdTypes),
                 cancellationToken: cancellationToken);
-        
+
         await botClient!.EditMessageTextAsync(
             chatId: chatId,
             messageId: callbackQuery.Message.MessageId,
@@ -508,7 +508,7 @@ public class TelegramService(
 
         List<ProductDto> products = await productService.GetProductAsync();
 
-        products.Remove(products.FirstOrDefault(x=>x.CategoryType == CategoryType.AppleId));
+        products.Remove(products.FirstOrDefault(x => x.CategoryType == CategoryType.AppleId));
 
         if (products.Count < 0)
             throw new AppException("محصولی وجود ندارد ❌");
@@ -4345,9 +4345,9 @@ public class TelegramService(
             }
 
             User? user = await GetUserByChatIdAsync(chatId);
-            
-            AppleIdType appleIdType = await appleService.GetAppleIdTypeById(type,user.Id);
-        
+
+            AppleIdType appleIdType = await appleService.GetAppleIdTypeById(type, user.Id);
+
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
                 text: $"""
@@ -4370,7 +4370,8 @@ public class TelegramService(
         }
     }
 
-    public async Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    public async Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -4390,34 +4391,34 @@ public class TelegramService(
             AppleId appleId = await appleService.BuyAppleIdAsync(type, chatId: chatId);
 
             string appleId_config = $"""
-                                    نماینده گرامی،
-                                    
-                                    اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
-                                    
-                                    📧 ایمیل: `\{appleId.Email}`
-                                    📱 تلفن: `\{appleId.Phone}`
-                                    🔑 رمز عبور: {appleId.Password}
-                                    🎂 تاریخ تولد: {appleId.BirthDay}
-                                    
-                                    ❓ سوال امنیتی ۱: {appleId.Question1}
-                                    🔑 پاسخ: {appleId.Answer1}
-                                    
-                                    ❓ سوال امنیتی ۲: {appleId.Question2}
-                                    🔑 پاسخ: {appleId.Answer2}
-                                    
-                                    ❓ سوال امنیتی ۳: {appleId.Question3}
-                                    🔑 پاسخ: {appleId.Answer3}
-                                    
-                                    لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید.
-                                    
-                                    با تشکر از خرید شما،
-                                    تیم پشتیبانی
-                                    
-                                    """;
-            
+                                     نماینده گرامی،
+
+                                     اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
+
+                                     📧 ایمیل: `\{appleId.Email}`
+                                     📱 تلفن: `\{appleId.Phone}`
+                                     🔑 رمز عبور: {appleId.Password}
+                                     🎂 تاریخ تولد: {appleId.BirthDay}
+
+                                     ❓ سوال امنیتی ۱: {appleId.Question1}
+                                     🔑 پاسخ: {appleId.Answer1}
+
+                                     ❓ سوال امنیتی ۲: {appleId.Question2}
+                                     🔑 پاسخ: {appleId.Answer2}
+
+                                     ❓ سوال امنیتی ۳: {appleId.Question3}
+                                     🔑 پاسخ: {appleId.Answer3}
+
+                                     لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید.
+
+                                     با تشکر از خرید شما،
+                                     تیم پشتیبانی
+
+                                     """;
+
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
-                text: "",
+                text: appleId_config,
                 replyMarkup: TelegramHelper.ButtonBackToHome(),
                 parseMode: ParseMode.MarkdownV2,
                 cancellationToken: cancellationToken);
