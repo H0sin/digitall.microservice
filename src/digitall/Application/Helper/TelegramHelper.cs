@@ -9,6 +9,7 @@ using Domain.DTOs.Product;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.DTOs.Wireguard;
+using Domain.Entities.Apple;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
@@ -403,6 +404,21 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
+    public static InlineKeyboardMarkup CreateListAppleIdTypeTemplateButton(ICollection<AppleIdType> appleIdTypes)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+        foreach (var type in appleIdTypes)
+        {
+            buttons.Add(
+                CreateList1Button(InlineKeyboardButton.WithCallbackData($"{type.Title} قیمت {type.Price:N0}",
+                    $"factor_appleId?type{type.Id}")));
+        }
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
     public static InlineKeyboardMarkup CreateListVpnTemplateButton(List<WireguardVpnTemplatesDto> templates,
         long peerId = 0)
     {
@@ -758,15 +774,15 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup? ManagementUserButtons(User? currentUser,bool accessToAmountNegative = false)
+    public static InlineKeyboardMarkup? ManagementUserButtons(User? currentUser, bool accessToAmountNegative = false)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-        
-        if(accessToAmountNegative)
+
+        if (accessToAmountNegative)
             buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(
                 "💲تغییر سقف خرید منفی نماینده ➖",
                 $"change_amount_negative?id={currentUser.Id}")));
-        
+
         buttons.Add(CreateList2Button(
             InlineKeyboardButton.WithCallbackData("افزایش موجودی ➕", $"increase_by_agent?id={currentUser.Id}"),
             InlineKeyboardButton.WithCallbackData("کاهش موجودی ➖", $"decrease_by_agent?id={currentUser.Id}")));
@@ -1103,7 +1119,7 @@ public class TelegramHelper
         switch (telegramUser.State)
         {
             #region awaiting send service name
-            
+
             case TelegramMarzbanVpnSessionState.AwaitingSendAmountNegative:
 
                 callbackQuery = new CallbackQuery()
@@ -1113,10 +1129,11 @@ public class TelegramHelper
                     Data = $"change_amount_negative?id={telegramUser.Id}",
                 };
 
-                await telegramService.ChangeAgentAmountNegative(botClient,callbackQuery,cancellationToken,telegramUser);
-                
+                await telegramService.ChangeAgentAmountNegative(botClient, callbackQuery, cancellationToken,
+                    telegramUser);
+
                 break;
-            
+
             case TelegramMarzbanVpnSessionState.AwaitingSendTelegramBotToken:
 
                 callbackQuery = new CallbackQuery()
@@ -1170,7 +1187,7 @@ public class TelegramHelper
                 }
 
                 User? currentUser = await telegramService.GetUserByChatIdAsync(chatId);
-                
+
                 callbackQuery = new CallbackQuery()
                 {
                     Message = message,

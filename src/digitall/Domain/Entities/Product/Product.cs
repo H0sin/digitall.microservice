@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Common;
+using Domain.Entities.Apple;
 
 namespace Domain.Entities.Product;
 
@@ -26,12 +27,14 @@ public class Product : BaseEntity
     public string? ProductImage { get; set; }
 
     public long VpnId { get; set; }
+    
+    public ICollection<AppleIdType>? AppleIdTypes { get; set; }
 
     #endregion
 
     #region reletion
 
     [ForeignKey(nameof(CategoryId))] public Category.Category? Category { get; set; }
-    
+
     #endregion
 }

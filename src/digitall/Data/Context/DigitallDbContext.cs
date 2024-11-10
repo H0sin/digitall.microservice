@@ -4,6 +4,7 @@ using Domain.Common;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Agent;
+using Domain.Entities.Apple;
 using Domain.Entities.Authorization;
 using Domain.Entities.Category;
 using Domain.Entities.Country;
@@ -77,7 +78,9 @@ public class DigitallDbContext : DbContext
     public DbSet<WireguardVpn> WireguardVpn { get; set; }
     public DbSet<WireguardVpnTemplate> WireguardVpnTemplates { get; set; }
     public DbSet<Peer> Peers { get; set; }
-
+    public DbSet<AppleId> AppleId { get; set; }
+    public DbSet<AppleIdType> AppleIdTypes { get; set; }
+    
     #endregion
 
     #region properties

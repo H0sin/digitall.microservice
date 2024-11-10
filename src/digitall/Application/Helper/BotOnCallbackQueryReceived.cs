@@ -29,6 +29,10 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "factor_appleId":
+                    await telegramService.SendFactorAppleIdAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
                 case "change_amount_negative":
                     await telegramService.ChangeAgentAmountNegative(botClient, callbackQuery, cancellationToken,telegramUser);
                     break;
