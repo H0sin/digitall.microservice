@@ -4343,6 +4343,7 @@ public class TelegramService(
             }
 
             User? user = await GetUserByChatIdAsync(chatId);
+            
             AppleIdType appleIdType = await appleService.GetAppleIdTypeById(type,user.Id);
         
             await botClient.SendTextMessageAsync(
