@@ -4327,32 +4327,105 @@ public class TelegramService(
     public async Task SendFactorAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        long chatId = callbackQuery.Message!.Chat.Id;
-
-        long id = 0;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["id"], out id);
-        }
+            long chatId = callbackQuery.Message!.Chat.Id;
 
-        User? user = await GetUserByChatIdAsync(chatId);
-        AppleIdType appleIdType = await appleService.GetAppleIdTypeById(id,user.Id);
+            long type = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["type"], out type);
+            }
+
+            User? user = await GetUserByChatIdAsync(chatId);
+            AppleIdType appleIdType = await appleService.GetAppleIdTypeById(type,user.Id);
         
-        await botClient.SendTextMessageAsync(
-            chatId: callbackQuery.Message!.Chat.Id,
-            text: $"""
-                   🧾 فاکتور خرید Apple ID
-                   📱 نوع Apple ID: {appleIdType.Title}
-                   💵 قیمت: {appleIdType.Price:N0} تومان
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: $"""
+                        🧾 فاکتور خرید Apple ID
+                       📱 نوع Apple ID: {appleIdType.Title}
+                       💵 قیمت: {appleIdType.Price:N0} تومان
 
-                   🔄 پس از تکمیل پرداخت، اطلاعات Apple ID برای شما ارسال خواهد شد.
-                   """,
-            replyMarkup: TelegramHelper.ButtonBackToHome(),
-            cancellationToken: cancellationToken);
+                       🔄 پس از تکمیل پرداخت، اطلاعات Apple ID برای شما ارسال خواهد شد.
+                       """,
+                replyMarkup: TelegramHelper.ButtonBuyAppleId(type),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: e.Message,
+                replyMarkup: TelegramHelper.ButtonBackToHome(),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = callbackQuery.Message!.Chat.Id;
+
+            long type = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["type"], out type);
+            }
+
+            AppleId appleId = await appleService.BuyAppleIdAsync(type, chatId: chatId);
+
+            string appleId_config = $"""
+                                    نماینده گرامی،
+                                    
+                                    اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
+                                    
+                                    📧 ایمیل: `\{appleId.Email}`
+                                    📱 تلفن: `\{appleId.Phone}`
+                                    🔑 رمز عبور: {appleId.Password}
+                                    🎂 تاریخ تولد: {appleId.BirthDay}
+                                    
+                                    ❓ سوال امنیتی ۱: {appleId.Question1}
+                                    🔑 پاسخ: {appleId.Answer1}
+                                    
+                                    ❓ سوال امنیتی ۲: {appleId.Question2}
+                                    🔑 پاسخ: {appleId.Answer2}
+                                    
+                                    ❓ سوال امنیتی ۳: {appleId.Question3}
+                                    🔑 پاسخ: {appleId.Answer3}
+                                    
+                                    لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید.
+                                    
+                                    با تشکر از خرید شما،
+                                    تیم پشتیبانی
+                                    
+                                    """;
+            
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: "",
+                replyMarkup: TelegramHelper.ButtonBackToHome(),
+                parseMode: ParseMode.MarkdownV2,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: e.Message,
+                replyMarkup: TelegramHelper.ButtonBackToHome(),
+                cancellationToken: cancellationToken);
+        }
     }
 }

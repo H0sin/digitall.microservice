@@ -179,7 +179,6 @@ public class WireguardService(
             long? count = await peerRepository.GetQuery().Where(x => x.WireguardVpnId == buy.WireguardVpnId)
                 .CountAsync();
 
-
             #region check name
 
             if (isAgent != null)
