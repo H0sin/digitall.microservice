@@ -42,6 +42,10 @@ public static class BotOnCallbackQueryReceived
                         telegramUser);
                     break;
                 
+                case "buy_appleId":
+                    await telegramService.BuyAppleIdAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
                 case "set_branding_name":
                     await telegramService.UpdateAgentBrandingNameAsync(
                         botClient, callbackQuery, cancellationToken, telegramUser);

@@ -4327,32 +4327,48 @@ public class TelegramService(
     public async Task SendFactorAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
-        long chatId = callbackQuery.Message!.Chat.Id;
-
-        long id = 0;
-        string callbackData = callbackQuery.Data;
-        int questionMarkIndex = callbackData.IndexOf('?');
-
-        if (questionMarkIndex >= 0)
+        try
         {
-            string? query = callbackData?.Substring(questionMarkIndex);
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            Int64.TryParse(queryParameters["id"], out id);
-        }
+            long chatId = callbackQuery.Message!.Chat.Id;
 
-        User? user = await GetUserByChatIdAsync(chatId);
-        AppleIdType appleIdType = await appleService.GetAppleIdTypeById(id,user.Id);
+            long id = 0;
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
+
+            User? user = await GetUserByChatIdAsync(chatId);
+            AppleIdType appleIdType = await appleService.GetAppleIdTypeById(id,user.Id);
         
-        await botClient.SendTextMessageAsync(
-            chatId: callbackQuery.Message!.Chat.Id,
-            text: $"""
-                   🧾 فاکتور خرید Apple ID
-                   📱 نوع Apple ID: {appleIdType.Title}
-                   💵 قیمت: {appleIdType.Price:N0} تومان
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: $"""
+                        🧾 فاکتور خرید Apple ID
+                       📱 نوع Apple ID: {appleIdType.Title}
+                       💵 قیمت: {appleIdType.Price:N0} تومان
 
-                   🔄 پس از تکمیل پرداخت، اطلاعات Apple ID برای شما ارسال خواهد شد.
-                   """,
-            replyMarkup: TelegramHelper.ButtonBackToHome(),
-            cancellationToken: cancellationToken);
+                       🔄 پس از تکمیل پرداخت، اطلاعات Apple ID برای شما ارسال خواهد شد.
+                       """,
+                replyMarkup: TelegramHelper.ButtonBuyAppleId(),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message!.Chat.Id,
+                text: e.Message,
+                replyMarkup: TelegramHelper.ButtonBuyAppleId(),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        
     }
 }

@@ -192,7 +192,7 @@ public class UserService(
 
     public async Task<RegisterUserResult> RegisterAsync(RegisterUserDto registerUser)
     {
-        using IDbContextTransaction transaction = await userRepository.context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction = await userRepository.context.Database.BeginTransactionAsync();
         try
         {
             if (await userRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == registerUser.Email) is not null)

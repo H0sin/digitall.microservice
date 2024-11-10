@@ -66,6 +66,9 @@ public class TelegramHelper
     private static readonly InlineKeyboardButton BackToHome =
         InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی 🏠", "back_to_home");
 
+    private static readonly InlineKeyboardButton BuyAppleId =
+        InlineKeyboardButton.WithCallbackData("خرید اپل آیدی 🏠", "buy_appleId");
+    
     private static readonly InlineKeyboardButton TestFree =
         InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free");
 
@@ -288,6 +291,14 @@ public class TelegramHelper
     public static InlineKeyboardMarkup ButtonBackToHome()
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+        buttons.Add(CreateList1Button(BackToHome));
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup ButtonBuyAppleId()
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+        buttons.Add(CreateList1Button(BuyAppleId));
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
     }
