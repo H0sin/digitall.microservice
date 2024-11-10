@@ -298,7 +298,7 @@ public class TelegramHelper
     public static InlineKeyboardMarkup ButtonBuyAppleId(long type)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", $"buy_appleId?type{type}")));
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", $"buy_appleId?type={type}")));
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
     }

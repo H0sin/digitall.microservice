@@ -508,6 +508,8 @@ public class TelegramService(
 
         List<ProductDto> products = await productService.GetProductAsync();
 
+        products.Remove(products.FirstOrDefault(x=>x.CategoryType == CategoryType.AppleId));
+
         if (products.Count < 0)
             throw new AppException("محصولی وجود ندارد ❌");
 
@@ -4427,6 +4429,7 @@ public class TelegramService(
                 text: e.Message,
                 replyMarkup: TelegramHelper.ButtonBackToHome(),
                 cancellationToken: cancellationToken);
+            throw new ApplicationException(e.Message);
         }
     }
 }
