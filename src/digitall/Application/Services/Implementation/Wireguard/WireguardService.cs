@@ -710,12 +710,12 @@ public class WireguardService(
             });
 
             var response = await api.SendAsync(request);
-            if (response.StatusCode != 0) throw new AppException("متاسفانه مشکلی در هنگام ساخت سرویس وایرگارد پیش آمد");
+            if (response.StatusCode != 0) throw new AppException("متاسفانه مشکلی در هنگام تمدید سرویس وایرگارد پیش آمد");
 
             var getRequest = new RequestWireguard(WireguardApiPath.GetPeerConfig(server, peer.Name), HttpMethod.Get);
             var peerConfig = await api.SendAsync(getRequest);
 
-            if (!peerConfig.IsSuccess) throw new AppException("متاسفانه مشکلی در هنگام ساخت سرویس وایرگارد پیش آمد");
+            if (!peerConfig.IsSuccess) throw new AppException("متاسفانه مشکلی در هنگام تمدید سرویس وایرگارد پیش آمد");
 
             peer.TotalDay = template.Days;
             peer.TotalVolume = template.Gb;

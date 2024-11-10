@@ -4,6 +4,7 @@ using Application.Extensions;
 using Application.Factory;
 using Application.Helper;
 using Application.Services.Interface.Agent;
+using Application.Services.Interface.Apple;
 using Application.Services.Interface.Authorization;
 using Application.Services.Interface.Marzban;
 using Application.Services.Interface.Notification;
@@ -23,6 +24,7 @@ using Domain.DTOs.Product;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.DTOs.Wireguard;
+using Domain.Entities.Apple;
 using Domain.Entities.Marzban;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
@@ -61,6 +63,7 @@ public class TelegramService(
     ITransactionService transactionService,
     TelegramBotClientFactory botClientFactory,
     IConfiguration configuration,
+    IAppleService appleService,
     IOrderService orderService,
     ITelegramUserRepository telegramUserRepository,
     IAuthorizeService authorizeService,
@@ -228,7 +231,37 @@ public class TelegramService(
             case CategoryType.WireGuard:
                 await SendListWireGuardVpnAsync(botClient, callbackQuery, cancellationToken);
                 break;
+            case CategoryType.AppleId:
+                await SendListAppleIdTypeAsync(botClient, callbackQuery, cancellationToken);
+                break;
         }
+    }
+
+
+    public async Task SendListAppleIdTypeAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleId();
+        if(appleIdTypes.Count == 0)
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: """
+                      "کاربر گرامی، این Apple ID در حال حاضر برای فروش موجود نیست. لطفاً در صورت نیاز به راهنمایی بیشتر یا اطلاع از موجودی‌های جدید با ما در تماس باشید."
+                      """,
+                replyMarkup:
+                TelegramHelper.CreateListAppleIdTypeTemplateButton(appleIdTypes),
+                cancellationToken: cancellationToken);
+        
+        await botClient!.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: " نوع اپل آیدی را انتخاب نمایید. 📌",
+            replyMarkup:
+            TelegramHelper.CreateListAppleIdTypeTemplateButton(appleIdTypes),
+            cancellationToken: cancellationToken);
     }
 
     public async Task SendListWireguardVpnTemplateAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -4288,5 +4321,37 @@ public class TelegramService(
 
             await telegramUserRepository.Update(telegramUser);
         }
+    }
+
+    public async Task SendFactorAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message!.Chat.Id;
+
+        long id = 0;
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+        AppleIdType appleIdType = await appleService.GetAppleIdTypeById(id,user.Id);
+        
+        await botClient.SendTextMessageAsync(
+            chatId: callbackQuery.Message!.Chat.Id,
+            text: $"""
+                   🧾 فاکتور خرید Apple ID
+                   📱 نوع Apple ID: {appleIdType.Title}
+                   💵 قیمت: {appleIdType.Price:N0} تومان
+
+                   🔄 پس از تکمیل پرداخت، اطلاعات Apple ID برای شما ارسال خواهد شد.
+                   """,
+            replyMarkup: TelegramHelper.ButtonBackToHome(),
+            cancellationToken: cancellationToken);
     }
 }

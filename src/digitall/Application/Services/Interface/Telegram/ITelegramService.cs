@@ -1247,4 +1247,13 @@ public interface ITelegramService
     /// <returns></returns>
     Task ChangeAgentAmountNegative
         (ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
+
+    /// <summary>
+    /// send factor apple id 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendFactorAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }
