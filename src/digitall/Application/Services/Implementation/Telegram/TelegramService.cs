@@ -244,7 +244,8 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleId();
-        if(appleIdTypes.Count == 0)
+        
+        if(appleIdTypes.Count <= 1)
             await botClient!.EditMessageTextAsync(
                 chatId: chatId,
                 messageId: callbackQuery.Message.MessageId,

@@ -1245,8 +1245,7 @@ public interface ITelegramService
     /// <param name="cancellationToken"></param>
     /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task ChangeAgentAmountNegative
-        (ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
+    Task ChangeAgentAmountNegative(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
 
     /// <summary>
     /// send factor apple id 

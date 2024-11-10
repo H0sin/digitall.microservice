@@ -18,6 +18,7 @@ public class AppleService(
         {
             return await appleIdTypeRepository
                 .GetQuery()
+                .Include(z=>z.AppleIds)
                 .Where(x => x.AppleIds!.Count(s => s.UserId == null) > 1)
                 .ToListAsync();
         }
