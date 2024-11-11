@@ -18,6 +18,7 @@ using Application.Utilities;
 using Data.DefaultData;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Apple;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Product;
@@ -243,7 +244,7 @@ public class TelegramService(
     {
         long chatId = callbackQuery.Message!.Chat.Id;
 
-        ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleId();
+        ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleIdAsync();
 
         if (appleIdTypes.Count <= 1)
             await botClient!.EditMessageTextAsync(
@@ -3802,6 +3803,10 @@ public class TelegramService(
             case CategoryType.WireGuard:
                 await SendListWireguardServicesAsync(botClient, callbackQuery, cancellationToken, "");
                 break;
+
+            case CategoryType.AppleId:
+                await SendListAppleIdServiceAsync(botClient, callbackQuery, cancellationToken);
+                break;
         }
     }
 
@@ -4346,7 +4351,7 @@ public class TelegramService(
 
             User? user = await GetUserByChatIdAsync(chatId);
 
-            AppleIdType appleIdType = await appleService.GetAppleIdTypeById(type, user.Id);
+            AppleIdType appleIdType = await appleService.GetAppleIdTypeByIdAsync(type, user.Id);
 
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
@@ -4391,7 +4396,7 @@ public class TelegramService(
             AppleId appleId = await appleService.BuyAppleIdAsync(type, chatId: chatId);
 
             string appleId_config = $"""
-                                     نماینده گرامی
+                                     کاربر گرامی
 
                                      اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
 
@@ -4431,6 +4436,125 @@ public class TelegramService(
                 replyMarkup: TelegramHelper.ButtonBackToHome(),
                 cancellationToken: cancellationToken);
             throw new ApplicationException(e.Message);
+        }
+    }
+
+    public async Task SendListAppleIdServiceAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        int page = 1;
+        string? email = "";
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int32.TryParse(queryParameters["page"], out page);
+            email = queryParameters["email"];
+        }
+
+        if (page == 0) page = 1;
+
+
+        if (page == 0) page = 1;
+
+        FilterAppleId filter = new FilterAppleId();
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        filter.UserId = user.Id;
+        filter.Page = page;
+        filter.Email = email;
+        await appleService.FilterAppleIdListAsync(filter);
+
+        try
+        {
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: TelegramHelper.ListServicesMessage,
+                replyMarkup: TelegramHelper.CreateListAppleIdServices(filter, page),
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await botClient!.SendTextMessageAsync(
+                chatId: chatId,
+                text: TelegramHelper.ListServicesMessage,
+                replyMarkup: TelegramHelper.CreateListAppleIdServices(filter, page),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task SendTextForSearchAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendAppleIdServiceEmail;
+        await telegramUserRepository.Update(telegramUser);
+
+        await botClient!.SendTextMessageAsync(
+            chatId: callbackQuery.Message!.Chat.Id,
+            text: "لطفا ایمیل اپل آیدی خود را ارسال کنید",
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task SendAppleIdInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken, TelegramUser telegramUser)
+    {
+        try
+        {
+            long chatId = callbackQuery!.Message!.Chat.Id;
+
+            long id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
+
+            User? user = await GetUserByChatIdAsync(chatId);
+
+            AppleId? appleId = await appleService.GetAppleIdByIdAsync(id, user.Id);
+
+            string appleId_config = $"""
+                                     کاربر گرامی
+
+                                     اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
+
+                                     📧 ایمیل: `\{appleId.Email}`
+                                     📱 تلفن: `\{appleId.Phone}`
+                                     🔑 رمز عبور: {appleId.Password}
+                                     🎂 تاریخ تولد: {appleId.BirthDay}
+
+                                     ❓ سوال امنیتی ۱: {appleId.Question1}
+                                     🔑 پاسخ: {appleId.Answer1}
+
+                                     ❓ سوال امنیتی ۲: {appleId.Question2}
+                                     🔑 پاسخ: {appleId.Answer2}
+
+                                     ❓ سوال امنیتی ۳: {appleId.Question3}
+                                     🔑 پاسخ: {appleId.Answer3}
+
+                                     لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید
+
+                                     با تشکر از شما
+                                     تیم پشتیبانی
+                                     """;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

@@ -1264,4 +1264,34 @@ public interface ITelegramService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// filter list apple id
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendListAppleIdServiceAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// search apple id by email
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendTextForSearchAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
+
+    /// <summary>
+    /// send appleId information async
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
+    /// <returns></returns>
+    Task SendAppleIdInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken, TelegramUser telegramUser);
 }

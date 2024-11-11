@@ -3,9 +3,8 @@ using Application.Services.Interface.Agent;
 using Application.Services.Interface.Apple;
 using Application.Services.Interface.Notification;
 using Application.Static.Template;
-using Data.Migrations;
 using Domain.DTOs.Account;
-using Domain.DTOs.Agent;
+using Domain.DTOs.Apple;
 using Domain.Entities.Account;
 using Domain.Entities.Apple;
 using Domain.Entities.Order;
@@ -27,7 +26,7 @@ public class AppleService(
     INotificationService notificationService,
     IAppleIdTypeRepository appleIdTypeRepository) : IAppleService
 {
-    public async Task<List<AppleIdType>> GetListHaveExistAppleId()
+    public async Task<List<AppleIdType>> GetListHaveExistAppleIdAsync()
     {
         try
         {
@@ -43,19 +42,19 @@ public class AppleService(
         }
     }
 
-    public async Task<List<AppleIdType>> GetAppleIdType()
+    public async Task<List<AppleIdType>> GetAppleIdTypeAsync()
     {
         return await appleIdTypeRepository.GetQuery().ToListAsync();
     }
 
-    public async Task<AppleIdType?> GetAppleIdTypeById(long id)
+    public async Task<AppleIdType?> GetAppleIdTypeByIdAsync(long id)
     {
         return await appleIdTypeRepository.GetEntityById(id);
     }
 
-    public async Task<AppleIdType> GetAppleIdTypeById(long id, long userId)
+    public async Task<AppleIdType> GetAppleIdTypeByIdAsync(long id, long userId)
     {
-        AppleIdType? appleIdType = await GetAppleIdTypeById(id);
+        AppleIdType? appleIdType = await GetAppleIdTypeByIdAsync(id);
 
         // if (await appleIdRepository.GetQuery().CountAsync(x => userId == null & x.AppleIdTypeId == id) <= 0)
         // {
@@ -89,7 +88,7 @@ public class AppleService(
             if (chatId is not null)
                 user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
 
-            AppleIdType appleIdType = await GetAppleIdTypeById(id, user.Id);
+            AppleIdType appleIdType = await GetAppleIdTypeByIdAsync(id, user.Id);
 
             price = await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
 
@@ -196,5 +195,43 @@ public class AppleService(
             throw new ApplicationException(
                 "⚠️ خطایی در فرآیند خرید رخ داد. در صورت کسر موجودی، مبلغ 💵 به حساب شما بازگردانده خواهد شد. در غیر این صورت، لطفاً با پشتیبانی 📞 تماس بگیرید.");
         }
+    }
+
+    public async Task<FilterAppleId> FilterAppleIdListAsync(FilterAppleId filter)
+    {
+        var query = appleIdRepository.GetQuery();
+
+        if ((filter.UserId ?? 0) != 0)
+            query = query.Where(i => i.UserId == filter.UserId);
+
+        if (!string.IsNullOrEmpty(filter.Email))
+            query = query.Where(x => EF.Functions.Like(x.Email, $"%{filter.Email}%"));
+
+        IQueryable<AppleIdDto> appleIds = query.Select(x => new AppleIdDto(x));
+
+        await filter.Paging(appleIds);
+
+        return filter;
+    }
+
+    public async Task<AppleId?> GetAppleIdByIdAsync(long id, long userId)
+    {
+        return
+            await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+    }
+
+    public async Task<AppleId?> AddAppleIdAsync(AddAppleIdDto appleId, long userId)
+    {
+        var appleIdByEmail =
+            await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
+
+        if (appleIdByEmail is not null) throw new ApplicationException($"exist apple id by email {appleId.Email}");
+
+        AppleId currentAppleId = appleId.GenerateAppleId();
+
+        await appleIdRepository.AddEntity(currentAppleId);
+        await appleIdRepository.SaveChanges(userId);
+
+        return currentAppleId;
     }
 }
