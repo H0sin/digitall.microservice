@@ -77,5 +77,6 @@ public enum TelegramMarzbanVpnSessionState
     AwaitingSendMessageText,
     AwaitingSendDescriptionForDeleteWireguardAccount,
     AwaitingSendTelegramBotToken,
-    AwaitingSendAmountNegative
+    AwaitingSendAmountNegative,
+    AwaitingSendAppleIdServiceEmail
 }

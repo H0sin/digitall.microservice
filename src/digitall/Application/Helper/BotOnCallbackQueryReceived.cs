@@ -29,6 +29,18 @@ public static class BotOnCallbackQueryReceived
         {
             switch (data)
             {
+                case "appleId_info":
+                    await telegramService.SendAppleIdInformation(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
+                    break;
+                case "search_list_appleId_service":
+                    await telegramService.SendTextForSearchAppleIdAsync(botClient, callbackQuery, cancellationToken,telegramUser);
+                    break;
+                
+                case "list_my_appleId":
+                    await telegramService.SendListAppleIdServiceAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+                
                 case "factor_appleId":
                     await telegramService.SendFactorAppleIdAsync(botClient, callbackQuery, cancellationToken);
                     break;

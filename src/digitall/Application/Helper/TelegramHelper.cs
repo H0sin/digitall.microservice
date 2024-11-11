@@ -4,6 +4,7 @@ using Application.Services.Implementation.Telegram;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Telegram;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Apple;
 using Domain.DTOs.Marzban;
 using Domain.DTOs.Product;
 using Domain.DTOs.Telegram;
@@ -586,6 +587,33 @@ public class TelegramHelper
 
         return new InlineKeyboardMarkup(buttons);
     }
+    
+    public static InlineKeyboardMarkup CreateListAppleIdServices(FilterAppleId filter, int page)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        foreach (var entity in filter.Entities)
+        {
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData(entity.Email ?? entity.Phone,
+                $"appleId_info?id={entity.Id}")));
+        }
+
+        if (page != 1)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("قبلی",
+                $"list_my_appleId?page={page - 1}")));
+
+        if (page * filter.TakeEntity < filter.AllEntitiesCount)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("بعدی",
+                $"list_my_appleId?page={page + 1}")));
+        
+        buttons.Add(CreateList1Button(
+            InlineKeyboardButton.WithCallbackData("جستو جو اپل آیدی \ud83d\udd0d", "search_list_appleId_service")));
+        
+        
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
 
     public static InlineKeyboardMarkup CreateListServices(FilterPeer filter, int page)
     {
@@ -1131,6 +1159,20 @@ public class TelegramHelper
         {
             #region awaiting send service name
 
+            case TelegramMarzbanVpnSessionState.AwaitingSendAppleIdServiceEmail:
+                
+                callbackQuery = new CallbackQuery()
+                {
+                    Message = message,
+                    From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
+                    Data = $"list_my_appleId?email={message.Text}",
+                };
+
+                await telegramService.SendListAppleIdServiceAsync(botClient,callbackQuery,cancellationToken);
+                
+                telegramUser.State = TelegramMarzbanVpnSessionState.None;
+                break;
+            
             case TelegramMarzbanVpnSessionState.AwaitingSendAmountNegative:
 
                 callbackQuery = new CallbackQuery()
@@ -1700,4 +1742,6 @@ public class TelegramHelper
     }
 
     #endregion
+
+    
 }
