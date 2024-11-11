@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Application.Extensions;
 using Application.Services.Implementation.Apple;
 using Application.Services.Interface.Apple;
 using Asp.Versioning;
@@ -35,9 +36,9 @@ public class AppleController(IAppleService appleService) : BaseController
     /// <returns></returns>
     [ProducesResponseType(typeof(AppleId),(int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
-    public async Task<ApiResult<FilterAppleId>> AddAppleId([FromBody] AddAppleIdDto appleId)
+    [HttpPost]
+    public async Task<ApiResult<AppleId>> AddAppleId([FromBody] AddAppleIdDto appleId)
     {
-        throw new NotImplementedException();
-        // return Ok(await appleService.FilterAppleIdListAsync(filter));
+        return Ok(await appleService.AddAppleIdAsync(appleId,User.GetId()));
     }
 }
