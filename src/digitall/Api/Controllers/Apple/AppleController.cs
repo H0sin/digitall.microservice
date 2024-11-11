@@ -22,10 +22,10 @@ public class AppleController(IAppleService appleService) : BaseController
     /// get GetAppleIdTypesAsync
     /// </summary>
     /// <returns></returns>
-    [ProducesResponseType(typeof(List<AppleIdType>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(List<GetAppleIdTypeDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
-    public async Task<ApiResult<List<AppleIdType>>> GetAppleIdType()
+    public async Task<ApiResult<List<GetAppleIdTypeDto>>> GetAppleIdType()
     {
         return Ok(await appleService.GetAppleIdTypesAsync());
     }
