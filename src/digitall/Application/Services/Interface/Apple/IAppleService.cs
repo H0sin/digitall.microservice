@@ -5,6 +5,7 @@ namespace Application.Services.Interface.Apple;
 
 public interface IAppleService
 {
+     Task<List<GetAppleIdTypeDto>> GetAppleIdTypesAsync();
      Task<List<AppleIdType>> GetListHaveExistAppleIdAsync();
      Task<List<AppleIdType>> GetAppleIdTypeAsync();
      Task<AppleIdType?> GetAppleIdTypeByIdAsync(long id);
