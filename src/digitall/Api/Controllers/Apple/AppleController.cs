@@ -19,6 +19,19 @@ namespace Api.Controllers.Apple;
 public class AppleController(IAppleService appleService) : BaseController
 {
     /// <summary>
+    /// get GetAppleIdTypesAsync
+    /// </summary>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(List<AppleIdType>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<List<AppleIdType>>> GetAppleIdType()
+    {
+        return Ok(await appleService.GetAppleIdTypesAsync());
+    }
+
+
+    /// <summary>
     /// return list apple id
     /// </summary>
     /// <returns></returns>
@@ -29,16 +42,16 @@ public class AppleController(IAppleService appleService) : BaseController
     {
         return Ok(await appleService.FilterAppleIdListAsync(filter));
     }
-    
+
     /// <summary>
     /// return list apple id
     /// </summary>
     /// <returns></returns>
-    [ProducesResponseType(typeof(AppleId),(int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(AppleId), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpPost]
     public async Task<ApiResult<AppleId>> AddAppleId([FromBody] AddAppleIdDto appleId)
     {
-        return Ok(await appleService.AddAppleIdAsync(appleId,User.GetId()));
+        return Ok(await appleService.AddAppleIdAsync(appleId, User.GetId()));
     }
 }

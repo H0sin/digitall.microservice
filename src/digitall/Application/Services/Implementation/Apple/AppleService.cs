@@ -26,6 +26,13 @@ public class AppleService(
     INotificationService notificationService,
     IAppleIdTypeRepository appleIdTypeRepository) : IAppleService
 {
+    public async Task<List<GetAppleIdTypeDto>> GetAppleIdTypesAsync()
+    {
+        return await appleIdTypeRepository
+            .GetQuery()
+            .Select(x => new GetAppleIdTypeDto(x)).ToListAsync();
+    }
+
     public async Task<List<AppleIdType>> GetListHaveExistAppleIdAsync()
     {
         try
