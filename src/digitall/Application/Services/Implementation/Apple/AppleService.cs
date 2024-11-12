@@ -206,57 +206,48 @@ public class AppleService(
 
     public async Task<FilterAppleId> FilterAppleIdListAsync(FilterAppleId filter)
     {
-        var query = appleIdRepository
-            .GetQuery()
-            .GroupJoin(
-                userRepository.GetQuery(),
-                appleId => appleId.CreateBy,
-                user => user.Id,
-                (appleId, createByUsers) => new { AppleId = appleId, CreateByUser = createByUsers.FirstOrDefault() }
-            )
-            .GroupJoin(
-                userRepository.GetQuery(),
-                combined => combined.AppleId.ModifyBy,
-                user => user.Id,
-                (combined, modifyByUsers) => new 
+          var query = from appleId in appleIdRepository.GetQuery().Where(x => x.IsDelete == false)
+                join createByUser in userRepository.GetQuery().Where(x => x.IsDelete == false)
+                on appleId.CreateBy equals createByUser.Id into createByGroup
+                from createByUser in createByGroup.DefaultIfEmpty()
+                
+                join modifyByUser in userRepository.GetQuery().Where(x => x.IsDelete == false)
+                on appleId.ModifyBy equals modifyByUser.Id into modifyByGroup
+                from modifyByUser in modifyByGroup.DefaultIfEmpty()
+                
+                select new AppleIdDto
                 {
-                    combined.AppleId,
-                    combined.CreateByUser,
-                    ModifyByUser = modifyByUsers.FirstOrDefault()
-                }
-            );
+                    Id = appleId.Id,
+                    Email = appleId.Email,
+                    Phone = appleId.Phone,
+                    Password = appleId.Password,
+                    BirthDay = appleId.BirthDay,
+                    Question1 = appleId.Question1,
+                    Answer1 = appleId.Answer1,
+                    Question2 = appleId.Question2,
+                    Answer2 = appleId.Answer2,
+                    Question3 = appleId.Question3,
+                    Answer3 = appleId.Answer3,
+                    UserId = appleId.UserId,
+                    OrderId = appleId.OrderId,
+                    CreateBy = createByUser != null ? createByUser.FirstName + " " + createByUser.LastName : null,
+                    ModifyBy = modifyByUser != null ? modifyByUser.FirstName + " " + modifyByUser.LastName : null,
+                    CreateDate = appleId.CreateDate,
+                    ModifiedDate = appleId.ModifiedDate,
+                    Status = appleId.UserId != null ? "not-active" : "active"
+                };
 
-        if ((filter.UserId ?? 0) != 0)
-            query = query.Where(i => i.AppleId.UserId == filter.UserId);
+    if ((filter.UserId ?? 0) != 0)
+        query = query.Where(i => i.UserId == filter.UserId);
 
-        if (!string.IsNullOrEmpty(filter.Email))
-            query = query.Where(x => EF.Functions.Like(x.AppleId.Email, $"%{filter.Email}%"));
+    if (!string.IsNullOrEmpty(filter.Email))
+        query = query.Where(x => EF.Functions.Like(x.Email, $"%{filter.Email}%"));
 
-        IQueryable<AppleIdDto> appleIds = query.Select(x => new AppleIdDto
-        {
-            Id = x.AppleId.Id,
-            Email = x.AppleId.Email,
-            Phone = x.AppleId.Phone,
-            Password = x.AppleId.Password,
-            BirthDay = x.AppleId.BirthDay,
-            Question1 = x.AppleId.Question1,
-            Answer1 = x.AppleId.Answer1,
-            Question2 = x.AppleId.Question2,
-            Answer2 = x.AppleId.Answer2,
-            Question3 = x.AppleId.Question3,
-            Answer3 = x.AppleId.Answer3,
-            UserId = x.AppleId.UserId,
-            OrderId = x.AppleId.OrderId,
-            CreateBy = x.CreateByUser != null ? x.CreateByUser.FirstName + " " + x.CreateByUser.LastName : null,
-            ModifyBy = x.ModifyByUser != null ? x.ModifyByUser.FirstName + " " + x.ModifyByUser.LastName : null,
-            CreateDate = x.AppleId.CreateDate,
-            ModifiedDate = x.AppleId.ModifiedDate,
-            Status = x.AppleId.UserId != null ? "not-active" : "active"
-        });
-
-        await filter.Paging(appleIds);
+    IQueryable<AppleIdDto> appleIds = query;
     
-        return filter;
+    await filter.Paging(appleIds);
+    
+    return filter;
     }
 
     public async Task<AppleId?> GetAppleIdByIdAsync(long id, long userId)
