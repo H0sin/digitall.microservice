@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Apple;
+﻿using Domain.Entities.Account;
+using Domain.Entities.Apple;
 
 namespace Domain.DTOs.Apple;
 
@@ -7,8 +8,9 @@ public class AppleIdDto
     public AppleIdDto()
     {
     }
-
-    public AppleIdDto(AppleId appleId)
+    
+    
+    public AppleIdDto(AppleId appleId,User? createBy = null,User? modifyBy = null)
     {
         Id = appleId.Id;
         Email = appleId.Email;
@@ -23,10 +25,16 @@ public class AppleIdDto
         Answer3 = appleId.Answer3;
         UserId = appleId.UserId;
         OrderId = appleId.OrderId;
+        CreateBy = createBy?.FirstName + "" + createBy?.LastName;
+        ModifyBy = modifyBy?.FirstName + "" + modifyBy?.LastName;
+        CreateDate = appleId.CreateDate;
+        ModifiedDate = appleId.ModifiedDate;
+        Status = appleId.UserId != null ? "not-active" : "active";
     }
 
+    
     public long Id { get; set; }
-
+    public string Status { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Password { get; set; }
@@ -39,4 +47,12 @@ public class AppleIdDto
     public string? Answer3 { get; set; }
     public long? UserId { get; set; }
     public long? OrderId { get; set; }
+
+    public string? CreateBy { get; set; }
+    
+    public string? ModifyBy { get; set; }
+    
+    public DateTime CreateDate { get; set; }
+    
+    public DateTime ModifiedDate { get; set; }
 }

@@ -214,8 +214,12 @@ public class AppleService(
         if (!string.IsNullOrEmpty(filter.Email))
             query = query.Where(x => EF.Functions.Like(x.Email, $"%{filter.Email}%"));
 
-        IQueryable<AppleIdDto> appleIds = query.Select(x => new AppleIdDto(x));
+        IEnumerable<Task<AppleIdDto>> tasks = query.AsEnumerable().Select(async x => new AppleIdDto(x,
+            await userRepository.GetEntityById(x.CreateBy), 
+            await userRepository.GetEntityById(x.ModifyBy)));
 
+        var appleIds = await Task.WhenAll(tasks);
+        
         await filter.Paging(appleIds);
 
         return filter;
@@ -232,7 +236,7 @@ public class AppleService(
         var appleIdByEmail =
             await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
 
-        if (appleIdByEmail is not null) throw new ApplicationException($"exist apple id by email {appleId.Email}");
+        if (appleIdByEmail is not null) throw new ExistsException($"exist apple id by email {appleId.Email}");
 
         AppleId currentAppleId = appleId.GenerateAppleId();
 
