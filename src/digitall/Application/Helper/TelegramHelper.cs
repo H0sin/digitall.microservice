@@ -341,19 +341,21 @@ public class TelegramHelper
 
         buttons.Add(CreateList2Button(TestFree, BuyProduct));
         buttons.Add(CreateList2Button(MyServices, Supports));
-        buttons.Add(CreateList2Button(RepresentationRequest, Wallet));
 
         buttons.Add(CreateList1Button(SiteInformation));
 
-        if (user is not null & user is { IsAgent: true })
+        if (user is { IsAgent: true })
         {
             buttons.Add(CreateList2Button(InviteLink, Transactions));
-            buttons.Add(CreateList1Button(ManagementAgent));
+            buttons.Add(CreateList2Button(ManagementAgent, Wallet));
         }
         else
+        {
+            buttons.Add(CreateList2Button(RepresentationRequest, Wallet));
             buttons.Add(CreateList1Button(Transactions));
+        }
 
-        // if (has_bot) buttons.Add(CreateList1Button(SpecialBot));
+        if (!has_bot) buttons.Add(CreateList1Button(SpecialBot));
 
         return new InlineKeyboardMarkup(buttons);
     }
