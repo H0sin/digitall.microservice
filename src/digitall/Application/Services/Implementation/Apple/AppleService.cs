@@ -206,22 +206,56 @@ public class AppleService(
 
     public async Task<FilterAppleId> FilterAppleIdListAsync(FilterAppleId filter)
     {
-        var query = appleIdRepository.GetQuery();
+        var query = appleIdRepository
+            .GetQuery()
+            .GroupJoin(
+                userRepository.GetQuery(),
+                appleId => appleId.CreateBy,
+                user => user.Id,
+                (appleId, createByUsers) => new { AppleId = appleId, CreateByUser = createByUsers.FirstOrDefault() }
+            )
+            .GroupJoin(
+                userRepository.GetQuery(),
+                combined => combined.AppleId.ModifyBy,
+                user => user.Id,
+                (combined, modifyByUsers) => new 
+                {
+                    combined.AppleId,
+                    combined.CreateByUser,
+                    ModifyByUser = modifyByUsers.FirstOrDefault()
+                }
+            );
 
         if ((filter.UserId ?? 0) != 0)
-            query = query.Where(i => i.UserId == filter.UserId);
+            query = query.Where(i => i.AppleId.UserId == filter.UserId);
 
         if (!string.IsNullOrEmpty(filter.Email))
-            query = query.Where(x => EF.Functions.Like(x.Email, $"%{filter.Email}%"));
+            query = query.Where(x => EF.Functions.Like(x.AppleId.Email, $"%{filter.Email}%"));
 
-        IEnumerable<Task<AppleIdDto>> tasks = query.AsEnumerable().Select(async x => new AppleIdDto(x,
-            await userRepository.GetEntityById(x.CreateBy), 
-            await userRepository.GetEntityById(x.ModifyBy)));
+        IQueryable<AppleIdDto> appleIds = query.Select(x => new AppleIdDto
+        {
+            Id = x.AppleId.Id,
+            Email = x.AppleId.Email,
+            Phone = x.AppleId.Phone,
+            Password = x.AppleId.Password,
+            BirthDay = x.AppleId.BirthDay,
+            Question1 = x.AppleId.Question1,
+            Answer1 = x.AppleId.Answer1,
+            Question2 = x.AppleId.Question2,
+            Answer2 = x.AppleId.Answer2,
+            Question3 = x.AppleId.Question3,
+            Answer3 = x.AppleId.Answer3,
+            UserId = x.AppleId.UserId,
+            OrderId = x.AppleId.OrderId,
+            CreateBy = x.CreateByUser != null ? x.CreateByUser.FirstName + " " + x.CreateByUser.LastName : null,
+            ModifyBy = x.ModifyByUser != null ? x.ModifyByUser.FirstName + " " + x.ModifyByUser.LastName : null,
+            CreateDate = x.AppleId.CreateDate,
+            ModifiedDate = x.AppleId.ModifiedDate,
+            Status = x.AppleId.UserId != null ? "not-active" : "active"
+        });
 
-        var appleIds = await Task.WhenAll(tasks);
-        
         await filter.Paging(appleIds);
-
+    
         return filter;
     }
 
