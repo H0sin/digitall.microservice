@@ -10,7 +10,7 @@ public class AppleIdDto
     }
     
     
-    public AppleIdDto(AppleId appleId,User? createBy = null,User? modifyBy = null)
+    public AppleIdDto(AppleId appleId)
     {
         Id = appleId.Id;
         Email = appleId.Email;
@@ -25,8 +25,8 @@ public class AppleIdDto
         Answer3 = appleId.Answer3;
         UserId = appleId.UserId;
         OrderId = appleId.OrderId;
-        CreateBy = createBy?.FirstName + "" + createBy?.LastName;
-        ModifyBy = modifyBy?.FirstName + "" + modifyBy?.LastName;
+        // CreateBy = createBy?.FirstName + "" + createBy?.LastName;
+        // ModifyBy = modifyBy?.FirstName + "" + modifyBy?.LastName;
         CreateDate = appleId.CreateDate;
         ModifiedDate = appleId.ModifiedDate;
         Status = appleId.UserId != null ? "not-active" : "active";
