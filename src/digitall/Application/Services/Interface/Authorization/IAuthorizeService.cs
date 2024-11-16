@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Authorization;
 using Domain.DTOs.Menu;
+using Domain.Entities.Account;
 using Domain.Entities.Authorization;
 using Domain.Enums.Authorization;
 
@@ -18,4 +19,6 @@ public interface IAuthorizeService
     Task<UserByRolesDto?> GetRoleByUserIdAsync(long userId);
     Task<List<RoleMenusDto>> GetHasMenusByRoleId(long roleId);
     Task<List<MenuDto>> GetMenusAsync();
+    Task<List<User>> GetUsersByRoleIdAsync();
+    Task<List<User>> GetUsersByRoleNameAsync(string roleName);
 }

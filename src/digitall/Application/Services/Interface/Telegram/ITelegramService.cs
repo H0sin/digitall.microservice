@@ -1262,8 +1262,9 @@ public interface ITelegramService
     /// <param name="botClient"></param>
     /// <param name="callbackQuery"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken,TelegramUser telegramUser);
 
     /// <summary>
     /// filter list apple id
@@ -1293,5 +1294,69 @@ public interface ITelegramService
     /// <param name="cancellationToken"></param>
     /// <param name="telegramUser"></param>
     /// <returns></returns>
-    Task SendAppleIdInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken, TelegramUser telegramUser);
+    Task SendAppleIdInformationAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken, TelegramUser telegramUser);
+
+    /// <summary>
+    /// appleid warranty
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AppleIdWarrantyAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// fixed for warantty
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendAppleIdForWarrantyAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    
+    /// <summary>
+    /// assign to me appleid for warranty
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AssignToMeAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task WrongAppleIdInformationAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// reject 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task RejectWarrantyRequestBecauseTrueAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// reject
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task RejectWarrantyRequestBecauseChangeAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="botClient"></param>
+    /// <param name="callbackQuery"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task AcceptWarrantyAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }

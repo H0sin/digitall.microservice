@@ -68,8 +68,8 @@ public class TelegramHelper
         InlineKeyboardButton.WithCallbackData("بازگشت به منو اصلی 🏠", "back_to_home");
 
     private static readonly InlineKeyboardButton BuyAppleId =
-        InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", "buy_appleId");
-    
+        InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🛒", "buy_appleId");
+
     private static readonly InlineKeyboardButton TestFree =
         InlineKeyboardButton.WithCallbackData("تست رایگان 😎", "test_free");
 
@@ -111,6 +111,61 @@ public class TelegramHelper
         $"special_bot");
 
     #region buttons method
+
+    public static InlineKeyboardMarkup TaskAppleIdComplaint()
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("🔶برسی شد🔶", "barecy_2")));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup AppleIdProblems(long id)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList2Button(
+                InlineKeyboardButton.WithCallbackData("not active", $"accept_warranty?id={id}&p=not_active"),
+                InlineKeyboardButton.WithCallbackData("disabled", $"accept_warranty?id={id}&p=disabled")));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup ActionSupporterForAppleId(AppleIdDto? appleId)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList1Button(
+            InlineKeyboardButton.WithCallbackData("✅ تایید درخواست", $"accept_warranty?id={appleId.Id}")));
+
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("🚫 اپل آیدی سالم بود رد درخواست",
+            $"reject_b_true?id={appleId.Id}")));
+
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("🔗 مشخصات تغییر پیدا کرده رد درخواست",
+            $"reject_b_change?id={appleId.Id}")));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup? AppleIdInformationButton(AppleId appleId, AppleIdType type)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        // buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("مشخصات آپل آیدی اشتباه است 📛", 
+        //     $"wrong_appleId_Information?Id={appleId.Id}")));
+
+        if (type.Warranty)
+            buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("گزارش مشکلات - گارانتی",
+                $"appleId_warranty?Id={appleId.Id}")));
+
+
+        buttons.Add(
+            CreateList1Button(InlineKeyboardButton.WithCallbackData("بازگشت به لیست اپل آیدی ها", $"list_my_appleId")));
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
 
     public static InlineKeyboardMarkup CreateListVpnWiregardButton(List<WireguardVpnDto> vpns)
     {
@@ -299,7 +354,8 @@ public class TelegramHelper
     public static InlineKeyboardMarkup ButtonBuyAppleId(long type)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠", $"buy_appleId?type={type}")));
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠",
+            $"buy_appleId?type={type}")));
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
     }
@@ -589,7 +645,7 @@ public class TelegramHelper
 
         return new InlineKeyboardMarkup(buttons);
     }
-    
+
     public static InlineKeyboardMarkup CreateListAppleIdServices(FilterAppleId filter, int page)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
@@ -607,11 +663,11 @@ public class TelegramHelper
         if (page * filter.TakeEntity < filter.AllEntitiesCount)
             buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("بعدی",
                 $"list_my_appleId?page={page + 1}")));
-        
+
         buttons.Add(CreateList1Button(
             InlineKeyboardButton.WithCallbackData("جستو جو اپل آیدی \ud83d\udd0d", "search_list_appleId_service")));
-        
-        
+
+
         buttons.Add(CreateList1Button(BackToHome));
 
         return new InlineKeyboardMarkup(buttons);
@@ -730,6 +786,21 @@ public class TelegramHelper
         buttons.Add(CreateList2Button(
             InlineKeyboardButton.WithCallbackData("ارسال پیام به پشتیبانی ✉️", "send_text_supporting"),
             InlineKeyboardButton.WithCallbackData("سوالات متداول ❓", "default_question")));
+
+        buttons.Add(CreateList1Button(BackToHome));
+
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    public static InlineKeyboardMarkup? ButtonForSendToWarranty(long id)
+    {
+        IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
+
+        buttons.Add(CreateList1Button(
+            InlineKeyboardButton.WithCallbackData("با شرایط مواقفم | تایید ✅", $"accept_send_wa?id={id}")));
+
+        buttons.Add(
+            CreateList1Button(InlineKeyboardButton.WithCallbackData("بازگشت به سرویس", $"appleId_info?id={id}")));
 
         buttons.Add(CreateList1Button(BackToHome));
 
@@ -1162,7 +1233,7 @@ public class TelegramHelper
             #region awaiting send service name
 
             case TelegramMarzbanVpnSessionState.AwaitingSendAppleIdServiceEmail:
-                
+
                 callbackQuery = new CallbackQuery()
                 {
                     Message = message,
@@ -1170,11 +1241,11 @@ public class TelegramHelper
                     Data = $"list_my_appleId?email={message.Text}",
                 };
 
-                await telegramService.SendListAppleIdServiceAsync(botClient,callbackQuery,cancellationToken);
-                
+                await telegramService.SendListAppleIdServiceAsync(botClient, callbackQuery, cancellationToken);
+
                 telegramUser.State = TelegramMarzbanVpnSessionState.None;
                 break;
-            
+
             case TelegramMarzbanVpnSessionState.AwaitingSendAmountNegative:
 
                 callbackQuery = new CallbackQuery()
@@ -1744,6 +1815,4 @@ public class TelegramHelper
     }
 
     #endregion
-
-    
 }

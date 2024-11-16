@@ -4,6 +4,23 @@ namespace Application.Services.Interface.Notification;
 
 public interface INotificationService
 {
+
+    /// <summary>
+    /// added notification for role memebers
+    /// </summary>
+    /// <param name="notification"></param>
+    /// <param name="roleName"></param>
+    /// <returns></returns>
+    Task AddNotificationForRole(AddNotificationDto notification,string roleName);
+    
+    /// <summary>
+    /// added notification for role members
+    /// </summary>
+    /// <param name="notification"></param>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    Task AddNotificationForRole(AddNotificationDto notification,long roleId);
+    
     /// <summary>
     /// add notification admin added notification
     /// </summary>

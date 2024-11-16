@@ -16,6 +16,7 @@ using Application.Services.Interface.Wireguard;
 using Application.Static.Template;
 using Application.Utilities;
 using Data.DefaultData;
+using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
 using Domain.DTOs.Apple;
@@ -246,24 +247,35 @@ public class TelegramService(
 
         ICollection<AppleIdType> appleIdTypes = await appleService.GetListHaveExistAppleIdAsync();
 
-        if (appleIdTypes.Count <= 1)
+        if (appleIdTypes.Count < 1)
             await botClient!.EditMessageTextAsync(
                 chatId: chatId,
                 messageId: callbackQuery.Message.MessageId,
                 text: """
-                      "کاربر گرامی، این Apple ID در حال حاضر برای فروش موجود نیست. لطفاً در صورت نیاز به راهنمایی بیشتر یا اطلاع از موجودی‌های جدید با ما در تماس باشید."
+                      کاربر گرامی، این Apple ID در حال حاضر برای فروش موجود نیست. لطفاً در صورت نیاز به راهنمایی بیشتر یا اطلاع از موجودی‌های جدید با ما در تماس باشید.
+                      """,
+                cancellationToken: cancellationToken);
+        else
+            await botClient!.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: """
+                      قبل از انتخاب نوع اپل آیدی، لطفاً توضیحات زیر را مطالعه فرمایید:
+
+                      1. اپل آیدی قدیمی  
+                      این اپل آیدی‌ها چند سال پیش ساخته شده‌اند و احتمال نات اکتیو شدن آنها بسیار کم است (حدود 5%). 🔒 همچنین، این نوع اپل آیدی‌ها دارای گارانتی هستند که در صورت بروز مشکل، امکان استفاده از پشتیبانی وجود دارد. 📞
+
+                      2. اپل آیدی تازه ساخت با گارانتی  
+                      این اپل آیدی‌ها به تازگی ساخته شده‌اند و احتمال نات اکتیو شدن آنها بین 20 تا 30 درصد است. ⚠️ با این حال، این نوع اپل آیدی‌ها همچنان دارای گارانتی هستند و می‌توانید از خدمات پشتیبانی بهره‌مند شوید. 🛠
+
+                      3. اپل آیدی تازه ساخت بدون گارانتی  
+                      این نوع اپل آیدی‌ها به تازگی ساخته شده‌اند اما فاقد گارانتی هستند. 🛑 اگر به دنبال گزینه‌ای با قیمت مناسب‌تر هستید و مشکلی با عدم گارانتی ندارید، این مدل می‌تواند انتخاب مناسبی باشد. 💸
+
+                      لطفاً با توجه به نیاز خود، بهترین گزینه را انتخاب کنید. 🤔
                       """,
                 replyMarkup:
                 TelegramHelper.CreateListAppleIdTypeTemplateButton(appleIdTypes),
                 cancellationToken: cancellationToken);
-
-        await botClient!.EditMessageTextAsync(
-            chatId: chatId,
-            messageId: callbackQuery.Message.MessageId,
-            text: " نوع اپل آیدی را انتخاب نمایید. 📌",
-            replyMarkup:
-            TelegramHelper.CreateListAppleIdTypeTemplateButton(appleIdTypes),
-            cancellationToken: cancellationToken);
     }
 
     public async Task SendListWireguardVpnTemplateAsync(TelegramBotClient botClient, CallbackQuery callbackQuery,
@@ -4351,7 +4363,7 @@ public class TelegramService(
 
             User? user = await GetUserByChatIdAsync(chatId);
 
-            AppleIdType appleIdType = await appleService.GetAppleIdTypeByIdAsync(type, user.Id);
+            GetAppleIdTypeDto appleIdType = await appleService.GetAppleIdTypeByIdAsync(type, user.Id);
 
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
@@ -4376,7 +4388,7 @@ public class TelegramService(
     }
 
     public async Task BuyAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         try
         {
@@ -4396,37 +4408,49 @@ public class TelegramService(
             AppleId appleId = await appleService.BuyAppleIdAsync(type, chatId: chatId);
 
             string appleId_config = $"""
-                                     کاربر گرامی
+                                     🌟 اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر است:
 
-                                     اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
+                                     📧 ایمیل: `\{appleId.Email}`  
+                                     📱 تلفن: {appleId.Phone}
+                                     🔑 رمز عبور: `\{appleId.Password}`  
+                                     🎂 تاریخ تولد: {appleId.BirthDay?.ToString("yyyy/MM/dd")} سال ماه روز 
 
-                                     📧 ایمیل: `\{appleId.Email}`
-                                     📱 تلفن: `\{appleId.Phone}`
-                                     🔑 رمز عبور: {appleId.Password}
-                                     🎂 تاریخ تولد: {appleId.BirthDay}
+                                     🛡 سوال امنیتی ۱: {appleId.Question1}
+                                     🔑 پاسخ: `\{appleId.Answer1}`  
 
-                                     ❓ سوال امنیتی ۱: {appleId.Question1}
-                                     🔑 پاسخ: {appleId.Answer1}
+                                     🛡 سوال امنیتی ۲: {appleId.Question2}
+                                     🔑 پاسخ: `\{appleId.Answer2}`  
 
-                                     ❓ سوال امنیتی ۲: {appleId.Question2}
-                                     🔑 پاسخ: {appleId.Answer2}
+                                     🛡 سوال امنیتی ۳: {appleId.Question3}
+                                     🔑 پاسخ: `\{appleId.Answer3}`  
 
-                                     ❓ سوال امنیتی ۳: {appleId.Question3}
-                                     🔑 پاسخ: {appleId.Answer3}
+                                     🔒 لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و برای بازیابی حساب خود از آنها استفاده نمایید
 
-                                     لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید
+                                     🙏 لطفاً توجه فرمایید:  
+                                     💡 به دلیل شرایط تحریم ایران، حتماً گزینه Find My iPhone را غیرفعال کنید تا از مشکلات احتمالی جلوگیری شود
 
-                                     با تشکر از خرید شما
-                                     تیم پشتیبانی
+                                     📖 آموزش غیرفعال کردن Find My iPhone:  
+                                     1 وارد تنظیمات Settings شوید  
+                                     2 بر روی Apple Account خود در بالای صفحه کلیک کنید  
+                                     3 وارد بخش Find My شوید  
+                                     4 گزینه Find My iPhone را غیرفعال کنید  
+                                     5 برای تأیید، رمز عبور Apple Account را وارد کنید  
 
+                                     🚨 هشدار مهم:  
+                                     در صورتی که اپل ایدی خریداری شده شامل گارانتی باشد 
+                                     ❗️ در صورت تغییر هر یک از مشخصات اپل آیدی مانند ایمیل، شماره تلفن، یا سوالات امنیتی، گارانتی نات اکتیوی شما باطل خواهد شد و امکان بازیابی وجود ندارد
+
+                                     ❤️ با تشکر از خرید شما  
+                                     🎉 تیم پشتیبانی
                                      """;
 
             await botClient.SendTextMessageAsync(
                 chatId: callbackQuery.Message!.Chat.Id,
                 text: appleId_config,
-                replyMarkup: TelegramHelper.ButtonBackToHome(),
                 parseMode: ParseMode.MarkdownV2,
                 cancellationToken: cancellationToken);
+
+            await SendMainMenuAsync(botClient, callbackQuery, cancellationToken, telegramUser);
         }
         catch (Exception e)
         {
@@ -4435,7 +4459,7 @@ public class TelegramService(
                 text: e.Message,
                 replyMarkup: TelegramHelper.ButtonBackToHome(),
                 cancellationToken: cancellationToken);
-            throw new ApplicationException(e.Message);
+            // throw new ApplicationException(e.Message);
         }
     }
 
@@ -4503,7 +4527,7 @@ public class TelegramService(
             cancellationToken: cancellationToken);
     }
 
-    public async Task SendAppleIdInformation(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+    public async Task SendAppleIdInformationAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
         try
@@ -4526,35 +4550,383 @@ public class TelegramService(
 
             AppleId? appleId = await appleService.GetAppleIdByIdAsync(id, user.Id);
 
-            string appleId_config = $"""
-                                     کاربر گرامی
+            if (appleId.SendToWarranty)
+            {
+                await botClient.SendTextMessageAsync(
+                    chatId: callbackQuery.Message!.Chat.Id,
+                    text: """
+                            ⚠️⚠️ هشدار مهم ⚠️⚠️
 
-                                     اطلاعات مربوط به اپل آیدی خریداری‌شده شما به شرح زیر می‌باشد:
+                          کاربر گرامی،
 
-                                     📧 ایمیل: `\{appleId.Email}`
-                                     📱 تلفن: `\{appleId.Phone}`
-                                     🔑 رمز عبور: {appleId.Password}
-                                     🎂 تاریخ تولد: {appleId.BirthDay}
+                          این محصول در حال بررسی برای گارانتی است و تا پایان بررسی نهایی، امکان مشاهده یا تغییرات در آن وجود ندارد. ⏳  
+                          لطفاً صبور باشید تا فرآیند بررسی به اتمام برسد. پس از تکمیل بررسی، به شما اطلاع داده خواهد شد. 📩
 
-                                     ❓ سوال امنیتی ۱: {appleId.Question1}
-                                     🔑 پاسخ: {appleId.Answer1}
+                          🚫 از هرگونه تغییر در این محصول تا پایان بررسی خودداری فرمایید. 🚫
 
-                                     ❓ سوال امنیتی ۲: {appleId.Question2}
-                                     🔑 پاسخ: {appleId.Answer2}
+                          با تشکر از همکاری شما  
+                          💼 تیم پشتیبانی 🙏
+                          """,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                AppleIdType type = await appleService.GetAppleIdTypeByIdAsync(appleId.AppleIdTypeId);
 
-                                     ❓ سوال امنیتی ۳: {appleId.Question3}
-                                     🔑 پاسخ: {appleId.Answer3}
+                string appleId_config = $"""
+                                         🌟 اطلاعات مربوط به اپل آیدی شما به شرح زیر است:
 
-                                     لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و از آنها برای بازیابی حساب خود استفاده نمایید
+                                         📧 ایمیل: `\{appleId.Email}`  
+                                         📱 تلفن: {appleId.Phone}
+                                         🔑 رمز عبور: `\{appleId.Password}`  
+                                         🎂 تاریخ تولد: {appleId.BirthDay?.ToString("yyyy/MM/dd")} سال ماه روز 
 
-                                     با تشکر از شما
-                                     تیم پشتیبانی
-                                     """;
+                                         🛡 سوال امنیتی ۱: {appleId.Question1}
+                                         🔑 پاسخ: `\{appleId.Answer1}`  
+
+                                         🛡 سوال امنیتی ۲: {appleId.Question2}
+                                         🔑 پاسخ: `\{appleId.Answer2}`  
+
+                                         🛡 سوال امنیتی ۳: {appleId.Question3}
+                                         🔑 پاسخ: `\{appleId.Answer3}`  
+
+                                         🔒 لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و برای بازیابی حساب خود از آنها استفاده نمایید
+
+                                         🙏 لطفاً توجه فرمایید:  
+                                         💡 به دلیل شرایط تحریم ایران، حتماً گزینه Find My iPhone را غیرفعال کنید تا از مشکلات احتمالی جلوگیری شود
+
+                                         📖 آموزش غیرفعال کردن Find My iPhone:  
+                                         1 وارد تنظیمات Settings شوید  
+                                         2 بر روی Apple Account خود در بالای صفحه کلیک کنید  
+                                         3 وارد بخش Find My شوید  
+                                         4 گزینه Find My iPhone را غیرفعال کنید  
+                                         5 برای تأیید، رمز عبور Apple Account را وارد کنید  
+
+                                         🚨 هشدار مهم:  
+                                         در صورتی که اپل ایدی خریداری شده شامل گارانتی باشد 
+                                         ❗️ در صورت تغییر هر یک از مشخصات اپل آیدی مانند ایمیل، شماره تلفن، یا سوالات امنیتی، گارانتی نات اکتیوی شما باطل خواهد شد و امکان بازیابی وجود ندارد
+
+                                         """;
+
+                await botClient.SendTextMessageAsync(
+                    chatId: callbackQuery.Message!.Chat.Id,
+                    text: appleId_config,
+                    replyMarkup: TelegramHelper.AppleIdInformationButton(appleId, type),
+                    parseMode: ParseMode.MarkdownV2,
+                    cancellationToken: cancellationToken);
+            }
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public async Task AppleIdWarrantyAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        await botClient.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: """
+                  ⚠️ هشدار مهم
+
+                  کاربر گرامی،
+
+                  در صورتی که دکمه "تایید" را بزنید، اپل آیدی شما برای بررسی به کارشناسان ما ارسال می‌شود.  
+                  توجه: در صورتی که هرکدام از اطلاعات اپل آیدی توسط شما تغییر داده شده باشد، درخواست استفاده از گارانتی شما رد خواهد شد.
+
+                  پس از تایید درخواست شما توسط کارشناسان، می‌توانید یکی از گزینه‌های زیر را انتخاب کنید:
+
+                  1️⃣ درخواست رفع مشکل همین اپل آیدی (مدت زمان : 48 ساعت)  
+                  2️⃣ تعویض اپل آیدی  
+                  3️⃣ بازگشت وجه  
+
+                  ⏳ لطفاً توجه کنید که روند بررسی درخواست شما ممکن است تا 24 ساعت زمان ببرد.
+
+                  برای ادامه، روی "تایید" کلیک کنید.
+
+                  🔒 تیم پشتیبانی
+                  """,
+            replyMarkup: TelegramHelper.ButtonForSendToWarranty(id),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task SendAppleIdForWarrantyAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        bool response = await appleService.SendToWarrantyAppleId(id, user);
+
+        if (response)
+        {
+            await botClient.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: """
+                      🌟 درخواست گارانتی شما با موفقیت ارسال شد! 🌟
+                      لطفاً تا 24 ساعت منتظر بمانید تا نتیجه بررسی شود.
+                      در این مدت می‌توانید با پشتیبانی در ارتباط باشید. 🙏
+                      """,
+                cancellationToken: cancellationToken
+            );
+        }
+        else
+        {
+            await botClient.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: """
+                      🌟 درخواست گارانتی شما ارسال نشد! 🌟
+                      دوباره تلاش کنید و درصورت بروز مشکل با پشتیبانی ارتباط بگیرید
+                      """,
+                cancellationToken: cancellationToken
+            );
+        }
+    }
+
+    public async Task AssignToMeAppleIdAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery!.Message!.Chat.Id;
+
+        long id = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        try
+        {
+            AppleIdDto? appleId = await appleService.AssignToMeAsync(id, chatId: chatId);
+            AppleIdInformationDto information = await appleService.GetAppleIdInformation(id);
+
+            string appleIdInformation = $"""
+                                         مشخصات کاربر  
+                                         👤 نام کاربری {information.TelegramUserName}  
+                                         💬 چت آیدی {information.ChatId}  
+
+                                         مشخصات سفارش  
+                                         🕒 زمان خرید {information.CreateOrder}  
+                                         💰 مبلغ سفارش {information.Price:N0}  
+
+                                         مشخصات اپل آیدی  
+                                         📧 ایمیل {information.Email}  
+                                         📱 تلفن {information.Phone}  
+                                         🎂 تاریخ تولد {information.BirthDay}  
+                                         🔑 رمز عبور {information.Password}  
+
+                                         🛡 سوال امنیتی ۱ {information.Question1}  
+                                         🔑 پاسخ {information.Answer1}  
+
+                                         🛡 سوال امنیتی ۲ {information.Question2}  
+                                         🔑 پاسخ {information.Answer2}  
+
+                                         🛡 سوال امنیتی ۳ {information.Question3}  
+                                         🔑 پاسخ {information.Answer3}  
+
+                                         🏷 لطفاً یکی از گزینه‌های زیر را پس از بررسی انتخاب کنید:
+
+                                         ✅ اپل آیدی سالم بود - رد گارانتی
+
+                                         این گزینه زمانی انتخاب می‌شود که اپل آیدی سالم باشد و مشکلی نداشته باشد. درخواست گارانتی رد خواهد شد
+                                         🚫 مشخصات اپل آیدی تغییر داده شده - رد گارانتی
+
+                                         این گزینه زمانی انتخاب می‌شود که مشتری مشخصات اپل آیدی (ایمیل یا پسورد) را تغییر داده باشد درخواست گارانتی رد خواهد شد
+                                         ⚠️ اپل آیدی مشکل دارد - تایید گارانتی
+
+                                         این گزینه زمانی انتخاب می‌شود که اپل آیدی واقعاً مشکل دارد و درخواست گارانتی تایید می‌شود اپل آیدی جایگزین باید ارائه شود
+                                         """;
+
+            await botClient.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: appleIdInformation,
+                replyMarkup: TelegramHelper.ActionSupporterForAppleId(appleId),
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (AppException e)
+        {
+            await botClient.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: callbackQuery.Message.MessageId,
+                text: e.Message,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task WrongAppleIdInformationAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            long chatId = callbackQuery.Message.Chat.Id;
+
+            long id = 0;
+
+            string callbackData = callbackQuery.Data;
+            int questionMarkIndex = callbackData.IndexOf('?');
+
+            if (questionMarkIndex >= 0)
+            {
+                string? query = callbackData?.Substring(questionMarkIndex);
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                Int64.TryParse(queryParameters["id"], out id);
+            }
+
+            User? user = await GetUserByChatIdAsync(chatId);
+
+            bool response = await appleService.SendToWrongInformationAppleId(id, user);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task RejectWarrantyRequestBecauseTrueAppleIdAsync(ITelegramBotClient botClient,
+        CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message.Chat.Id;
+
+        long id = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        await appleService.RejectWarrantyRequestAsync(id,
+            "این اپل آیدی به درستی فعال بوده و مشکلی ندارد بنابراین شامل گارانتی نمی‌شود 📝", user.Id);
+
+        await botClient.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: callbackQuery.Message.Text,
+            replyMarkup: TelegramHelper.TaskAppleIdComplaint(),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task RejectWarrantyRequestBecauseChangeAppleIdAsync(ITelegramBotClient botClient,
+        CallbackQuery callbackQuery,
+        CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message.Chat.Id;
+
+        long id = 0;
+
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+        }
+
+        User? user = await GetUserByChatIdAsync(chatId);
+
+        await appleService.RejectWarrantyRequestAsync(id,
+            "اطلاعات اپل آیدی توسط شما تغییر یافته‌ و دیگر شامل گارانتی نمی‌شود 📝", user.Id);
+
+        await botClient.EditMessageTextAsync(
+            chatId: chatId,
+            messageId: callbackQuery.Message.MessageId,
+            text: callbackQuery.Message.Text,
+            replyMarkup: TelegramHelper.TaskAppleIdComplaint(),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async Task AcceptWarrantyAsync(TelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        long chatId = callbackQuery.Message.Chat.Id;
+        
+        long id = 0;
+        string? problem = null;
+        
+        string callbackData = callbackQuery.Data;
+        int questionMarkIndex = callbackData.IndexOf('?');
+
+        if (questionMarkIndex >= 0)
+        {
+            string? query = callbackData?.Substring(questionMarkIndex);
+            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+            Int64.TryParse(queryParameters["id"], out id);
+            problem = queryParameters["p"];
+        }
+
+        // AppleId appleId = await appleService.GetAppleIdByIdAsync(id);
+        
+        if (problem is null)
+        {
+            await botClient.EditMessageTextAsync(
+                chatId:chatId,
+                messageId:callbackQuery.Message.MessageId,
+                text:"دلیل مشکل داشتن اپل ایدی چی بود ؟",
+                replyMarkup:TelegramHelper.AppleIdProblems(id),
+                cancellationToken:cancellationToken);
+        }
+        else
+        {
+            await appleService.ApplyWarrantyServicesAsync(id, problem);
+        }
+        
+
     }
 }

@@ -11,8 +11,6 @@ public class AddAppleIdDto
     [Required]
     [EmailAddress(ErrorMessage = "please enter email")]
     public string Email { get; set; }
-    
-    [Required]
     public string? Phone { get; set; }
     
     [Required]

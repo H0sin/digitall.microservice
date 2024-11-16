@@ -1,13 +1,32 @@
-﻿using Application.Services.Interface.Notification;
+﻿using Application.Services.Interface.Authorization;
+using Application.Services.Interface.Notification;
+using Data.Repositories.Account;
 using Domain.DTOs.Notification;
+using Domain.Entities.Account;
 using Domain.Enums.Notification;
 using Domain.IRepositories.Notification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Implementation.Notification;
 
-public class NotificationService(INotificationRepository notificationRepository) : INotificationService
+public class NotificationService(INotificationRepository notificationRepository,IAuthorizeService authorizeService) : INotificationService
 {
+    public async Task AddNotificationForRole(AddNotificationDto notification, string roleName)
+    {
+        List<User> users = await authorizeService.GetUsersByRoleNameAsync(roleName);
+
+        foreach (var user in users)
+        {
+            notification.UserId = user.Id;
+            await AddNotificationAsync(notification,user.Id);
+        }
+    }
+
+    public Task AddNotificationForRole(AddNotificationDto notification, long roleId)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task AddNotificationAsync(AddNotificationDto notification, long userId)
     {
         Domain.Entities.Notification.Notification notify = new()

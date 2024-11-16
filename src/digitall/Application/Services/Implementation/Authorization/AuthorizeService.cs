@@ -220,6 +220,26 @@ public class AuthorizeService(
         }).ToListAsync();
     }
 
+    public Task<List<User>> GetUsersByRoleIdAsync()
+    {
+        throw new NotImplementedException();
+        // var s = await userRepository
+        //     .GetQuery()
+        //     .Include(x=>x.UserRoles)
+        //     .ThenInclude(r=>r.Role)
+        //     .Where(x=>x.UserRoles.rol)
+    }
+
+    public async Task<List<User>> GetUsersByRoleNameAsync(string roleName)
+    {
+        return await userRepository
+            .GetQuery()
+            .Include(x => x.UserRoles)
+            .ThenInclude(r => r.Role)
+            .Where(x => x.UserRoles.Any(ur => ur.Role.Title == roleName))
+            .ToListAsync();
+    }
+
     #endregion
 
     #region has permission

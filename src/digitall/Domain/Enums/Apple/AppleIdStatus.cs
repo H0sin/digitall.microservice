@@ -6,4 +6,6 @@ public enum AppleIdStatus
     OnAvailable,
     SoldOut,
     AwaitingEdit,
+    Disabled,
+    NotActive
 }

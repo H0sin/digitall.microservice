@@ -8,5 +8,7 @@ public class AppleIdType : BaseEntity
     public Product.Product? Product { get; set; }
     public string? Title { get; set; }
     public long Price { get; set; }
+    
+    public bool Warranty { get; set; }
     public ICollection<AppleId>? AppleIds { get; set; }
 }
