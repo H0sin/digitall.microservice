@@ -14,4 +14,5 @@ public interface IOrderService
     Task<AddProductToOrderResult> AddProductToOrderAsync(List<AddProductToOrderDto> orders, long userId);
     Task<FilterOrderDto> FilterOrderAsync(FilterOrderDto filter);
     Task PaymentOrderAsync();
+    Task<Domain.Entities.Order.Order?> GetOrderById(long id);
 }

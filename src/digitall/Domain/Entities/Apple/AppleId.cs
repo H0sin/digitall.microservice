@@ -21,6 +21,5 @@ public class AppleId : BaseEntity
     public long? OrderId { get; set; }
     public long? AssignSupporterUserId { get; set; }
     public bool SendToWarranty { get; set; } = false;
-    
     public AppleIdStatus? Status { get; set; }
 }

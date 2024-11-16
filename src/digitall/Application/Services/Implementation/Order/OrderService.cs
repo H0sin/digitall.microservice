@@ -134,5 +134,10 @@ public class OrderService(
         throw new NotImplementedException();
     }
 
+    public async Task<Domain.Entities.Order.Order?> GetOrderById(long id)
+    {
+        return await orderRepository.GetEntityById(id);
+    }
+
     #endregion
 }

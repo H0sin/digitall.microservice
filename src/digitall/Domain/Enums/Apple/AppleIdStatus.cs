@@ -3,9 +3,9 @@
 public enum AppleIdStatus
 {
     Available,
-    OnAvailable,
     SoldOut,
     AwaitingEdit,
     Disabled,
+    Lock,
     NotActive
 }

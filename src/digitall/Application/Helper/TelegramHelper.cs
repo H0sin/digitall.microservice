@@ -11,6 +11,7 @@ using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
 using Domain.DTOs.Wireguard;
 using Domain.Entities.Apple;
+using Domain.Entities.Order;
 using Domain.Entities.Telegram;
 using Domain.Entities.Transaction;
 using Domain.Exceptions;
@@ -125,9 +126,10 @@ public class TelegramHelper
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
-        buttons.Add(CreateList2Button(
-                InlineKeyboardButton.WithCallbackData("not active", $"accept_warranty?id={id}&p=not_active"),
-                InlineKeyboardButton.WithCallbackData("disabled", $"accept_warranty?id={id}&p=disabled")));
+        buttons.Add(CreateList3Button(
+            InlineKeyboardButton.WithCallbackData("not active", $"accept_warranty?id={id}&p=notactive"),
+            InlineKeyboardButton.WithCallbackData("disabled", $"accept_warranty?id={id}&p=disabled"),
+            InlineKeyboardButton.WithCallbackData("locked", $"accept_warranty?id={id}&p=lock")));
 
         return new InlineKeyboardMarkup(buttons);
     }
@@ -148,17 +150,19 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup? AppleIdInformationButton(AppleId appleId, AppleIdType type)
+    public static InlineKeyboardMarkup? AppleIdInformationButton(AppleId appleId, AppleIdType type,Order order)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
         // buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("مشخصات آپل آیدی اشتباه است 📛", 
         //     $"wrong_appleId_Information?Id={appleId.Id}")));
 
-        if (type.Warranty)
+        DateTime purchaseDate = order.CreateDate;
+        TimeSpan difference = DateTime.UtcNow - purchaseDate;
+        
+        if (type.Warranty & difference.Days < type.WarrantyDay)
             buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("گزارش مشکلات - گارانتی",
                 $"appleId_warranty?Id={appleId.Id}")));
-
 
         buttons.Add(
             CreateList1Button(InlineKeyboardButton.WithCallbackData("بازگشت به لیست اپل آیدی ها", $"list_my_appleId")));
@@ -354,7 +358,7 @@ public class TelegramHelper
     public static InlineKeyboardMarkup ButtonBuyAppleId(long type)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
-        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("خرید اپل آیدی | ارسال اطلاعات 🏠",
+        buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("تایید خرید 🛒",
             $"buy_appleId?type={type}")));
         buttons.Add(CreateList1Button(BackToHome));
         return new InlineKeyboardMarkup(buttons);
@@ -474,7 +478,7 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup CreateListAppleIdTypeTemplateButton(ICollection<AppleIdType> appleIdTypes)
+    public static InlineKeyboardMarkup CreateListAppleIdTypeTemplateButton(ICollection<GetAppleIdTypeDto> appleIdTypes)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
         foreach (var type in appleIdTypes)

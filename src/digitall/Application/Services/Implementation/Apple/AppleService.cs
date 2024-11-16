@@ -13,12 +13,14 @@ using Domain.Entities.Account;
 using Domain.Entities.Apple;
 using Domain.Entities.Order;
 using Domain.Entities.Transaction;
+using Domain.Enums.Apple;
 using Domain.Enums.Notification;
 using Domain.Enums.Order;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Apple;
 using Domain.IRepositories.Order;
+using Domain.IRepositories.Transaction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +33,7 @@ public class AppleService(
     IOrderRepository orderRepository,
     IOrderDetailRepository orderDetailRepository,
     INotificationService notificationService,
+    IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     IAppleIdTypeRepository appleIdTypeRepository) : IAppleService
 {
     public async Task<List<GetAppleIdTypeDto>> GetAppleIdTypesAsync()
@@ -40,19 +43,35 @@ public class AppleService(
             .Select(x => new GetAppleIdTypeDto(x)).ToListAsync();
     }
 
-    public async Task<List<AppleIdType>> GetListHaveExistAppleIdAsync()
+    public async Task<List<GetAppleIdTypeDto>> GetListHaveExistAppleIdAsync(long userId)
     {
         try
         {
-            return await appleIdTypeRepository
+            List<AppleIdType> appleIds = await appleIdTypeRepository
                 .GetQuery()
                 // .Where(x => x.AppleIds!.Count(s => s.UserId == null) > 1)
                 .Include(z => z.AppleIds)
                 .ToListAsync();
+
+            List<GetAppleIdTypeDto> listAppleIds = new List<GetAppleIdTypeDto>();
+            CountingVpnPrice countingVpnPrice = new();
+            
+            foreach (var appleId in appleIds)
+            {
+                var price = await countingVpnPrice.CalculateFinalPrice(agentService, userId, appleId.Price);
+
+
+                var getAppleIdType = new GetAppleIdTypeDto(appleId);
+                getAppleIdType.Price = price;
+                
+                listAppleIds.Add(getAppleIdType);
+            }
+            
+            return listAppleIds;
         }
         catch (Exception e)
         {
-            return new List<AppleIdType>();
+            return new ();
         }
     }
 
@@ -81,7 +100,7 @@ public class AppleService(
 
         appleIdTypeDto.Price = price;
 
-        return new GetAppleIdTypeDto(appleIdType);
+        return appleIdTypeDto;
     }
 
     public async Task<AppleId> BuyAppleIdAsync(long id, long? userId = null, long? chatId = null)
@@ -103,9 +122,7 @@ public class AppleService(
 
             price = appleIdType.Price;
             // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
-            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, price, 0,
-                0, 0, 0, price, 1);
-
+            
             if (user.Balance < price)
             {
                 throw new BadRequestException("موجودی شما کافی نیست");
@@ -185,7 +202,8 @@ public class AppleService(
 
             AppleId? appleId = await appleIdRepository
                 .GetQuery()
-                .FirstOrDefaultAsync(x => x.UserId == null && x.AppleIdTypeId == appleIdType.Id);
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == null && x.AppleIdTypeId == appleIdType.Id && x.Status == AppleIdStatus.Available);
 
             if (appleId is null)
                 throw new ApplicationException("""
@@ -195,6 +213,7 @@ public class AppleService(
 
             appleId.UserId = user.Id;
             appleId.OrderId = order.Id;
+            appleId.Status = AppleIdStatus.SoldOut;
 
             await appleIdRepository.UpdateEntity(appleId);
             await appleIdRepository.SaveChanges(user.Id);
@@ -406,20 +425,148 @@ public class AppleService(
                        به دلیل زیر رد شده است:  
 
                        📝 دلیل: {message}  
-                       
+
                        🌟 با احترام، تیم پشتیبانی  
                        """,
             NotificationType = NotificationType.Alter,
             UserId = appleId.UserId,
         };
 
-        await notificationService.AddNotificationAsync(notification,userId);
+        await notificationService.AddNotificationAsync(notification, userId);
         await appleIdRepository.UpdateEntity(appleId);
         await appleIdRepository.SaveChanges(userId);
     }
 
-    public Task ApplyWarrantyServicesAsync(long id, string problem)
+    public async Task<AppleId?> ApplyWarrantyServicesAsync(long id, AppleIdStatus status)
     {
-        throw new NotImplementedException();
+        try
+        {
+            AppleId? appleId = await appleIdRepository.GetEntityById(id);
+
+            if (appleId is null) throw new NotFoundException("can not find");
+
+            AppleId? existAppleId = await appleIdRepository
+                .GetQuery()
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == null && x.AppleIdTypeId == appleId.AppleIdTypeId &&
+                    x.Status == AppleIdStatus.Available);
+
+            if (existAppleId is not null)
+            {
+                existAppleId.UserId = appleId.UserId;
+                existAppleId.OrderId = appleId.OrderId;
+                existAppleId.Status = AppleIdStatus.SoldOut;
+
+                AddNotificationDto notification = new()
+                {
+                    Message = $"""
+                               ❌ متأسفانه اپل آیدی قبلی شما با ایمیل {appleId.Email} به دلیل مشکل فنی حذف شد.  
+                               🌟 اما نگران نباشید! اپل آیدی جدید برای شما جایگزین شده است:  
+
+                               📧 ایمیل: {existAppleId.Email}  
+                               📱 تلفن: {existAppleId.Phone}  
+                               🔑 رمز عبور: {existAppleId.Password}  
+                               🎂 تاریخ تولد: {existAppleId.BirthDay?.ToString("yyyy/MM/dd")} سال ماه روز  
+
+                               🛡 سوال امنیتی ۱: {existAppleId.Question1}  
+                               🔑 پاسخ: {existAppleId.Answer1}  
+
+                               🛡 سوال امنیتی ۲: {existAppleId.Question2}  
+                               🔑 پاسخ: {existAppleId.Answer2}  
+
+                               🛡 سوال امنیتی ۳: {existAppleId.Question3}  
+                               🔑 پاسخ: {existAppleId.Answer3}  
+
+                               🔒 لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و برای بازیابی حساب خود از آنها استفاده نمایید.  
+
+                               🙏 لطفاً توجه فرمایید:  
+                               💡 به دلیل شرایط تحریم ایران، حتماً گزینه Find My iPhone را غیرفعال کنید تا از مشکلات احتمالی جلوگیری شود.  
+
+                               📖 آموزش غیرفعال کردن Find My iPhone:  
+                               1. وارد تنظیمات Settings شوید  
+                               2. بر روی Apple Account خود در بالای صفحه کلیک کنید  
+                               3. وارد بخش Find My شوید  
+                               4. گزینه Find My iPhone را غیرفعال کنید  
+                               5. برای تأیید، رمز عبور Apple Account را وارد کنید  
+                               """,
+                    UserId = appleId.UserId,
+                };
+
+
+                appleId.Status = status;
+                appleId.OrderId = null;
+                appleId.UserId = null;
+                appleId.AssignSupporterUserId = null;
+
+                await notificationService.AddNotificationAsync(notification, 1);
+
+                await appleIdRepository.UpdateEntity(existAppleId);
+                await appleIdRepository.SaveChanges(1);
+
+                await appleIdRepository.UpdateEntity(appleId);
+                await appleIdRepository.SaveChanges(1);
+
+                return existAppleId;
+            }
+            else
+            {
+                Domain.Entities.Order.Order? order = await orderRepository
+                    .GetQuery()
+                    .Include(x => x.OrderDetails.OrderByDescending(x => x.Id))
+                    .SingleOrDefaultAsync(x => x.Id == appleId.OrderId);
+
+                OrderDetail? orderDetail = order?.OrderDetails.FirstOrDefault();
+
+                List<AgentsIncomesDetail> agentsIncomesDetail = await agentsIncomesDetailRepository
+                    .GetQuery().Where(x => x.OrderDetailId == orderDetail.Id)
+                    .ToListAsync();
+
+                User? user = await userRepository.GetEntityById(appleId.UserId ?? 0);
+                user.Balance += orderDetail.ProductPrice;
+
+                await userRepository.UpdateEntity(user);
+                await userRepository.SaveChanges(1);
+
+                foreach (var agentIncomeDetail in agentsIncomesDetail)
+                {
+                    User? userBalance = await userRepository.GetEntityById(agentIncomeDetail.UserId);
+                    userBalance.Balance -= agentIncomeDetail.Profit;
+                    await userRepository.UpdateEntity(userBalance);
+                    await userRepository.SaveChanges(1);
+                    await notificationService.AddNotificationAsync(
+                        NotificationTemplate.DecreaseForDeleteService(userBalance.Id, "AppleID",
+                            agentIncomeDetail.Profit), 1);
+                }
+
+
+                await notificationService.AddNotificationAsync(new()
+                {
+                    Message = $"""
+                               ✨ اپل ایدی با ایمیل {appleId.Email} با موفقیت حذف شد ✅
+                               💰 مبلغ {orderDetail.ProductPrice:N0} تومان به موجودی شما اضافه شد ✅
+                               ممنون که ما را انتخاب کردید! 🎉
+                               """,
+                    UserId = appleId.UserId,
+                }, 1);
+
+                appleId.Status = status;
+                appleId.OrderId = null;
+                appleId.UserId = null;
+                appleId.AssignSupporterUserId = null;
+
+                await appleIdRepository.UpdateEntity(appleId);
+                await appleIdRepository.SaveChanges(1);
+
+                await orderRepository.DeleteEntity(orderDetail.OrderId);
+                await orderRepository.SaveChanges(1);
+
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

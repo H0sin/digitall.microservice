@@ -1,13 +1,14 @@
 ﻿using Domain.DTOs.Apple;
 using Domain.Entities.Account;
 using Domain.Entities.Apple;
+using Domain.Enums.Apple;
 
 namespace Application.Services.Interface.Apple;
 
 public interface IAppleService
 {
      Task<List<GetAppleIdTypeDto>> GetAppleIdTypesAsync();
-     Task<List<AppleIdType>> GetListHaveExistAppleIdAsync();
+     Task<List<GetAppleIdTypeDto>> GetListHaveExistAppleIdAsync(long userId);
      Task<List<AppleIdType>> GetAppleIdTypeAsync();
      Task<AppleIdType?> GetAppleIdTypeByIdAsync(long id);
      Task<GetAppleIdTypeDto> GetAppleIdTypeByIdAsync(long id,long userId);
@@ -21,5 +22,5 @@ public interface IAppleService
      Task<AppleIdDto?> GetAppleIdAssignToSupportAsync(long supportId);
      Task<AppleIdInformationDto?> GetAppleIdInformation(long id);
      Task RejectWarrantyRequestAsync(long id, string message,long userId);
-     Task ApplyWarrantyServicesAsync(long id, string problem);
+     Task<AppleId?> ApplyWarrantyServicesAsync(long id,AppleIdStatus status);
 }
