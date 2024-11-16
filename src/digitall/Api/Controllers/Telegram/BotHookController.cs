@@ -54,7 +54,7 @@ public class BotHookController(
         {
             _token = token;
             _botClient = botClientFactory.GetOrAdd(token);
-
+            
             await HandleUpdateAsync(update, new CancellationToken());
             Response.StatusCode = 200;
         }
@@ -97,7 +97,7 @@ public class BotHookController(
                     notificationService,
                     cancellationToken
                 ),
-            { CallbackQuery: { } callbackQuery } => BotOnCallbackQueryReceived
+            { CallbackQuery: { } callbackQuery } =>  BotOnCallbackQueryReceived
                 .Action(
                     telegramService,
                     _botClient!,

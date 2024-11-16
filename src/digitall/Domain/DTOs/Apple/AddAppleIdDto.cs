@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Domain.Entities.Apple;
+using Domain.Enums.Apple;
 
 namespace Domain.DTOs.Apple;
 
@@ -11,8 +12,6 @@ public class AddAppleIdDto
     [Required]
     [EmailAddress(ErrorMessage = "please enter email")]
     public string Email { get; set; }
-    
-    [Required]
     public string? Phone { get; set; }
     
     [Required]
@@ -58,6 +57,7 @@ public class AddAppleIdDto
             Answer2 = Answer2,
             Question3 = Question3,
             Answer3 = Answer3,
+            Status = AppleIdStatus.Available
         };
     }
 }

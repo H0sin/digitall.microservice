@@ -17,6 +17,15 @@ public class RoleItems
         },
         new Role()
         {
+            Id = 4,
+            Title = "پشتیبانی اپل ایدی",
+            CreateBy = 1,
+            CreateDate = DateTime.Now,
+            ModifiedDate = DateTime.Now,
+            ModifyBy = 1,
+        },
+        new Role()
+        {
             Id = 2,
             Title = "همکار",
             CreateBy = 1,

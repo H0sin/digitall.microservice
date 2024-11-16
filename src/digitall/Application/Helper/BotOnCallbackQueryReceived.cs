@@ -23,41 +23,74 @@ public static class BotOnCallbackQueryReceived
     {
         string data = callbackQuery.Data.Split('?')[0];
 
-        var telegramUser = await memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) ?? await memoryCache.Update(new TelegramUser(callbackQuery.Message.Chat.Id)); 
-        
+        var telegramUser = await memoryCache.Get(callbackQuery.Message?.Chat.Id ?? 0) ??
+                           await memoryCache.Update(new TelegramUser(callbackQuery.Message.Chat.Id));
+
         try
         {
             switch (data)
             {
+                case "accept_warranty":
+                    await telegramService.AcceptWarrantyAsync(botClient,callbackQuery,cancellationToken);
+                    break;
+                
+                case "reject_b_true":
+                    await telegramService.RejectWarrantyRequestBecauseTrueAppleIdAsync(botClient, callbackQuery,
+                        cancellationToken);
+                    break;
+
+                case "reject_b_change":
+                    await telegramService.RejectWarrantyRequestBecauseChangeAppleIdAsync(botClient, callbackQuery,
+                        cancellationToken);
+                    break;
+
+                case "wrong_appleId_Information":
+                    await telegramService.WrongAppleIdInformationAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "assign_appleId_tome":
+                    await telegramService.AssignToMeAppleIdAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "accept_send_wa":
+                    await telegramService.SendAppleIdForWarrantyAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
+                case "appleId_warranty":
+                    await telegramService.AppleIdWarrantyAsync(botClient, callbackQuery, cancellationToken);
+                    break;
+
                 case "appleId_info":
-                    await telegramService.SendAppleIdInformation(botClient, callbackQuery, cancellationToken,
+                    await telegramService.SendAppleIdInformationAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser);
                     break;
                 case "search_list_appleId_service":
-                    await telegramService.SendTextForSearchAppleIdAsync(botClient, callbackQuery, cancellationToken,telegramUser);
+                    await telegramService.SendTextForSearchAppleIdAsync(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
                     break;
-                
+
                 case "list_my_appleId":
                     await telegramService.SendListAppleIdServiceAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "factor_appleId":
                     await telegramService.SendFactorAppleIdAsync(botClient, callbackQuery, cancellationToken);
                     break;
-                
+
                 case "change_amount_negative":
-                    await telegramService.ChangeAgentAmountNegative(botClient, callbackQuery, cancellationToken,telegramUser);
+                    await telegramService.ChangeAgentAmountNegative(botClient, callbackQuery, cancellationToken,
+                        telegramUser);
                     break;
-                
+
                 case "special_bot":
                     await telegramService.RequestForSpecialBotAsync(botClient, callbackQuery, cancellationToken,
                         telegramUser);
                     break;
-                
+
                 case "buy_appleId":
-                    await telegramService.BuyAppleIdAsync(botClient, callbackQuery, cancellationToken);
+                    await telegramService.BuyAppleIdAsync(botClient, callbackQuery, cancellationToken, telegramUser);
                     break;
-                
+
                 case "set_branding_name":
                     await telegramService.UpdateAgentBrandingNameAsync(
                         botClient, callbackQuery, cancellationToken, telegramUser);

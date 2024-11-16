@@ -15,6 +15,16 @@ public class UserRoleItems
             CreateDate = DateTime.Now,
             ModifiedDate = DateTime.Now,
             ModifyBy = 1
+        },
+        new UserRole()
+        {
+            Id = 2,
+            RoleId = 4,
+            UserId = 1,
+            CreateBy = 1,
+            CreateDate = DateTime.Now,
+            ModifiedDate = DateTime.Now,
+            ModifyBy = 1
         }
     };
 }

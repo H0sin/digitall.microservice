@@ -18,5 +18,8 @@ public class AppleId : BaseEntity
     public string? Question3 { get; set; }
     public string? Answer3 { get; set; }
     public long? UserId { get; set; }
-    public long? OrderId { get; set; } 
+    public long? OrderId { get; set; }
+    public long? AssignSupporterUserId { get; set; }
+    public bool SendToWarranty { get; set; } = false;
+    public AppleIdStatus? Status { get; set; }
 }

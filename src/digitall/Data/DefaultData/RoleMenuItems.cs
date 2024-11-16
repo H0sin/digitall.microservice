@@ -115,6 +115,6 @@ public class RoleMenuItems
             MenuId = 5,
             RoleId = 2,
             Id = 11
-        }
+        },
     };
 }

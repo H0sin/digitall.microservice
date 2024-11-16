@@ -1,19 +1,48 @@
 ﻿using Application.Helper;
+using Data.Migrations;
 using Domain.DTOs.Account;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
+using Domain.Entities.Apple;
 using Domain.Entities.Marzban;
 using Domain.Entities.Notification;
+using Domain.Entities.Order;
 using Domain.Entities.Transaction;
 using Domain.Enums.Notification;
 using Domain.Enums.Transaction;
 using Telegram.Bot.Types;
+using User = Domain.Entities.Account.User;
 
 namespace Application.Static.Template;
 
 public static class NotificationTemplate
 {
+    public static AddNotificationDto WarrantyNotificationForSupports(AppleId appleId)
+        => new()
+        {
+            Message = $"""
+                       🚨🚨 درخواست جدید گارانتی اپل آیدی! 🚨🚨
+                       
+                       🆘📣 توجه، پشتیبان عزیز! 📣🆘
+                       🔔 یک درخواست گارانتی اپل آیدی از طرف مشتری ثبت شده است.
+                       
+                       🤔 شما انجام می‌دهید؟ 🤔
+                       ⚠️ توجه: فقط یک پشتیبان می‌تواند این درخواست را قبول کند اگر شما این درخواست را تایید کنید، سایر پشتیبان‌ها قادر به قبول آن نخواهند بود!
+                       
+                       📍 لطفاً هرچه سریع‌تر تصمیم بگیرید تا فرآیند رسیدگی به درخواست مشتری آغاز شود ⏳
+                       
+                       با کلیک روی دکمه زیر، شما مسئول رسیدگی به این درخواست می‌شوید و سایر پشتیبان‌ها دسترسی به این درخواست نخواهند داشت
+                       """,
+            NotificationType = NotificationType.Alter,
+            UserId = 0,
+            Buttons = new()
+            {
+                new("من انجام میدهم ✅", $"assign_appleId_tome?id={appleId.Id}"),
+            }
+        };
+
+
     public static AddNotificationDto SetBrandName(long userId)
         => new()
         {
@@ -595,7 +624,7 @@ public static class NotificationTemplate
         return notifications;
     }
 
-    public static AddNotificationDto AlterForDisabledAccounts(DateTime disabledTime,long userId)
+    public static AddNotificationDto AlterForDisabledAccounts(DateTime disabledTime, long userId)
         => new(
         )
         {
@@ -614,9 +643,9 @@ public static class NotificationTemplate
                        """,
             UserId = userId,
             NotificationType = NotificationType.Alter,
-            Buttons = new ()
+            Buttons = new()
             {
-                new ("تسویه حساب 🏦","inventory_increase")
+                new("تسویه حساب 🏦", "inventory_increase")
             },
         };
 }
