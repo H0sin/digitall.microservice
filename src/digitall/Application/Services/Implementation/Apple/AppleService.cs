@@ -7,6 +7,7 @@ using Application.Static.Template;
 using Data.DefaultData;
 using Data.Migrations;
 using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Apple;
 using Domain.DTOs.Notification;
 using Domain.Entities.Account;
@@ -122,6 +123,21 @@ public class AppleService(
 
             price = appleIdType.Price;
             // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
+            
+            AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
+            
+            if (user.Balance < price)
+            {
+                if (isAgent == null && user?.Balance < price)
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
+
+                if (!(isAgent != null && isAgent.AmountWithNegative < user?.Balance - price))
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
+            }
             
             if (user.Balance < price)
             {
