@@ -1,4 +1,5 @@
-﻿using Application.Helper;
+﻿using Application.Extensions;
+using Application.Helper;
 using Application.Services.Interface.Agent;
 using Application.Services.Interface.Apple;
 using Application.Services.Interface.Authorization;
@@ -7,6 +8,7 @@ using Application.Static.Template;
 using Data.DefaultData;
 using Data.Migrations;
 using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Apple;
 using Domain.DTOs.Notification;
 using Domain.Entities.Account;
@@ -122,6 +124,21 @@ public class AppleService(
 
             price = appleIdType.Price;
             // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
+            
+            AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
+            
+            if (user.Balance < price)
+            {
+                if (isAgent == null && user?.Balance < price)
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
+
+                if (!(isAgent != null && isAgent.AmountWithNegative < user?.Balance - price))
+                {
+                    throw new BadRequestException("موجودی شما کافی نیست");
+                }
+            }
             
             if (user.Balance < price)
             {
@@ -282,8 +299,7 @@ public class AppleService(
 
     public async Task<AppleId?> AddAppleIdAsync(AddAppleIdDto appleId, long userId)
     {
-        var appleIdByEmail =
-            await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
+        var appleIdByEmail = await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
 
         if (appleIdByEmail is not null) throw new ExistsException($"exist apple id by email {appleId.Email}");
 
@@ -568,5 +584,20 @@ public class AppleService(
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public async Task<AppleIdDto?> GetAppleIdByIdAsync(long id)
+    {
+        var appleId = await appleIdRepository
+            .GetEntityById(id);
+
+        var createBy = await userRepository.GetEntityById(appleId.CreateBy);
+        var modifyBy = await userRepository.GetEntityById(appleId.ModifyBy);
+        
+        AppleIdDto newAppleId = new(appleId);
+        newAppleId.CreateBy = createBy.UserFullName();
+        newAppleId.CreateBy = modifyBy.UserFullName();
+
+        return newAppleId;
     }
 }
