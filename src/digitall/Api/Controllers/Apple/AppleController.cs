@@ -54,4 +54,18 @@ public class AppleController(IAppleService appleService) : BaseController
     {
         return Ok(await appleService.AddAppleIdAsync(appleId, User.GetId()));
     }
+
+
+    /// <summary>
+    /// return appleId dto
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(AppleIdDto), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet("{id}")]
+    public async Task<ApiResult<AppleIdDto>> GetAppleIdById(long id)
+    {
+        return Ok(await appleService.GetAppleIdByIdAsync(id));
+    }
 }
