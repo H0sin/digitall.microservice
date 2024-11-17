@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Account;
 using Domain.Entities.Apple;
+using Domain.Enums.Apple;
 
 namespace Domain.DTOs.Apple;
 
@@ -29,12 +30,12 @@ public class AppleIdDto
         // ModifyBy = modifyBy?.FirstName + "" + modifyBy?.LastName;
         CreateDate = appleId.CreateDate;
         ModifiedDate = appleId.ModifiedDate;
-        Status = appleId.UserId != null ? "not-active" : "active";
+        Status = appleId.Status ?? AppleIdStatus.SoldOut;
     }
 
     
     public long Id { get; set; }
-    public string Status { get; set; }
+    public AppleIdStatus Status { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Password { get; set; }

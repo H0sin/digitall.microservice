@@ -274,7 +274,7 @@ public class AppleService(
                 ModifyBy = modifyByUser != null ? modifyByUser.FirstName + " " + modifyByUser.LastName : null,
                 CreateDate = appleId.CreateDate,
                 ModifiedDate = appleId.ModifiedDate,
-                Status = appleId.UserId != null ? "not-active" : "active"
+                Status = appleId.Status ?? AppleIdStatus.SoldOut
             };
 
         if ((filter.UserId ?? 0) != 0)
@@ -591,12 +591,13 @@ public class AppleService(
         var appleId = await appleIdRepository
             .GetEntityById(id);
 
-        var createBy = await userRepository.GetEntityById(appleId.CreateBy);
-        var modifyBy = await userRepository.GetEntityById(appleId.ModifyBy);
+        var createBy = await userRepository.GetEntityById(appleId?.CreateBy ?? 0);
+        var modifyBy = await userRepository.GetEntityById(appleId?.ModifyBy ?? 0);
         
         AppleIdDto newAppleId = new(appleId);
-        newAppleId.CreateBy = createBy.UserFullName();
-        newAppleId.CreateBy = modifyBy.UserFullName();
+        
+        newAppleId.CreateBy = createBy?.UserFullName() ?? "";
+        newAppleId.ModifyBy = modifyBy?.UserFullName() ?? "";
 
         return newAppleId;
     }

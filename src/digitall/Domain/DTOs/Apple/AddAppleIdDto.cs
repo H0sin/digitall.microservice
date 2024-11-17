@@ -57,7 +57,7 @@ public class AddAppleIdDto
             Answer2 = Answer2,
             Question3 = Question3,
             Answer3 = Answer3,
-            Status = AppleIdStatus.Available
+            Status = AppleIdStatus.Available,
         };
     }
 }
