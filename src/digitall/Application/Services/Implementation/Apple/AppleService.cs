@@ -57,7 +57,7 @@ public class AppleService(
 
             List<GetAppleIdTypeDto> listAppleIds = new List<GetAppleIdTypeDto>();
             CountingVpnPrice countingVpnPrice = new();
-            
+
             foreach (var appleId in appleIds)
             {
                 var price = await countingVpnPrice.CalculateFinalPrice(agentService, userId, appleId.Price);
@@ -65,15 +65,15 @@ public class AppleService(
 
                 var getAppleIdType = new GetAppleIdTypeDto(appleId);
                 getAppleIdType.Price = price;
-                
+
                 listAppleIds.Add(getAppleIdType);
             }
-            
+
             return listAppleIds;
         }
         catch (Exception e)
         {
-            return new ();
+            return new();
         }
     }
 
@@ -124,9 +124,9 @@ public class AppleService(
 
             price = appleIdType.Price;
             // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
-            
+
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
-            
+
             if (user.Balance < price)
             {
                 if (isAgent == null && user?.Balance < price)
@@ -138,11 +138,6 @@ public class AppleService(
                 {
                     throw new BadRequestException("موجودی شما کافی نیست");
                 }
-            }
-            
-            if (user.Balance < price)
-            {
-                throw new BadRequestException("موجودی شما کافی نیست");
             }
 
             user!.Balance -= price;
@@ -299,7 +294,8 @@ public class AppleService(
 
     public async Task<AppleId?> AddAppleIdAsync(AddAppleIdDto appleId, long userId)
     {
-        var appleIdByEmail = await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
+        var appleIdByEmail =
+            await appleIdRepository.GetQuery().SingleOrDefaultAsync(x => x.Email == appleId.Email.Trim());
 
         if (appleIdByEmail is not null) throw new ExistsException($"exist apple id by email {appleId.Email}");
 
@@ -593,9 +589,9 @@ public class AppleService(
 
         var createBy = await userRepository.GetEntityById(appleId?.CreateBy ?? 0);
         var modifyBy = await userRepository.GetEntityById(appleId?.ModifyBy ?? 0);
-        
+
         AppleIdDto newAppleId = new(appleId);
-        
+
         newAppleId.CreateBy = createBy?.UserFullName() ?? "";
         newAppleId.ModifyBy = modifyBy?.UserFullName() ?? "";
 
