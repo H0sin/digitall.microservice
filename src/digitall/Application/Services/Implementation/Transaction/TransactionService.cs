@@ -128,6 +128,8 @@ public class TransactionService(
             await transactionRepository.AddEntity(newTransactionAgent);
             await transactionRepository.SaveChanges(agentId);
 
+            newTransaction.TransactionCode = newTransactionAgent.TransactionCode;
+            
             await transactionRepository.AddEntity(newTransaction);
             await transactionRepository.SaveChanges(userId);
 
@@ -172,9 +174,12 @@ public class TransactionService(
                 TransactionTime = transaction.TransactionTime,
             };
 
+            
             await transactionRepository.AddEntity(newTransactionAgent);
             await transactionRepository.SaveChanges(agentId);
 
+            newTransaction.TransactionCode = newTransactionAgent.TransactionCode;
+            
             await transactionRepository.AddEntity(newTransaction);
             await transactionRepository.SaveChanges(userId);
 
@@ -193,7 +198,7 @@ public class TransactionService(
     public async Task UpdateTransactionStatusAsync(
         UpdateTransactionStatusDto transaction, long userId)
     {
-        using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
         try
         {
             Domain.Entities.Transaction.Transaction? transe =
@@ -235,6 +240,7 @@ public class TransactionService(
                     TransactionType = TransactionType.Decrease,
                     Price = transe.Price,
                     Title = "کسر به دلیل قبول تراکنش",
+                    TransactionCode = transe.TransactionCode,
                     TransactionStatus = TransactionStatus.Accepted,
                     TransactionDetailId = transe.TransactionDetailId ?? 0,
                     AccountName = agent?.User?.TelegramUsername ?? agent?.User?.UserFullName() ?? "",
