@@ -125,7 +125,7 @@ public class WireguardService(
             User? user = null;
             AgentDto? agent = null;
             var templatePrice = 0;
-
+            var mainTemplate = await wireguardVpnTemplateRepository.GetEntityById(buy.WireguardVpnTemplateId ?? 0);
             CountingVpnPrice countingVpnPrice = new();
 
             #endregion
@@ -147,8 +147,8 @@ public class WireguardService(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, template.Price, 0,
-                0, 0, 0, template?.Price ?? 0, 1);
+            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price, 0,
+                0, 0, 0, mainTemplate.Price, 1);
 
             if (user.Balance < template.Price)
             {
@@ -596,10 +596,13 @@ public class WireguardService(
             User? user = null;
             AgentDto? agent = null;
             var templatePrice = 0;
+
             CountingVpnPrice countingVpnPrice = new();
             Peer? peer = null;
 
             peer = await peerRepository.GetEntityById(buy.PeerId ?? 0);
+
+            var mainTemplate = await wireguardVpnTemplateRepository.GetEntityById(buy.WireguardVpnTemplateId ?? 0);
 
             if (peer is null) throw new NotFoundException($"peer is not found by id {buy.PeerId}");
 
@@ -618,8 +621,8 @@ public class WireguardService(
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, template.Price, 0,
-                0, 0, 0, template?.Price ?? 0, 1);
+            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price, 0,
+                0, 0, 0, mainTemplate.Price, 1);
 
             if (user.Balance < template.Price)
             {
@@ -709,7 +712,8 @@ public class WireguardService(
             });
 
             var response = await api.SendAsync(request);
-            if (response.StatusCode != 0) throw new AppException("متاسفانه مشکلی در هنگام تمدید سرویس وایرگارد پیش آمد");
+            if (response.StatusCode != 0)
+                throw new AppException("متاسفانه مشکلی در هنگام تمدید سرویس وایرگارد پیش آمد");
 
             var getRequest = new RequestWireguard(WireguardApiPath.GetPeerConfig(server, peer.Name), HttpMethod.Get);
             var peerConfig = await api.SendAsync(getRequest);

@@ -121,6 +121,7 @@ public class AppleService(
                 user = await userRepository.GetQuery().SingleOrDefaultAsync(x => x.ChatId == chatId);
 
             GetAppleIdTypeDto appleIdType = await GetAppleIdTypeByIdAsync(id, user.Id);
+            var mainAppleIdType = await appleIdTypeRepository.GetEntityById(id);
 
             price = appleIdType.Price;
             // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
@@ -145,9 +146,9 @@ public class AppleService(
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(user.Id);
 
-            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, price,
+            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainAppleIdType.Price,
                 0,
-                0, 0, 0, price, 1);
+                0, 0, 0, mainAppleIdType.Price, 1);
 
             Domain.Entities.Order.Order order = new()
             {
