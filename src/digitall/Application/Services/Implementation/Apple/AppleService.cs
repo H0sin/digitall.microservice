@@ -124,8 +124,7 @@ public class AppleService(
             var mainAppleIdType = await appleIdTypeRepository.GetEntityById(id);
 
             price = appleIdType.Price;
-            // await countingVpnPrice.CalculateFinalPrice(agentService, user.Id, appleIdType.Price);
-
+            
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
             if (user.Balance < price)

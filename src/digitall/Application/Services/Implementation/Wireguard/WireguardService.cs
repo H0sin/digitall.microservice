@@ -125,7 +125,10 @@ public class WireguardService(
             User? user = null;
             AgentDto? agent = null;
             var templatePrice = 0;
-            var mainTemplate = await wireguardVpnTemplateRepository.GetEntityById(buy.WireguardVpnTemplateId ?? 0);
+
+            var mainTemplate = await wireguardVpnTemplateRepository
+                .GetEntityById(buy.WireguardVpnTemplateId ?? 0);
+
             CountingVpnPrice countingVpnPrice = new();
 
             #endregion
@@ -141,14 +144,12 @@ public class WireguardService(
                 template = await CountingWireguardVpnTemplatePriceByIdAsync(buy.WireguardVpnTemplateId ?? 0, user.Id);
 
             wireguardVpn = await wireguardVpnRepository.GetEntityById(buy.WireguardVpnId);
+
             var server = await wireguardServerRepository.GetEntityById(wireguardVpn.WireguardServerId);
 
             #endregion
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
-
-            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price, 0,
-                0, 0, 0, mainTemplate.Price, 1);
 
             if (user.Balance < template.Price)
             {
@@ -169,9 +170,9 @@ public class WireguardService(
             await userRepository.SaveChanges(user.Id);
 
 
-            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, template.Price,
+            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price,
                 template.Gb,
-                template.Days, wireguardVpn.GbPrice, wireguardVpn.DayPrice, template?.Price ?? 0, 1);
+                template.Days, wireguardVpn.GbPrice, wireguardVpn.DayPrice, mainTemplate.Price, 1);
 
             if (isAgent == null)
                 agent = await agentService.GetAgentByUserIdAsync(user.Id);
@@ -620,10 +621,7 @@ public class WireguardService(
             var server = await wireguardServerRepository.GetEntityById(wireguardVpn.WireguardServerId);
 
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
-
-            await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price, 0,
-                0, 0, 0, mainTemplate.Price, 1);
-
+            
             if (user.Balance < template.Price)
             {
                 if (isAgent == null && user?.Balance < template.Price)
@@ -642,9 +640,9 @@ public class WireguardService(
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(user.Id);
 
-            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, template.Price,
+            var incomes = await countingVpnPrice.CalculateUserIncomes(agentService, user.Id, mainTemplate.Price,
                 template.Gb,
-                template.Days, wireguardVpn.GbPrice, wireguardVpn.DayPrice, template?.Price ?? 0, 1);
+                template.Days, wireguardVpn.GbPrice, wireguardVpn.DayPrice, mainTemplate.Price, 1);
 
             Domain.Entities.Order.Order? order = await orderRepository.GetEntityById(peer.OrderId);
 
