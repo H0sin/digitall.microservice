@@ -357,7 +357,7 @@ public class MarzbanServies(
                 gbsPrice = (vpn.TotalGb *
                             await countingVpnPrice.CalculateFinalPrice(agentService, userId, marzbanVpn.GbPrice)) *
                            vpn.Count;
-
+ 
                 totalPrice = daysPrice + gbsPrice;
 
                 long finalPrice = (((marzbanVpn.GbPrice) * vpn.TotalGb) +
