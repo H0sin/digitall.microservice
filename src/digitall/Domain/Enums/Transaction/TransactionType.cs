@@ -10,5 +10,5 @@ public enum TransactionType
     
     [Display(Name = "افزایش دستی")] ManualIncrease,
     
-    [Display(Name = "افزایش دستی")] ManualDecrease,
+    [Display(Name = "کاهش دستی")] ManualDecrease,
 }
