@@ -48,7 +48,10 @@ public class Transaction : BaseEntity
     [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
     public TransactionStatus TransactionStatus { get; set; } = TransactionStatus.Waiting;
 
-    public long TransactionCode { get; set; } = new Random().NextInt64(100000000, 999999999);
+    [Display(Name = "برای کی")]
+    public long? UserId { get; set; } = null;
+
+    public long TransactionCode { get; set; } = new Random().NextInt64(10000000000, 99999999999);
 
     #endregion
 }

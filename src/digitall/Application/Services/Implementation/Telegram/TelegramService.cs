@@ -2199,11 +2199,12 @@ public class TelegramService(
         }
 
         User? user = await userRepository.GetEntityById(id);
+        User? parent = await GetUserByChatIdAsync(chatId);
 
         telegramUser.Id = id;
 
-        List<TransactionDto> transactions = await transactionService
-            .GetAllTransactionByUserIdAsync(user?.Id ?? 0);
+        List<TransactionDto> transactions =
+            await transactionService.GetAllTransactionParentForUserAsync(user.Id, parent.Id);
 
         if (transactions.Count <= 0)
             throw new AppException("تراکنشی ثبت نشده است");
@@ -2507,10 +2508,15 @@ public class TelegramService(
 
         await telegramUserRepository.Update(telegramUser);
 
+        string text = """
+                      💳 لطفاً مبلغ موردنظر برای شارژ را به تومان وارد کنید.  
+                      📢 توجه: لطفا مبلغ را با دقت وارد کنید.
+                      """;
+        
         await botClient!
             .SendTextMessageAsync(
-                chatId: chatId,
-                text: "لطفا مبلغ ارسالی برای شارژ را به تومان ارسال کنید!",
+                chatId,
+                text,
                 cancellationToken: cancellationToken);
     }
 
@@ -2540,9 +2546,15 @@ public class TelegramService(
 
         await telegramUserRepository.Update(telegramUser);
 
-        await botClient!.SendTextMessageAsync(
-            chatId: chatId,
-            text: "توضیحات تراکنش را ارسال کنید !",
+        string text = $"""
+                       💳 مبلغ {price:N0} تومان از موجودی شما کسر می‌گردد  
+                       📤 و به موجودی کاربر مقصد اضافه می‌شود.  
+                       📝 جهت تایید تراکنش  لطفاً توضیحات مربوط به تراکنش را نیز ارسال کنید.  
+                       این توضیحات به شفافیت و پیگیری‌های بعدی کمک خواهد کرد.
+                       """;
+
+
+        await botClient!.SendTextMessageAsync(chatId, text,
             cancellationToken: cancellationToken);
     }
 
@@ -2569,13 +2581,14 @@ public class TelegramService(
             NotificationTemplate.SendTransactionNotification(transaction, child.Id), user.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        await botClient!.SendTextMessageAsync(
-            chatId: callbackQuery.Message!.Chat.Id,
-            text: $"""
-                     مبلغ {telegramUser.IncreasePrice:N0}
-                      از حساب شما کم شد و به حساب کاربر شما واریز شد.
-                   """,
-            cancellationToken: cancellationToken);
+        
+        string text = $"""
+                       💰 مبلغ {telegramUser.IncreasePrice:N0} تومان  
+                       از حساب شما کسر شد و به حساب کاربر مقصد واریز گردید.  
+                       ✅ تراکنش با موفقیت انجام شد.  
+                       """;
+
+        await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
 
         await telegramUserRepository.Update(telegramUser);
 
@@ -2608,10 +2621,15 @@ public class TelegramService(
 
         await telegramUserRepository.Update(telegramUser);
 
+        string text = """
+                      💳 لطفاً مبلغ موردنظر برای کسر موجودی کاربر را به تومان وارد کنید.  
+                      📢 توجه: لطفا مبلغ را با دقت وارد کنید.
+                      """;
+        
         await botClient!
             .SendTextMessageAsync(
-                chatId: chatId,
-                text: "لطفا مبلغ ارسالی برای کسر شارژ را به تومان ارسال کنید!",
+                chatId,
+                text,
                 cancellationToken: cancellationToken);
     }
 
@@ -2634,10 +2652,15 @@ public class TelegramService(
 
         await telegramUserRepository.Update(telegramUser);
 
-        await botClient!.SendTextMessageAsync(
-            chatId: chatId,
-            text: "توضیحات تراکنش را ارسال کنید !",
-            cancellationToken: cancellationToken);
+        string text = $"""
+                       💳 مبلغ {price:N0} تومان از موجودی کاربر کسر می‌گردد  
+                       📤 و به موجودی شما اضافه می‌شود.  
+                       📝 جهت تایید تراکنش  لطفاً توضیحات مربوط به تراکنش را نیز ارسال کنید.  
+                       این توضیحات به شفافیت و پیگیری‌های بعدی کمک خواهد کرد.
+                       """;
+
+        
+        await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
     }
 
     public async Task DecreaseUserBalanceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -2664,19 +2687,20 @@ public class TelegramService(
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
-        await botClient!.SendTextMessageAsync(
-            chatId: callbackQuery.Message!.Chat.Id,
-            text: $"""
-                     مبلغ {telegramUser.DecreasePrice:N0}
-                      از حساب کاربر کم شد و به حساب  شما واریز شد.
-                   """,
-            cancellationToken: cancellationToken);
+        string text = $"""
+                       💰 مبلغ {telegramUser.DecreasePrice:N0} تومان  
+                       از حساب کاربر کسر شد و به حساب شما واریز گردید.  
+                       ✅ تراکنش با موفقیت انجام شد.  
+                       """;
+        
+        await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
 
         await telegramUserRepository.Update(telegramUser);
 
         await ManagementUserAsync(botClient!, new CallbackQuery()
         {
             Data = $"user_management?id={child.Id}",
+             
             Message = callbackQuery.Message,
         }, cancellationToken, telegramUser);
     }
@@ -4379,7 +4403,7 @@ public class TelegramService(
                        هشدار مهم! 🚨
                        لطفاً حتماً قبل از هر اقدامی این توضیحات را به دقت بخوانید:
                        به دلیل مشکلاتی که اپل با ایران دارد، استفاده از اپل آیدی می‌تواند باعث بروز مشکلات جدی برای دستگاه شما شود. ❗️ برای جلوگیری از غیرفعال شدن یا لاک شدن دستگاه، حتماً باید گزینه "Find My iPhone" را خاموش کنید. در صورت عدم انجام این کار، ممکن است دستگاه شما غیرفعال شود و مسئولیت کامل این اتفاق به عهده شما خواهد بود. ❌
-                       
+
                        آموزش خاموش کردن "Find My iPhone" 🛠
                        ۱. به Settings (تنظیمات) دستگاه خود بروید. ⚙️
                        ۲. روی [Your Name] (نام خودتان) در بالای صفحه کلیک کنید.
@@ -4387,10 +4411,10 @@ public class TelegramService(
                        ۴. سپس "Find My iPhone" را بزنید.
                        ۵. دکمه "Find My iPhone" را خاموش کنید (آن را به حالت Off تغییر دهید).
                        ۶. از شما درخواست می‌شود که رمز عبور اپل آیدی خود را وارد کنید. رمز را وارد کنید و تأیید کنید.
-                       
+
                        🔴 توجه مهم:
                        اگر گزینه "Find My iPhone" را خاموش نکنید و مشکلی مانند لاک شدن یا غیرفعال شدن برای دستگاه شما پیش بیاید، هیچ مسئولیتی بر عهده فروشنده نخواهد بود. این اقدام کاملاً به عهده خود شماست. ⚠️
-                       
+
                        ✅ در صورتی که با این شرایط موافق هستید، گزینه "تایید خرید" را بزنید تا اپل آیدی برای شما ارسال شود. 💬
                        """,
                 replyMarkup: TelegramHelper.ButtonBuyAppleId(type),
@@ -4446,7 +4470,7 @@ public class TelegramService(
                                      🔒 لطفاً این اطلاعات را به صورت محرمانه نگهداری کرده و برای بازیابی حساب خود از آنها استفاده نمایید
 
                                      🙏 لطفاً توجه فرمایید:
-                                     
+
                                      تمام مسئولیت حفظ و نگهداری اپل آیدی به عهده شما می باشد
                                      با عوض کردن سوالات امنیتی و پسورد و دو مرحله کردن ایمیل خود میتوانید امنیت اطلاعات خود را بالا ببرید
 
