@@ -101,6 +101,6 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [ProducesDefaultResponseType]
     public async Task<ApiResult<List<TransactionDetailDto>>> GetTransactionDetail()
     {
-        return Ok(await transactionService.GetTransactionDetailsAsync(1));
+        return Ok(await transactionService.GetTransactionDetailsByUserIdAsync(User.GetId()));
     }
 }

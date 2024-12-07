@@ -59,6 +59,13 @@ public interface ITransactionService
     Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);
 
     /// <summary>
+    /// transaction detials
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<TransactionDetailDto?> GetTransactionDetailsByUserIdAsync(long userId);
+    
+    /// <summary>
     /// update agent transaction deatil
     /// </summary>
     /// <param name="transaction"></param>
