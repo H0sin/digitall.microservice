@@ -363,6 +363,18 @@ public class TransactionService(
         return new TransactionDetailDto(transactionDetail);
     }
 
+    public async Task<TransactionDetailDto?> GetTransactionDetailsByUserIdAsync(long userId)
+    {
+        var agent = await agentService.GetAgentByAdminIdAsync(userId);
+        
+        TransactionDetail? transactionDetail = await transactionDetailRepository
+            .GetQuery()
+            .Include(x => x.Agent)
+            .SingleOrDefaultAsync(x => x.AgentId == agent.Id);
+        
+        return new TransactionDetailDto(transactionDetail);
+    }
+
     public async Task<bool> UpdateTransactionDetailsAsync(TransactionDetailDto transactionDetail, long userId)
     {
         TransactionDetail? detail = await transactionDetailRepository
