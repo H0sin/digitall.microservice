@@ -96,10 +96,9 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<TransactionDetailDto>), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ApiResult<List<TransactionDetailDto>>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     [ProducesDefaultResponseType]
-    public async Task<ApiResult<List<TransactionDetailDto>>> GetTransactionDetail()
+    public async Task<ApiResult<TransactionDetailDto>> GetTransactionDetail()
     {
         return Ok(await transactionService.GetTransactionDetailsByUserIdAsync(User.GetId()));
     }
