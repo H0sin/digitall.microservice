@@ -31,6 +31,16 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    public async Task<AgencyInformationDto> GetMyAgencyInformation(long userId)
+    {
+        var agent = await agentRepository
+            .GetQuery()
+            .Include(x => x.TransactionDetail)
+            .FirstOrDefaultAsync(x => x.AgentAdminId == userId);
+
+        return new AgencyInformationDto(agent, agent.TransactionDetail);
+    } 
+
     public async Task<List<AgentDto>> AgentsReachedNegativeLimit()
     {
         return await agentRepository.GetQuery()

@@ -14,6 +14,12 @@ public interface IAgentService
 {
 
     /// <summary>
+    /// get agent information agency
+    /// </summary>
+    /// <returns></returns>
+    Task<AgencyInformationDto> GetMyAgencyInformation(long userId);
+
+    /// <summary>
     /// get list agent negative
     /// </summary>
     /// <returns></returns>
