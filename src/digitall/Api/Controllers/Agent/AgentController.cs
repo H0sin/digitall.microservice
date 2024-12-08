@@ -22,6 +22,19 @@ public class AgentController(IAgentService agentService) : BaseController
 {
     #region get
 
+
+    /// <summary>
+    /// agency information
+    /// </summary>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<AgentDto>> AgencyInformation()
+    {
+        return Ok(await agentService.GetMyAgencyInformation(User.GetId()));
+    }
+    
     /// <summary>
     /// get agent after login my admin agent information
     /// </summary>
