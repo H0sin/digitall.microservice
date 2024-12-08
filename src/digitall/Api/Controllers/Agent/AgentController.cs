@@ -20,8 +20,8 @@ namespace Api.Controllers.Agent;
 [ApiVersion(1)]
 public class AgentController(IAgentService agentService) : BaseController
 {
+    
     #region get
-
 
     /// <summary>
     /// agency information
@@ -252,5 +252,19 @@ public class AgentController(IAgentService agentService) : BaseController
         return Ok();
     }
 
+    
+    /// <summary>
+    /// update agent information 
+    /// </summary>
+    /// <param name="agency"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> Update([FromBody] AgencyInformationDto agency)
+    {
+        await agentService.UpdateAgencyAsync(agency, User.GetId());
+        return Ok();
+    }
     #endregion
 }
