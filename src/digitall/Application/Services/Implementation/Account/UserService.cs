@@ -115,15 +115,7 @@ public class UserService(
             .Where(x => x.AgentId == agent.Id)
             .ToListAsync();
 
-        return users.Select(x => new UserDto
-        {
-            Id = x.Id,
-            Mobile = x.Mobile,
-            FirstName = x.FirstName,
-            LastName = x.LastName,
-            Avatar = PathExtension.UserAvatarThumbServer + x.Avatar,
-            ChatId = x.ChatId
-        }).ToList();
+        return users.Select(x => new UserDto(x)).ToList();
     }
 
     public async Task<UserDto> GetUserByMobileAsync(string mobile)
@@ -327,10 +319,12 @@ public class UserService(
         return filter;
     }
 
-    public async Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter)
+    public async Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter,long userId)
     {
+        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(userId);
+        
         IQueryable<User> query = userRepository.GetQuery()
-            .Where(x => x.AgentId == filter.AgentId);
+            .Where(x => x.AgentId == agent.Id);
 
         #region filter
 
@@ -340,25 +334,12 @@ public class UserService(
         if (!string.IsNullOrEmpty(filter.LastName))
             query = query.Where(s => EF.Functions.Like(s.LastName, $"%{filter.LastName}%"));
 
-
         if (!string.IsNullOrEmpty(filter.Mobile))
             query = query.Where(s => s.Mobile == filter.Mobile);
 
         #endregion
 
-        IQueryable<UserDto> users = query.Select(u => new UserDto
-        {
-            Id = u.Id,
-            Mobile = u.Mobile,
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-            Address = u.Address,
-            Avatar = PathExtension.UserAvatarThumbServer + u.Avatar,
-            AgentId = u.AgentId,
-            Email = u.Email,
-            IsMobileActive = u.IsMobileActive,
-            Balance = u.Balance
-        });
+        IQueryable<UserDto> users = query.Select(u => new UserDto(u));
 
         await filter.Paging(users);
 

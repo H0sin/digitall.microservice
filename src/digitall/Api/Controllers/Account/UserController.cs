@@ -147,11 +147,10 @@ namespace Api.Controllers.Account
         /// <returns>Lists Users</returns>
         [Authorize]
         [HttpGet]
-        [PermissionChecker("Users")]
         [ProducesResponseType(typeof(ApiResult<FilterUsersDto>), (int)HttpStatusCode.OK)]
         public async Task<ApiResult<FilterUsersDto>> GetAgentUsersFilter([FromQuery] FilterUsersDto filter)
         {
-            FilterUsersDto users = await userService.GetAgentUsersByFilterAsync(filter);
+            FilterUsersDto users = await userService.GetAgentUsersByFilterAsync(filter,User.GetId());
 
             return new OkObjectResult(users);
         }

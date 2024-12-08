@@ -24,7 +24,7 @@ public interface IUserService
     Task RegisterUserFromTelegram(StartTelegramBotDto user);
     Task<ForgetPasswordResult> ForgetPasswordAsync(ForgetUserPasswordDto forget);
     Task<FilterUsersDto> GetUsersByFilterAsync(FilterUsersDto filter);
-    Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter);
+    Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter,long userId);
     Task<UserDto?> GetUserByIdAsync(long id);
     Task<UserDto?> GetUserByEmailAsync(string email);
     Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId);
