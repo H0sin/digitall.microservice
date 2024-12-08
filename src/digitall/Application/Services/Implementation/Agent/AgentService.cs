@@ -456,6 +456,35 @@ public class AgentService(
         return new AgentDto(agent);
     }
 
+    public async Task UpdateAgencyAsync(AgencyInformationDto agency,long userId)
+    {
+
+        var agent = await agentRepository.
+            GetQuery().
+            Include(y=>y.TransactionDetail).
+            SingleOrDefaultAsync(x=>x.AgentAdminId == userId);
+
+        if (string.IsNullOrEmpty(agent.BrandName)) throw new AppException("brand name is empty");
+        
+        agent.BrandName = agency.BrandName;
+        agent.PersianBrandName = agency.PersianBrandName;
+        agent.AgentCode = agency.AgentCode;
+        agent.BrandAddress = agency.BrandAddress;
+        agent.AgentPercent = agency.AgentPercent;
+        agent.UserPercent = agency.UserPercent;
+        agent.AllowNegative = agency.AllowNegative;
+        agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.MaximumAmountForAgent  = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.MaximumAmountForAgent  = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.CardNumber = agency.CardNumber;
+        agent.TransactionDetail.CardHolderName = agency.CardHolderName;
+        agent.TransactionDetail.Description = agency.Description;
+
+        await agentRepository.UpdateEntity(agent);
+        await agentRepository.SaveChanges(userId);
+    }
+
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
         Domain.Entities.Agent.Agent? parent = await

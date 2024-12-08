@@ -184,4 +184,12 @@ public interface IAgentService
     Task<AddAgentResult> AddAgentAsync(AddAgentDto agent, long userId);
     Task<List<long>> GetAgentRoot(long agentId);
     Task<AgentDto?> GetAgentByAdminIdAsync(long? adminId);
+
+    /// <summary>
+    /// update agency
+    /// </summary>
+    /// <param name="agency"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateAgencyAsync(AgencyInformationDto agency,long userId);
 }

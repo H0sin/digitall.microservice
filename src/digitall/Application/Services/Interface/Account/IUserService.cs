@@ -30,7 +30,15 @@ public interface IUserService
     Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId);
     Task<List<UserDto>> GetUserByAgentAsync(long userId);
     Task SendMobileActiveCode(string phone, long userId);
-    Task<UserDto?> GetUserByChatIdAsync(long chatId); 
+    Task<UserDto?> GetUserByChatIdAsync(long chatId);
+    
+    /// <summary>
+    /// get child agent user by id async
+    /// </summary>
+    /// <param name="adminId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<UserDto?> GetUserByIdAsync(long adminId, long userId);
     
     /// <summary>
     /// for update balanced user after append transaction
