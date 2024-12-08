@@ -27,10 +27,10 @@ public class AgentController(IAgentService agentService) : BaseController
     /// agency information
     /// </summary>
     /// <returns></returns>
-    [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResult<AgencyInformationDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
-    public async Task<ApiResult<AgentDto>> AgencyInformation()
+    public async Task<ApiResult<AgencyInformationDto>> AgencyInformation()
     {
         return Ok(await agentService.GetMyAgencyInformation(User.GetId()));
     }
