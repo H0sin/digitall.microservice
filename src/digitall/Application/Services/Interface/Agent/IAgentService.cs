@@ -12,7 +12,6 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService
 {
-
     /// <summary>
     /// get agent information agency
     /// </summary>
@@ -24,13 +23,13 @@ public interface IAgentService
     /// </summary>
     /// <returns></returns>
     Task<List<AgentDto>> AgentsReachedNegativeLimit();
-    
+
     /// <summary>
     /// agents 
     /// </summary>
     /// <returns></returns>
     Task<List<AgentDto>> AgentsReachedNegativeNotLimit();
-    
+
     /// <summary>
     /// send list agent
     /// </summary>
@@ -191,5 +190,12 @@ public interface IAgentService
     /// <param name="agency"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task UpdateAgencyAsync(AgencyInformationDto agency,long userId);
+    Task UpdateAgencyAsync(AgencyInformationDto agency, long userId);
+
+
+    /// <summary>
+    /// report agent incomes detail
+    /// </summary>
+    /// <returns></returns>
+    Task<FilterProfitReportDto> FilterProfitReportAsync(FilterProfitReportDto filter,long userId);
 }

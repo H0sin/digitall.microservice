@@ -39,7 +39,7 @@ public class AgentService(
             .FirstOrDefaultAsync(x => x.AgentAdminId == userId);
 
         return new AgencyInformationDto(agent, agent.TransactionDetail);
-    } 
+    }
 
     public async Task<List<AgentDto>> AgentsReachedNegativeLimit()
     {
@@ -456,16 +456,13 @@ public class AgentService(
         return new AgentDto(agent);
     }
 
-    public async Task UpdateAgencyAsync(AgencyInformationDto agency,long userId)
+    public async Task UpdateAgencyAsync(AgencyInformationDto agency, long userId)
     {
-
-        var agent = await agentRepository.
-            GetQuery().
-            Include(y=>y.TransactionDetail).
-            SingleOrDefaultAsync(x=>x.AgentAdminId == userId);
+        var agent = await agentRepository.GetQuery().Include(y => y.TransactionDetail)
+            .SingleOrDefaultAsync(x => x.AgentAdminId == userId);
 
         if (string.IsNullOrEmpty(agent.BrandName)) throw new AppException("brand name is empty");
-        
+
         agent.BrandName = agency.BrandName;
         agent.PersianBrandName = agency.PersianBrandName ?? "";
         agent.BrandAddress = agency.BrandAddress ?? "";
@@ -474,14 +471,30 @@ public class AgentService(
         agent.AllowNegative = agency.AllowNegative;
         agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
         agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
-        agent.TransactionDetail.MaximumAmountForAgent  = agency.MaximumAmountForAgent;
-        agent.TransactionDetail.MaximumAmountForAgent  = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
+        agent.TransactionDetail.MaximumAmountForAgent = agency.MaximumAmountForAgent;
         agent.TransactionDetail.CardNumber = agency.CardNumber;
         agent.TransactionDetail.CardHolderName = agency.CardHolderName;
         agent.TransactionDetail.Description = agency.Description;
 
         await agentRepository.UpdateEntity(agent);
         await agentRepository.SaveChanges(userId);
+    }
+
+    public async Task<FilterProfitReportDto> FilterProfitReportAsync(FilterProfitReportDto filter,long userId)
+    {
+        var query = agentsIncomesDetailRepository
+            .GetQuery()
+            .Where(x => x.UserId == userId);
+
+        if (filter.StartDate is not null)
+            query = query.Where(x => x.CreateDate >= filter.StartDate);
+
+        var incomes = query.Select(x => new AgentIncomeDto(x));
+
+        await filter.Paging(incomes);
+
+        return filter;
     }
 
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)

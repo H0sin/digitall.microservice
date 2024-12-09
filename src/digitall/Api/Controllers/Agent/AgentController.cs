@@ -266,5 +266,23 @@ public class AgentController(IAgentService agentService) : BaseController
         await agentService.UpdateAgencyAsync(agency, User.GetId());
         return Ok();
     }
+    
+    #endregion
+
+    #region report
+
+    /// <summary>
+    /// report agent incomes
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(ApiResult<FilterProfitReportDto>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<FilterProfitReportDto>> ProfitReport([FromQuery] FilterProfitReportDto filter)
+    {
+        return Ok(await agentService.FilterProfitReportAsync(filter,User.GetId()));
+    }
+
     #endregion
 }
