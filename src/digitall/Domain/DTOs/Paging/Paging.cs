@@ -67,18 +67,26 @@ public class BasePaging<T>
         if (allEntitiesCount < TakeEntity) Page = 1;
         var showPageCountId = allEntitiesCount - (Page - 1) * TakeEntity;
 
-        var pageCount = Convert.ToInt32(Math.Ceiling(allEntitiesCount / (double)TakeEntity));
+        var pageCount = TakeEntity == 0
+            ? 1
+            : Convert.ToInt32(
+                Math.Ceiling(allEntitiesCount / (double)TakeEntity));
+
         ShowPageCountId = showPageCountId;
         AllEntitiesCount = allEntitiesCount;
         SkipEntity = (Page - 1) * TakeEntity;
         StartPage = Page - HowManyShowPageAfterAndBefore <= 0 ? 1 : Page - HowManyShowPageAfterAndBefore;
         EndPage = Page + HowManyShowPageAfterAndBefore > pageCount ? pageCount : Page + HowManyShowPageAfterAndBefore;
-        PageCount = pageCount;
+        
+        if (TakeEntity == 0)
+        {
+            SkipEntity = 0;
+            TakeEntity = allEntitiesCount;
+        }
         Entities = await queryable.Skip(SkipEntity).Take(TakeEntity).ToListAsync();
-
         return this;
     }
-    
+
     public async Task<BasePaging<T>> Paging(IEnumerable<T> enumerable)
     {
         if (Page < 1) Page = 1;
@@ -93,9 +101,16 @@ public class BasePaging<T>
         StartPage = Page - HowManyShowPageAfterAndBefore <= 0 ? 1 : Page - HowManyShowPageAfterAndBefore;
         EndPage = Page + HowManyShowPageAfterAndBefore > pageCount ? pageCount : Page + HowManyShowPageAfterAndBefore;
         PageCount = pageCount;
-        Entities =  enumerable.Skip(SkipEntity).Take(TakeEntity).ToList();
+
+        if (TakeEntity == 0)
+        {
+            SkipEntity = 0;
+            TakeEntity = allEntitiesCount;
+        }
+
+        Entities = enumerable.Skip(SkipEntity).Take(TakeEntity).ToList();
         await Task.CompletedTask;
-        
+
         return this;
     }
 }

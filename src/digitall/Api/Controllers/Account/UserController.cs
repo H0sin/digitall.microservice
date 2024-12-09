@@ -178,6 +178,21 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(await userService.GetUserByIdAsync(User.GetId(), id));
     }
 
+    
+    /// <summary>
+    /// get user me
+    /// </summary>
+    /// <returns></returns>
+    [Authorize]
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResult<UserDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NoContent)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<UserDto>> GetMe()
+    {
+        return Ok(await userService.GetUserByIdAsync(User.GetId()));
+    }
+
     /// <summary>
     /// get user list by agent admin id form token این متد برای نمایش کاربران نمایندگی ها است 
     /// </summary>
