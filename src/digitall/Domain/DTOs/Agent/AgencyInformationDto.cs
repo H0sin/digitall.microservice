@@ -42,6 +42,11 @@ public class AgencyInformationDto
         AgentAdminId = agent.AgentAdminId;
         Id = agent.Id;
     }
+
+    public AgencyInformationDto()
+    {
+        
+    }
 }
 
 
