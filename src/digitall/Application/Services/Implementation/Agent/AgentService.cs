@@ -467,9 +467,8 @@ public class AgentService(
         if (string.IsNullOrEmpty(agent.BrandName)) throw new AppException("brand name is empty");
         
         agent.BrandName = agency.BrandName;
-        agent.PersianBrandName = agency.PersianBrandName;
-        agent.AgentCode = agency.AgentCode;
-        agent.BrandAddress = agency.BrandAddress;
+        agent.PersianBrandName = agency.PersianBrandName ?? "";
+        agent.BrandAddress = agency.BrandAddress ?? "";
         agent.AgentPercent = agency.AgentPercent;
         agent.UserPercent = agency.UserPercent;
         agent.AllowNegative = agency.AllowNegative;
