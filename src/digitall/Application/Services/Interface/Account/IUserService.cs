@@ -47,4 +47,12 @@ public interface IUserService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateUserBalanceAsync(long price, long userId);
+
+    /// <summary>
+    /// update user async
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateUserAsync(UpdateUserDto user, long userId);
 }
