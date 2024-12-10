@@ -110,7 +110,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [HttpPost("{userId}")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
-    public async Task<ApiResult> IncreaseBalance(long userId, AddTransactionDto transaction)
+    public async Task<ApiResult> IncreaseBalance(long userId,[FromBody] AddTransactionDto transaction)
     {
         transaction.Title = "افزایش دستی موجودی";
         transaction.TransactionTime = DateTime.Now;
@@ -127,7 +127,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [HttpPost("{userId}")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
-    public async Task<ApiResult> DecreaseBalance(long userId, AddTransactionDto transaction)
+    public async Task<ApiResult> DecreaseBalance(long userId,[FromBody] AddTransactionDto transaction)
     {
         transaction.Title = "کاهش دستی موجودی";
         transaction.TransactionTime = DateTime.Now;
