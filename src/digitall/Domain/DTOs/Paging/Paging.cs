@@ -67,16 +67,14 @@ public class BasePaging<T>
         if (allEntitiesCount < TakeEntity) Page = 1;
         var showPageCountId = allEntitiesCount - (Page - 1) * TakeEntity;
 
-        var pageCount = TakeEntity == 0
-            ? 1
-            : Convert.ToInt32(
-                Math.Ceiling(allEntitiesCount / (double)TakeEntity));
+        var pageCount = TakeEntity == 0 ? 1 : Convert.ToInt32(Math.Ceiling(allEntitiesCount / (double)TakeEntity));
 
         ShowPageCountId = showPageCountId;
         AllEntitiesCount = allEntitiesCount;
         SkipEntity = (Page - 1) * TakeEntity;
         StartPage = Page - HowManyShowPageAfterAndBefore <= 0 ? 1 : Page - HowManyShowPageAfterAndBefore;
         EndPage = Page + HowManyShowPageAfterAndBefore > pageCount ? pageCount : Page + HowManyShowPageAfterAndBefore;
+        PageCount = pageCount;
         
         if (TakeEntity == 0)
         {
@@ -95,6 +93,7 @@ public class BasePaging<T>
         var showPageCountId = allEntitiesCount - (Page - 1) * TakeEntity;
 
         var pageCount = Convert.ToInt32(Math.Ceiling(allEntitiesCount / (double)TakeEntity));
+        
         ShowPageCountId = showPageCountId;
         AllEntitiesCount = allEntitiesCount;
         SkipEntity = (Page - 1) * TakeEntity;

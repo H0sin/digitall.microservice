@@ -34,7 +34,7 @@ public interface ITransactionService
     Task<List<TransactionDto>> SendTransactionWaitingAsync(long userId);
 
     /// <summary>
-    /// increase user balanse
+    /// increase user balance
     /// </summary>
     /// <param name="transaction"></param>
     /// <param name="userId"></param>
@@ -43,7 +43,7 @@ public interface ITransactionService
     Task IncreaseUserAsync(AddTransactionDto transaction, long userId,long agentId);
 
     /// <summary>
-    /// decrease user balanse
+    /// decrease user balance
     /// </summary>
     /// <param name="transaction"></param>
     /// <param name="userId"></param>
@@ -51,9 +51,8 @@ public interface ITransactionService
     /// <returns></returns>
     Task DecreaseUserAsync(AddTransactionDto transaction, long userId,long agentId);
     
-    Task UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction,
-        long userId);
-
+    Task UpdateTransactionStatusAsync(UpdateTransactionStatusDto transaction, long userId);
+ 
     Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter);
     Task AddTransactionDetailAsync(AddTransactionDetailDto transaction, long userId);
     Task<TransactionDetailDto?> GetTransactionDetailsAsync(long agnetId);

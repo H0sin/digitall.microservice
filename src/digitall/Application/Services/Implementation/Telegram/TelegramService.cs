@@ -2577,9 +2577,6 @@ public class TelegramService(
 
         await transactionService.IncreaseUserAsync(transaction, child!.Id, user!.Id);
 
-        await notificationService.AddNotificationAsync(
-            NotificationTemplate.SendTransactionNotification(transaction, child.Id), user.Id);
-
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
         
         string text = $"""
@@ -2681,9 +2678,6 @@ public class TelegramService(
         };
 
         await transactionService.DecreaseUserAsync(transaction, child!.Id, user!.Id);
-
-        await notificationService.AddNotificationAsync(
-            NotificationTemplate.SendTransactionNotification(transaction, child.Id), user.Id);
 
         telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
