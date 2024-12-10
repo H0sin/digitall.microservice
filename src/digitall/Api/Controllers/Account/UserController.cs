@@ -223,10 +223,22 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok();
     }
 
+    
+    /// <summary>
+    /// update user information by agent
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
     [HttpPut]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
+    [ProducesDefaultResponseType]
     public async Task<ApiResult> UpdateUser([FromBody] UpdateUserDto user)
     {
-        throw new NotImplementedException();
+        await userService.UpdateUserAsync(user, User.GetId());
+        return Ok();
     }
 
 

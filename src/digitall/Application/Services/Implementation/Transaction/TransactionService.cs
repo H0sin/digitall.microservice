@@ -133,9 +133,23 @@ public class TransactionService(
         await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
         try
         {
+            UserDto? user = await userService.GetUserByIdAsync(agentId);
+            AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+            long remainingBalance = user.Balance - transaction.Price;
+            
+            if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
+                throw new AppException(
+                    "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
+
+            if (user?.Balance < transaction.Price & agent?.NegativeChargeCeiling == 0)
+                throw new AppException(
+                    "مقدار که برای افزایش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب شما است! ❌");
+
+            
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
-            
+
             Domain.Entities.Transaction.Transaction newTransaction = new()
             {
                 Description = transaction.Description,
@@ -171,6 +185,12 @@ public class TransactionService(
         await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
         try
         {
+            UserDto? user = await userService.GetUserByIdAsync(userId);
+
+            if (user?.Balance < transaction.Price)
+                throw new AppException(
+                    "مقدار که برای کاهش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب کاربر است! ❌");
+            
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
 
@@ -200,7 +220,7 @@ public class TransactionService(
         catch (Exception e)
         {
             await t.RollbackAsync();
-            throw new AppException("خطا در عملیات");
+            throw new AppException(e.Message);
         }
     }
 

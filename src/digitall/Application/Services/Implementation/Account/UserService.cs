@@ -319,10 +319,10 @@ public class UserService(
         return filter;
     }
 
-    public async Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter,long userId)
+    public async Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter, long userId)
     {
         AgentDto? agent = await agentService.GetAgentByAdminIdAsync(userId);
-        
+
         IQueryable<User> query = userRepository.GetQuery()
             .Where(x => x.AgentId == agent.Id);
 
@@ -441,9 +441,35 @@ public class UserService(
         }
     }
 
+    public async Task UpdateUserAsync(UpdateUserDto user, long userId)
+    {
+        try
+        {
+            User? parent = await userRepository.GetEntityById(userId);
+            AgentDto? agent = await agentService.GetAgentByAdminIdAsync(userId);
+
+            if (agent is null && parent is null) throw new NotFoundException("ادمین در دسترس نیست");
+
+            User? child = await userRepository.GetEntityById(user.Id);
+
+            if (child is null | child.AgentId != agent.Id) throw new AppException("کاربر پیدا نشد");
+
+            child.IsBlocked = user.IsBlocked;
+            child.CardToCardPayment = user.CardToCardPayment;
+
+            await userRepository.UpdateEntity(child);
+            await userRepository.SaveChanges(userId);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     public async Task DisabledAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId,MarzbanUserStatus.active);
+        var services = await GetUserServices(userId, MarzbanUserStatus.active);
 
         foreach (var service in services)
         {
@@ -463,7 +489,7 @@ public class UserService(
 
     public async Task ActiveAllUserAccount(long userId)
     {
-        var services = await GetUserServices(userId,MarzbanUserStatus.disabled);
+        var services = await GetUserServices(userId, MarzbanUserStatus.disabled);
 
         foreach (var service in services)
         {
@@ -504,7 +530,7 @@ public class UserService(
         List<MarzbanUserDto> marzbanUsers = status is not null
             ? await marzbanService.GetMarzbanUsersByStatus(userId, status ?? MarzbanUserStatus.active)
             : await marzbanService.GetMarzbanUsersAsync(userId);
-        
+
         List<PeerDto> peers = await wireguardServices.GetPeersAsync(userId);
 
         List<(CategoryType, long)> response = new();

@@ -2512,7 +2512,7 @@ public class TelegramService(
                       💳 لطفاً مبلغ موردنظر برای شارژ را به تومان وارد کنید.  
                       📢 توجه: لطفا مبلغ را با دقت وارد کنید.
                       """;
-        
+
         await botClient!
             .SendTextMessageAsync(
                 chatId,
@@ -2527,19 +2527,6 @@ public class TelegramService(
         long chatId = callbackQuery!.Message!.Chat.Id;
 
         long price = TelegramHelper.CheckPrice(callbackQuery.Message.Text);
-
-        User? user = await GetUserByChatIdAsync(chatId);
-        AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
-
-        long remainingBalance = user.Balance - price;
-
-        if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
-            throw new AppException(
-                "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
-
-        if (user?.Balance < price & agent?.NegativeChargeCeiling == 0)
-            throw new AppException(
-                "مقدار که برای افزایش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب شما است! ❌");
 
         telegramUser.IncreasePrice = price;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForIncrease;
@@ -2561,39 +2548,50 @@ public class TelegramService(
     public async Task IncreaseUserBalanceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
-        long chatId = callbackQuery!.Message!.Chat.Id;
-
-        User? user = await GetUserByChatIdAsync(chatId);
-        User? child = await userRepository.GetEntityById(telegramUser.Id);
-
-        AddTransactionDto transaction = new AddTransactionDto()
+        try
         {
-            Description = callbackQuery.Message.Text,
-            Price = telegramUser.IncreasePrice,
-            Title = "افزایش دستی موجودی",
-            TransactionTime = DateTime.Now,
-            TransactionType = TransactionType.ManualIncrease,
-        };
+            long chatId = callbackQuery!.Message!.Chat.Id;
 
-        await transactionService.IncreaseUserAsync(transaction, child!.Id, user!.Id);
+            User? user = await GetUserByChatIdAsync(chatId);
+            User? child = await userRepository.GetEntityById(telegramUser.Id);
 
-        telegramUser.State = TelegramMarzbanVpnSessionState.None;
-        
-        string text = $"""
-                       💰 مبلغ {telegramUser.IncreasePrice:N0} تومان  
-                       از حساب شما کسر شد و به حساب کاربر مقصد واریز گردید.  
-                       ✅ تراکنش با موفقیت انجام شد.  
-                       """;
+            AddTransactionDto transaction = new AddTransactionDto()
+            {
+                Description = callbackQuery.Message.Text,
+                Price = telegramUser.IncreasePrice,
+                Title = "افزایش دستی موجودی",
+                TransactionTime = DateTime.Now,
+                TransactionType = TransactionType.ManualIncrease,
+            };
 
-        await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+            await transactionService.IncreaseUserAsync(transaction, child!.Id, user!.Id);
 
-        await telegramUserRepository.Update(telegramUser);
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
-        await ManagementUserAsync(botClient!, new CallbackQuery()
+            string text = $"""
+                           💰 مبلغ {telegramUser.IncreasePrice:N0} تومان  
+                           از حساب شما کسر شد و به حساب کاربر مقصد واریز گردید.  
+                           ✅ تراکنش با موفقیت انجام شد.  
+                           """;
+
+            await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+
+            await telegramUserRepository.Update(telegramUser);
+
+            await ManagementUserAsync(botClient!, new CallbackQuery()
+            {
+                Data = $"user_management?id={child.Id}",
+                Message = callbackQuery.Message,
+            }, cancellationToken, telegramUser);
+        }
+        catch (AppException e)
         {
-            Data = $"user_management?id={child.Id}",
-            Message = callbackQuery.Message,
-        }, cancellationToken, telegramUser);
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                text: e.Message,
+                cancellationToken: cancellationToken
+            );
+        }
     }
 
     public async Task DecreaseUserByAgentAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -2622,7 +2620,7 @@ public class TelegramService(
                       💳 لطفاً مبلغ موردنظر برای کسر موجودی کاربر را به تومان وارد کنید.  
                       📢 توجه: لطفا مبلغ را با دقت وارد کنید.
                       """;
-        
+
         await botClient!
             .SendTextMessageAsync(
                 chatId,
@@ -2638,12 +2636,6 @@ public class TelegramService(
 
         long price = TelegramHelper.CheckPrice(callbackQuery.Message.Text);
 
-        User? user = await userRepository.GetEntityById(telegramUser.Id);
-
-        if (user?.Balance < price)
-            throw new AppException(
-                "مقدار که برای کاهش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب کاربر است! ❌");
-
         telegramUser.DecreasePrice = price;
         telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendDescriptionForDecrease;
 
@@ -2656,47 +2648,58 @@ public class TelegramService(
                        این توضیحات به شفافیت و پیگیری‌های بعدی کمک خواهد کرد.
                        """;
 
-        
+
         await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
     }
 
     public async Task DecreaseUserBalanceAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken, TelegramUser telegramUser)
     {
-        long chatId = callbackQuery!.Message!.Chat.Id;
-
-        User? user = await GetUserByChatIdAsync(chatId);
-        User? child = await userRepository.GetEntityById(telegramUser.Id);
-
-        AddTransactionDto transaction = new AddTransactionDto()
+        try
         {
-            Description = callbackQuery.Message.Text,
-            Price = telegramUser.DecreasePrice,
-            Title = "کاهش دستی موجودی",
-            TransactionTime = DateTime.Now,
-            TransactionType = TransactionType.ManualDecrease,
-        };
+            long chatId = callbackQuery!.Message!.Chat.Id;
 
-        await transactionService.DecreaseUserAsync(transaction, child!.Id, user!.Id);
+            User? user = await GetUserByChatIdAsync(chatId);
+            User? child = await userRepository.GetEntityById(telegramUser.Id);
 
-        telegramUser.State = TelegramMarzbanVpnSessionState.None;
+            AddTransactionDto transaction = new AddTransactionDto()
+            {
+                Description = callbackQuery.Message.Text,
+                Price = telegramUser.DecreasePrice,
+                Title = "کاهش دستی موجودی",
+                TransactionTime = DateTime.Now,
+                TransactionType = TransactionType.ManualDecrease,
+            };
 
-        string text = $"""
-                       💰 مبلغ {telegramUser.DecreasePrice:N0} تومان  
-                       از حساب کاربر کسر شد و به حساب شما واریز گردید.  
-                       ✅ تراکنش با موفقیت انجام شد.  
-                       """;
-        
-        await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+            await transactionService.DecreaseUserAsync(transaction, child!.Id, user!.Id);
 
-        await telegramUserRepository.Update(telegramUser);
+            telegramUser.State = TelegramMarzbanVpnSessionState.None;
 
-        await ManagementUserAsync(botClient!, new CallbackQuery()
+            string text = $"""
+                           💰 مبلغ {telegramUser.DecreasePrice:N0} تومان  
+                           از حساب کاربر کسر شد و به حساب شما واریز گردید.  
+                           ✅ تراکنش با موفقیت انجام شد.  
+                           """;
+
+            await botClient!.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+
+            await telegramUserRepository.Update(telegramUser);
+
+            await ManagementUserAsync(botClient!, new CallbackQuery()
+            {
+                Data = $"user_management?id={child.Id}",
+
+                Message = callbackQuery.Message,
+            }, cancellationToken, telegramUser);
+        }
+        catch (AppException e)
         {
-            Data = $"user_management?id={child.Id}",
-             
-            Message = callbackQuery.Message,
-        }, cancellationToken, telegramUser);
+            await botClient.SendTextMessageAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                text: e.Message,
+                cancellationToken: cancellationToken
+            );
+        }
     }
 
     public async Task BlockUserAsync(ITelegramBotClient? botClient, CallbackQuery callbackQuery,
@@ -2716,7 +2719,6 @@ public class TelegramService(
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
             Int64.TryParse(queryParameters["id"], out id);
         }
-
 
         User? user = await GetUserByChatIdAsync(chatId);
 
