@@ -3,6 +3,7 @@ using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
 using Application.Extensions;
+using Application.Services.Implementation.Agent;
 using Application.Services.Interface.Transaction;
 using Domain.DTOs.Transaction;
 using Domain.Enums;
@@ -22,7 +23,6 @@ public class TransactionController(ITransactionService transactionService) : Bas
 {
     /// <summary>
     /// add transaction for user
-    /// فقط کاربری که لاگین هست مجاز به ثبت است
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
@@ -47,7 +47,6 @@ public class TransactionController(ITransactionService transactionService) : Bas
 
     /// <summary>
     /// after admin show transaction acept transaction
-    /// تغییر وضعیت تراکنش
     /// </summary>
     /// <param name="transaction">TransactionStatus 1 = accepted, 2 not accepted, 3 waiting</param>
     [HttpPut]
@@ -82,7 +81,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
-    public async Task<ApiResult> AddTransactionDetial(
+    public async Task<ApiResult> AddTransactionDetail(
         [FromBody] AddTransactionDetailDto transaction)
     {
         await transactionService.AddTransactionDetailAsync(transaction, User.GetId());
@@ -101,5 +100,39 @@ public class TransactionController(ITransactionService transactionService) : Bas
     public async Task<ApiResult<TransactionDetailDto>> GetTransactionDetail()
     {
         return Ok(await transactionService.GetTransactionDetailsByUserIdAsync(User.GetId()));
+    }
+
+    /// <summary>
+    /// add increase transaction dto
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    [HttpPost("{userId}")]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> IncreaseBalance(long userId, AddTransactionDto transaction)
+    {
+        transaction.Title = "افزایش دستی موجودی";
+        transaction.TransactionTime = DateTime.Now;
+        transaction.TransactionType = TransactionType.ManualIncrease;
+        await transactionService.IncreaseUserAsync(transaction, userId, User.GetId());
+        return Ok();
+    }
+
+    /// <summary>
+    /// Decrease
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    [HttpPost("{userId}")]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> DecreaseBalance(long userId, AddTransactionDto transaction)
+    {
+        transaction.Title = "کاهش دستی موجودی";
+        transaction.TransactionTime = DateTime.Now;
+        transaction.TransactionType = TransactionType.ManualDecrease;
+        await transactionService.DecreaseUserAsync(transaction, userId, User.GetId());
+        return Ok();
     }
 }

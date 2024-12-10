@@ -33,7 +33,7 @@ public class TransactionService(
     public async Task<AddTransactionResult> AddTransactionAsync(AddTransactionDto transaction, long userId)
     {
         UserDto? user = await userService.GetUserByIdAsync(userId);
-        
+
         if (user is null)
             return AddTransactionResult.NotUserExists;
 
@@ -133,6 +133,9 @@ public class TransactionService(
         await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
         try
         {
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
+            
             Domain.Entities.Transaction.Transaction newTransaction = new()
             {
                 Description = transaction.Description,
@@ -147,21 +150,6 @@ public class TransactionService(
                 CardNumber = transaction.CardNumber,
                 UserId = userId,
             };
-
-            // Domain.Entities.Transaction.Transaction newTransactionAgent = new()
-            // {
-            //     Description = transaction.Description,
-            //     Price = transaction.Price * -1,
-            //     Title = "کاهش دستی موجودی",
-            //     TransactionType = TransactionType.Decrease,
-            //     TransactionStatus = TransactionStatus.Accepted,
-            //     TransactionTime = transaction.TransactionTime,
-            // };
-
-            // await transactionRepository.AddEntity(newTransactionAgent);
-            // await transactionRepository.SaveChanges(agentId);
-            //
-            // newTransaction.TransactionCode = newTransactionAgent.TransactionCode;
 
             await transactionRepository.AddEntity(newTransaction);
             await transactionRepository.SaveChanges(agentId);
@@ -183,6 +171,9 @@ public class TransactionService(
         await using IDbContextTransaction t = await transactionRepository.context.Database.BeginTransactionAsync();
         try
         {
+            await notificationService.AddNotificationAsync(
+                NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
+
             Domain.Entities.Transaction.Transaction newTransaction = new()
             {
                 Description = transaction.Description,
@@ -197,7 +188,7 @@ public class TransactionService(
                 CardNumber = transaction.CardNumber,
                 UserId = userId
             };
-            
+
             await transactionRepository.AddEntity(newTransaction);
             await transactionRepository.SaveChanges(agentId);
 
@@ -247,7 +238,7 @@ public class TransactionService(
 
 
                 transe.TransactionStatus = TransactionStatus.Accepted;
-                
+
                 UserDto? child = await userService.GetUserByIdAsync(transe.CreateBy);
 
 //                 await transactionRepository.AddEntity(new Domain.Entities.Transaction.Transaction()
@@ -280,7 +271,7 @@ public class TransactionService(
                 throw new BadRequestException("شما قبلا این تراکنش را برسی کردید!");
 
             transe!.TransactionStatus = transaction.TransactionStatus;
-            
+
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.TransactionStatusAsync(transe.CreateBy, transe), userId);
 
@@ -366,12 +357,12 @@ public class TransactionService(
     public async Task<TransactionDetailDto?> GetTransactionDetailsByUserIdAsync(long userId)
     {
         var agent = await agentService.GetAgentByAdminIdAsync(userId);
-        
+
         TransactionDetail? transactionDetail = await transactionDetailRepository
             .GetQuery()
             .Include(x => x.Agent)
             .SingleOrDefaultAsync(x => x.AgentId == agent.Id);
-        
+
         return new TransactionDetailDto(transactionDetail);
     }
 
