@@ -204,19 +204,16 @@ public class AgentController(IAgentService agentService) : BaseController
     /// <param name="agent"></param>
     /// <returns>ok or bad request</returns>
     [HttpPost]
-    [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+    [ProducesResponseType(typeof(ApiResult),(int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
     public async Task<ApiResult> AddAgent([FromBody] AddAgentDto agent)
     {
         if (User.GetId() == 0)
             throw new AppException(ApiResultStatusCode.UnAuthorized);
 
-        AddAgentResult result = await agentService.AddAgentAsync(agent, User.GetId());
+        await agentService.AddAgentAsync(agent, User.GetId());
 
-        return result switch
-        {
-            AddAgentResult.Success => Ok(),
-            _ => BadRequest()
-        };
+        return Ok();
     }
 
     /// <summary>

@@ -587,10 +587,7 @@ public class AgentService(
             {
                 Message = "شما با موفقیت نماینده شدید ✅",
                 UserId = user.Id,
-                Buttons = new()
-                {
-                    new("مدیریت پنل نمایندگی 🏢", "agency_management")
-                },
+                Buttons = [new("مدیریت پنل نمایندگی 🏢", "agency_management")],
             }, user.Id);
             
             await transaction.CommitAsync();
