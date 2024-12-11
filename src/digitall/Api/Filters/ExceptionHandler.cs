@@ -89,6 +89,10 @@ public class ExceptionHandler : IAsyncExceptionFilter
                 case AppException exception:
                     if (exception.ApiStatusCode == ApiResultStatusCode.UnAuthorized)
                         context.Result =
+                            new JsonResult(new ApiResult(false, ApiResultStatusCode.UnAuthorized,
+                                "لطفا وارد شوید"));
+                    else
+                        context.Result =
                             new JsonResult(new ApiResult<object>(false, ApiResultStatusCode.LogicError,
                                 exception.AdditionalData, exception.Message));
                     break;
