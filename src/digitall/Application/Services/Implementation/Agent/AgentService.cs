@@ -537,9 +537,6 @@ public class AgentService(
 
             if (admin is null) throw new NotFoundException("چنین کاربری وجود ندارد! ");
 
-            if (await agentRepository.GetQuery().AnyAsync(x => x.AgentAdminId == agent.AgentAdminId))
-                throw new BadRequestException("این کاربرمدیر نمایندگی دیگری است");
-
             Domain.Entities.Agent.Agent parentAgent = (await agentRepository.GetQuery()
                 .SingleOrDefaultAsync(x => x.AgentAdminId == userId))!;
 
