@@ -15,4 +15,4 @@ public enum NotificationType : byte
     PaymentReports,
     DeletedReports,
     AgentRequestReports,
-}
+} 

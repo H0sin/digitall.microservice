@@ -2841,7 +2841,7 @@ public class TelegramService(
         if (fileId != null && await botClient!.GetFileAsync(
                 fileId,
                 cancellationToken: cancellationToken) != null)
-        {
+{
             file = await botClient!.GetFileAsync(
                 message.Photo?[^1].FileId ?? null,
                 cancellationToken: cancellationToken);
@@ -2849,7 +2849,7 @@ public class TelegramService(
             using var memoryStream = new MemoryStream();
 
             await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
-
+            
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             formFile =
