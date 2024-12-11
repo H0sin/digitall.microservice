@@ -8,6 +8,7 @@ using Data.DefaultData;
 using Data.Repositories.Agent;
 using Domain.DTOs.Account;
 using Domain.DTOs.Agent;
+using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.Entities.Account;
 using Domain.Entities.Agent;
@@ -556,7 +557,8 @@ public class AgentService(
                 BrandAddress = agent.BrandAddress,
                 BrandName = agent.BrandName,
                 PersianBrandName = agent.PersianBrandName,
-                AgentPercent = agent.Percent,
+                AgentPercent = agent.AgentPercent,
+                UserPercent = agent.UserPercent,
                 AmountWithNegative = -50000,
                 TransactionDetail = new()
                 {
@@ -575,11 +577,25 @@ public class AgentService(
             await agentRepository.SaveChanges(userId);
 
             User? user = await userRepository.GetEntityById(newAgent.AgentAdminId);
+
+            if (user.Balance <= 100000)
+                throw new AppException("موجودی کاربر برای نمایندگی کافی نیست لطفا کاربر باید 100000 هزار تومن حداقل موجودی داشته باشه");
+            
             user.IsAgent = true;
 
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
 
+            await notificationService.AddNotificationAsync(new AddNotificationDto()
+            {
+                Message = "شما با موفقیت نماینده شدید ✅",
+                UserId = user.Id,
+                Buttons = new()
+                {
+                    new("مدیریت پنل نمایندگی 🏢", "agency_management")
+                },
+            }, user.Id);
+            
             await transaction.CommitAsync();
 
             return AddAgentResult.Success;

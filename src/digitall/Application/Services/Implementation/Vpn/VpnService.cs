@@ -197,7 +197,7 @@ public class VpnService(
         //     User? user = await userRepository.GetEntityById(userId);
         //     var agentIds = await agentService.GetAgentRoot(user.AgentId);
         //
-        //     // using Percent percent = new(agentService);
+        //     // using AgentPercent percent = new(agentService);
         //
         //     long productPrice = await percent.Calculate(agentIds, product!.Price);
         //     long totalPrice = productPrice * buyVpn.Count;
@@ -373,7 +373,7 @@ public class VpnService(
         //
         // var agentIds = await agentService.GetAgentRoot(user.AgentId);
         //
-        // using Percent percent = new(agentService);
+        // using AgentPercent percent = new(agentService);
         //
         // foreach (VpnDto? entity in filter.Entities)
         // {

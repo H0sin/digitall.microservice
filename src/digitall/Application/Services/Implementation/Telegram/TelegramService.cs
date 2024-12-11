@@ -3490,7 +3490,7 @@ public class TelegramService(
         User? parentUser = await GetUserByChatIdAsync(chatId);
         User? user = await userRepository.GetEntityById(Id);
 
-        if (user.Balance > 100000)
+        if (user.Balance >= 100000)
         {
             AddAgentDto agent = new()
             {
@@ -3501,16 +3501,7 @@ public class TelegramService(
             };
 
             await agentService.AddAgentAsync(agent, parentUser.Id);
-
-            await notificationService.AddNotificationAsync(new AddNotificationDto()
-            {
-                Message = "شما با موفقیت نماینده شدید ✅",
-                UserId = user.Id,
-                Buttons = new()
-                {
-                    new("مدیریت پنل نمایندگی 🏢", "agency_management")
-                },
-            }, user.Id);
+            
             telegramUser.Id = Id;
 
             await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",

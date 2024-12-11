@@ -56,7 +56,7 @@ public class OrderService(
 
             var agentIds = await agentService.GetAgentRoot(user.AgentId);
 
-            // using Percent percent = new(agentService);
+            // using AgentPercent percent = new(agentService);
 
             OrderDetail orderDetail = new()
             {
