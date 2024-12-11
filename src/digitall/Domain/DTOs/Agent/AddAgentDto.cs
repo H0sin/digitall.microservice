@@ -7,11 +7,11 @@ public class AddAgentDto
 {
     [Display(Name = "نام برند")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
-    public string? BrandName { get; set; }
+    public string? BrandName { get; set; } = "";
 
     [Display(Name = "نام فارسی برند")]
     [MaxLength(300, ErrorMessage = "{0} نمیتواند بیشتر از {1} کاراکتر باشد")]
-    public string? PersianBrandName { get; set; }
+    public string? PersianBrandName { get; set; } = "";
 
     [Display(Name = "شناسه نماینده")] public long AgentAdminId { get; set; }
 

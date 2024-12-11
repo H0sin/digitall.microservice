@@ -576,10 +576,10 @@ public class AgentService(
             User? user = await userRepository.GetEntityById(newAgent.AgentAdminId);
 
             if (user.Balance <= 100000)
-                throw new AppException("موجودی کاربر برای نمایندگی کافی نیست لطفا کاربر باید 100000 هزار تومن حداقل موجودی داشته باشه");
+                throw new AppException(
+                    $"موجودی کاربر برای نمایندگی کافی نیست لطفا کاربر باید {100000:N0} هزار تومن حداقل موجودی داشته باشد");
             
             user.IsAgent = true;
-
             await userRepository.UpdateEntity(user);
             await userRepository.SaveChanges(userId);
 

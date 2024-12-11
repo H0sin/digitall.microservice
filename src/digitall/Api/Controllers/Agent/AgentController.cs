@@ -208,9 +208,6 @@ public class AgentController(IAgentService agentService) : BaseController
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddAgent([FromBody] AddAgentDto agent)
     {
-        if (User.GetId() == 0)
-            throw new AppException(ApiResultStatusCode.UnAuthorized);
-
         await agentService.AddAgentAsync(agent, User.GetId());
 
         return Ok();
