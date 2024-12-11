@@ -284,6 +284,6 @@ public class UserController(IUserService userService) : ControllerBase
             _ => NotFound()
         };
     }
-
+    
     #endregion
 }

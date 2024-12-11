@@ -424,10 +424,11 @@ public class UserService(
     {
         var agent = await agentService.GetAgentByAdminIdAsync(adminId);
         var user = await userRepository.GetEntityById(userId);
-
         if (user.AgentId != agent.Id) throw new NotFoundException($"not found user by id {userId}");
 
-        return new UserDto(user);
+        AgentDto? childAgent = user.IsAgent ? await agentService.GetAgentByAdminIdAsync(user.Id) : null;
+
+        return new UserDto(user, childAgent);
     }
 
     public async Task UpdateUserBalanceAsync(long price, long userId)

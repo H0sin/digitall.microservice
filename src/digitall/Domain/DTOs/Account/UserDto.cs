@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.DTOs.Agent;
 using Domain.Entities.Account;
 
 namespace Domain.DTOs.Account;
@@ -59,6 +60,8 @@ public class UserDto
     
     public bool IsAgent { get; set; }
 
+    public AgentDto? Agency { get; set; }
+    
     public UserDto()
     {
     }
@@ -84,5 +87,29 @@ public class UserDto
         CardToCardPayment = user.CardToCardPayment;
         IsBlocked = user.IsBlocked;
         IsAgent = user.IsAgent;
+    }
+
+    public UserDto(User user,AgentDto? agent)
+    {
+        Id = user.Id;
+        Email = user.Email;
+        Mobile = user.Mobile!;
+        MobileActiveCode = user.MobileActiveCode!;
+        IsMobileActive = user.IsMobileActive;
+        FirstName = user.FirstName!;
+        LastName = user.LastName!;
+        Avatar = user.Avatar;
+        Address = user.Address;
+        AgentId = user.AgentId;
+        ModifiedDate = user.ModifiedDate;
+        Balance = user.Balance;
+        ChatId = user.ChatId;
+        TelegramUsername = user.TelegramUsername;
+        UserStatus = user.UserStatus;
+        CreateDate = user.CreateDate;
+        CardToCardPayment = user.CardToCardPayment;
+        IsBlocked = user.IsBlocked;
+        IsAgent = user.IsAgent;
+        Agency = agent;
     }
 }

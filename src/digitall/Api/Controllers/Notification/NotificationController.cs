@@ -2,16 +2,11 @@
 using Api.Controllers.Base;
 using Api.Filters;
 using Asp.Versioning;
-using Api.Filters;
 using Application.Extensions;
 using Application.Services.Interface.Notification;
-using Application.Utilities;
 using Domain.DTOs.Notification;
-using Domain.Enums;
 using Domain.Enums.Notification;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Serilog;
 
 namespace Api.Controllers.Notification;
 
