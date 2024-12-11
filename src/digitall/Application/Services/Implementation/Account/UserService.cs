@@ -452,9 +452,16 @@ public class UserService(
             if (agent is null && parent is null) throw new NotFoundException("ادمین در دسترس نیست");
 
             User? child = await userRepository.GetEntityById(user.Id);
-
+            AgentDto? childAgent = null;
             if (child is null | child.AgentId != agent.Id) throw new AppException("کاربر پیدا نشد");
 
+            if (child.IsAgent)
+            {
+                childAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
+                childAgent!.SpecialPercent = user.SpecialPercent;
+                await agentService.UpdateAgentAsync(childAgent,userId);
+            }
+            
             child.IsBlocked = user.IsBlocked;
             child.CardToCardPayment = user.CardToCardPayment;
 

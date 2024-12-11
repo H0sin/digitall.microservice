@@ -17,7 +17,9 @@ public class AddAgentDto
 
     [Display(Name = "آدرس مغازه")] public string? BrandAddress { get; set; }
 
-    [Display(Name = "درصد")] public long Percent { get; set; }
+    [Display(Name = "درصد نماینده")] public int AgentPercent { get; set; } = 50;
 
-    public AddTransactionDetailDto? AddTransactionDetialDto { get; set; }
+    [Display(Name = "درصد کاربر")] public int UserPercent { get; set; } = 200;
+
+    public AddTransactionDetailDto? AddTransactionDetail { get; set; }
 }

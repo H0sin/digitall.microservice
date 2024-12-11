@@ -13,7 +13,7 @@
 //
 // namespace Application.Helper;
 //
-// public class Percent(IAgentService agentService, IMarzbanService? marzbanService = null) : IDisposable
+// public class AgentPercent(IAgentService agentService, IMarzbanService? marzbanService = null) : IDisposable
 // {
 //     // public async Task<>
 //
