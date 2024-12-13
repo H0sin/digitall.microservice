@@ -63,7 +63,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// get transaction list by filter
     /// </summary>
     /// <returns>FilterTransaction</returns>
-    [HttpPost]
+    [HttpGet]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<FilterTransactionDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]

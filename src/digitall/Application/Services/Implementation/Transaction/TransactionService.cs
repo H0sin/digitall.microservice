@@ -334,7 +334,7 @@ public class TransactionService(
     public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter)
     {
         IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository.GetQuery();
-
+        
         IQueryable<TransactionDto> transaction = query.Select(x => new TransactionDto()
         {
             AccountName = x.AccountName,
