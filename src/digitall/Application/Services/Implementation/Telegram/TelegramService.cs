@@ -138,10 +138,12 @@ public class TelegramService(
             }
         }
 
+        string token = JwtHelper.GenerateToken(new UserDto(user));
+
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: TelegramHelper.BackToHomeMessage,
-            replyMarkup: TelegramHelper.CreateMainMenu(user!, has_bot),
+            replyMarkup: TelegramHelper.CreateMainMenu(user!, has_bot, token),
             cancellationToken: cancellationToken);
 
         await telegramUserRepository.Update(telegramUser);
@@ -198,7 +200,16 @@ public class TelegramService(
         long chatId = callbackQuery.Message!.Chat.Id;
 
         List<ProductDto> products = await productService.GetProductAsync();
+        
+        User? user = await GetUserByChatIdAsync(chatId);
 
+        if (user.TelegramUsername != callbackQuery.From.Username)
+        {
+            user.TelegramUsername = callbackQuery.From.Username;
+            await userRepository.UpdateEntity(user);
+            await userRepository.SaveChanges(user.Id);
+        }
+        
         if (products.Count <= 0)
             throw new AppException("محصولی وجود ندارد ❌");
 
@@ -2841,7 +2852,7 @@ public class TelegramService(
         if (fileId != null && await botClient!.GetFileAsync(
                 fileId,
                 cancellationToken: cancellationToken) != null)
-{
+        {
             file = await botClient!.GetFileAsync(
                 message.Photo?[^1].FileId ?? null,
                 cancellationToken: cancellationToken);
@@ -2849,7 +2860,7 @@ public class TelegramService(
             using var memoryStream = new MemoryStream();
 
             await botClient!.DownloadFileAsync(file.FilePath!, memoryStream, cancellationToken);
-            
+
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             formFile =
@@ -3501,7 +3512,7 @@ public class TelegramService(
             };
 
             await agentService.AddAgentAsync(agent, parentUser.Id);
-            
+
             telegramUser.Id = Id;
 
             await botClient!.SendTextMessageAsync(chatId, "کاربر با موفقیت نماینده شده ✅",

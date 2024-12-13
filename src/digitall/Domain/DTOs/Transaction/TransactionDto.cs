@@ -18,6 +18,7 @@ public class TransactionDto
     public string? BankName { get; set; }
     [Display(Name = "عکس تراکنش")] public string? AvatarTransaction { get; set; }
     public long TransactionCode { get; set; }
+    
     public long CreateBy { get; set; }
     public string? Username { get; set; }
     public long ChatId { get; set; }

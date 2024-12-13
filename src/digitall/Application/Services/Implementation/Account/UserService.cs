@@ -459,9 +459,9 @@ public class UserService(
             {
                 childAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
                 childAgent!.SpecialPercent = user.SpecialPercent;
-                await agentService.UpdateAgentAsync(childAgent,userId);
+                await agentService.UpdateAgentAsync(childAgent, userId);
             }
-            
+
             child.IsBlocked = user.IsBlocked;
             child.CardToCardPayment = user.CardToCardPayment;
 

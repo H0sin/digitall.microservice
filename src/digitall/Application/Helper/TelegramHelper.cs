@@ -420,7 +420,7 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup CreateMainMenu(User user, bool has_bot = false)
+    public static InlineKeyboardMarkup CreateMainMenu(User user, bool has_bot = false,string? token = null)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
@@ -433,6 +433,12 @@ public class TelegramHelper
         {
             buttons.Add(CreateList2Button(InviteLink, Transactions));
             buttons.Add(CreateList2Button(ManagementAgent, Wallet));
+            
+            if(token != null && user.Id <= 11)
+                buttons.Add(CreateList1Button(InlineKeyboardButton.WithWebApp("اپ نمایندگی", new WebAppInfo()
+                {
+                    Url = $"https://digitalldns.com?token={token}"
+                })));
         }
         else
         {
