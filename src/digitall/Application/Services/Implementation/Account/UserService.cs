@@ -8,6 +8,7 @@ using Application.Utilities;
 using Application.Extensions;
 using Application.Senders.Sms;
 using Application.Services.Interface.Marzban;
+using Application.Services.Interface.Telegram;
 using Application.Services.Interface.Wireguard;
 using Application.Static.Template;
 using Data.DefaultData;
@@ -29,11 +30,14 @@ using Domain.Enums.Marzban;
 using Domain.Enums.Notification;
 using Domain.Exceptions;
 using Domain.IRepositories.Account;
+using Domain.IRepositories.Telegram;
 using IPE.SmsIrClient.Models.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SixLabors.ImageSharp.ColorSpaces;
+using SkiaSharp;
+using UserInformationDto = Domain.DTOs.Account.UserInformationDto;
 
 namespace Application.Services.Implementation.Account;
 
@@ -42,7 +46,8 @@ public class UserService(
     IAgentService agentService,
     INotificationService notificationService,
     IWireguardServices wireguardServices,
-    IMarzbanService marzbanService
+    IMarzbanService marzbanService,
+    ITelegramBotRepository botRepository
 ) : IUserService
 {
     public async Task<LoginUserResult> LoginAsync(LoginUserDto login)
@@ -473,6 +478,15 @@ public class UserService(
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public async Task<UserInformationDto> GetInformationAsync(long userId)
+    {
+        var user = await userRepository.GetEntityById(userId);
+        var telegramBot = await botRepository.GetQuery().SingleOrDefaultAsync(x => x.BotId == user.BotId);
+        var agency = await agentService.GetAgentByAdminIdAsync(user.Id);
+
+        return new (user,agency,telegramBot);
     }
 
     public async Task DisabledAllUserAccount(long userId)
