@@ -342,6 +342,28 @@ public class UserService(
         if (!string.IsNullOrEmpty(filter.Mobile))
             query = query.Where(s => s.Mobile == filter.Mobile);
 
+        if (!string.IsNullOrEmpty(filter.Username))
+        {
+            string usernameFilter = $"%{filter.Username}%";
+            query = query.Where(s =>
+                EF.Functions.Like(s.FirstName, usernameFilter) ||
+                EF.Functions.Like(s.LastName, usernameFilter) ||
+                EF.Functions.Like(s.TelegramUsername, usernameFilter) ||
+                s.Id.ToString().Contains(filter.Username) ||
+                s.ChatId.ToString().Contains(filter.Username));
+        }
+
+        switch (filter.IsAgent)
+        {
+            case 1:
+                query = query.Where(x => !x.IsAgent);
+                break;
+
+            case 2:
+                query = query.Where(x => x.IsAgent);
+                break;
+        }
+
         #endregion
 
         IQueryable<UserDto> users = query.Select(u => new UserDto(u));
@@ -486,7 +508,7 @@ public class UserService(
         var telegramBot = await botRepository.GetQuery().SingleOrDefaultAsync(x => x.BotId == user.BotId);
         var agency = await agentService.GetAgentByAdminIdAsync(user.Id);
 
-        return new (user,agency,telegramBot);
+        return new(user, agency, telegramBot);
     }
 
     public async Task DisabledAllUserAccount(long userId)
