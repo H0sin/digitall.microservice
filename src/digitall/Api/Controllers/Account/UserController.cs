@@ -164,6 +164,21 @@ public class UserController(IUserService userService) : ControllerBase
     #region get user
 
     /// <summary>
+    /// get me all Information
+    /// </summary>
+    /// <remarks>get user id form token</remarks>
+    /// <returns>user information</returns>
+    [Authorize]
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResult<UserInformationDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NoContent)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult<UserInformationDto>> GetInformation()
+    {
+        return Ok(await userService.GetInformationAsync(User.GetId()));
+    }
+
+    /// <summary>
     /// get user by Id
     /// </summary>
     /// <remarks>get user id form token</remarks>
@@ -178,7 +193,7 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(await userService.GetUserByIdAsync(User.GetId(), id));
     }
 
-    
+
     /// <summary>
     /// get user me
     /// </summary>
@@ -223,7 +238,7 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok();
     }
 
-    
+
     /// <summary>
     /// update user information by agent
     /// </summary>
@@ -284,6 +299,6 @@ public class UserController(IUserService userService) : ControllerBase
             _ => NotFound()
         };
     }
-    
+
     #endregion
 }

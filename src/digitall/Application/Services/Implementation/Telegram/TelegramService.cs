@@ -50,6 +50,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using File = Telegram.Bot.Types.File;
 using User = Domain.Entities.Account.User;
+using UserInformationDto = Domain.DTOs.Telegram.UserInformationDto;
 
 
 namespace Application.Services.Implementation.Telegram;
