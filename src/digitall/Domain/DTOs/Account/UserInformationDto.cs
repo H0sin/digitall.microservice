@@ -27,7 +27,7 @@ public class UserInformationDto
         Id = user.Id;
         Balance = user.Balance;
         Agency = agent;
-        BotName = bot?.Link?.Replace("https://t.me/", "Mr_mmd_vpn_bot").Replace("_", "") ?? "";
+        BotName = bot?.Link?.Replace("https://t.me/", "").Replace("_", " ") ?? "";
         BotLink = bot?.Link;
     }
 
