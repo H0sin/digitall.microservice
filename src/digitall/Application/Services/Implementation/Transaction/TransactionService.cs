@@ -137,7 +137,7 @@ public class TransactionService(
             AgentDto? agent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
             long remainingBalance = user.Balance - transaction.Price;
-            
+
             if (remainingBalance < (agent?.NegativeChargeCeiling ?? 0) & agent?.NegativeChargeCeiling < 0)
                 throw new AppException(
                     "مبلغ درخواستی باعث می‌شود که موجودی شما بیش از حد مجاز منفی شود! ❌");
@@ -146,7 +146,7 @@ public class TransactionService(
                 throw new AppException(
                     "مقدار که برای افزایش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب شما است! ❌");
 
-            
+
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
 
@@ -190,7 +190,7 @@ public class TransactionService(
             if (user?.Balance < transaction.Price)
                 throw new AppException(
                     "مقدار که برای کاهش موجودی کاربر درخواست داده اید بیشتر از موجودی حساب کاربر است! ❌");
-            
+
             await notificationService.AddNotificationAsync(
                 NotificationTemplate.SendTransactionNotification(transaction, userId), agentId);
 
@@ -328,13 +328,32 @@ public class TransactionService(
 
     public async Task<TransactionDto> GetTransactionByIdAsync(long id)
     {
-        return new TransactionDto(await transactionRepository.GetEntityById(id));
+        var transaction = await transactionRepository.GetEntityById(id);
+        var user = await userService.GetUserByIdAsync(id);
+        return new TransactionDto(transaction,user);
     }
 
     public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter)
     {
         IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository.GetQuery();
+
+
+        #region filter
+
+        if (filter.StartDate is not null)
+            query = query.Where(s => s.TransactionTime >= filter.StartDate);
+
+        if (filter.EndDate is not null)
+            query = query.Where(s => s.TransactionTime <= filter.EndDate);
+
+        if (filter.Details is not null)
+            query = query.Where(x => x.Price == filter.Details || x.TransactionCode == filter.Details);
         
+        if (filter.Type is not null)
+            query = query.Where(x => x.TransactionType == filter.Type);
+
+        #endregion
+
         IQueryable<TransactionDto> transaction = query.Select(x => new TransactionDto()
         {
             AccountName = x.AccountName,
