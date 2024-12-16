@@ -66,7 +66,7 @@ public class TransactionDto
         Username = user.TelegramUsername;
     }
     
-    public TransactionDto(Entities.Transaction.Transaction? transaction,UserDto user)
+    public TransactionDto(Entities.Transaction.Transaction? transaction,UserDto? user)
     {
         Id = transaction?.Id ?? 0;
         Title = transaction?.Title;
@@ -79,9 +79,9 @@ public class TransactionDto
         CardNumber = transaction.CardNumber;
         BankName = transaction.BankName;
         AvatarTransaction = transaction?.AvatarTransaction;
-        TransactionDetailId = transaction.TransactionDetailId ?? 0;
-        TransactionCode = transaction.TransactionCode;
-        ChatId = user.ChatId ?? 0;
-        Username = user.TelegramUsername;
+        TransactionDetailId = transaction?.TransactionDetailId ?? 0;
+        TransactionCode = transaction?.TransactionCode ?? 0;
+        ChatId = user?.ChatId ?? 0;
+        Username = user?.TelegramUsername ?? "";
     }
 }
