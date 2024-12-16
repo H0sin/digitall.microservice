@@ -329,7 +329,17 @@ public class TransactionService(
     public async Task<TransactionDto> GetTransactionByIdAsync(long id)
     {
         var transaction = await transactionRepository.GetEntityById(id);
-        var user = await userService.GetUserByIdAsync(id);
+        UserDto? user = null;
+        
+        if (transaction.TransactionType == TransactionType.Increase)
+        {
+            user = await userService.GetUserByIdAsync(transaction.CreateBy);
+        }
+        else
+        {
+            user = await userService.GetUserByIdAsync(transaction.UserId ?? 0);
+        }
+        
         return new TransactionDto(transaction,user);
     }
 
