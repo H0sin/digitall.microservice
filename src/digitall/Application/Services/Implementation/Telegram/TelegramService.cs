@@ -4454,7 +4454,8 @@ public class TelegramService(
 
                                      📧 ایمیل: `\{appleId.Email}`  
                                      📱 تلفن: {appleId.Phone}
-                                     🔑 رمز عبور: {appleId.Password}  
+                                     🔑 رمز عبور: 
+                                      `\{appleId.Password}`  
                                      🎂 تاریخ تولد: {appleId.BirthDay?.ToString("yyyy/MM/dd")} سال ماه روز 
 
                                      🛡 سوال امنیتی ۱: {appleId.Question1}
@@ -4616,7 +4617,8 @@ public class TelegramService(
 
                                          📧 ایمیل: `\{appleId.Email}`  
                                          📱 تلفن: {appleId.Phone}
-                                         🔑 رمز عبور: {appleId.Password}
+                                         🔑 رمز عبور: 
+                                         `\{appleId.Password}`  
                                          🎂 تاریخ تولد: {appleId.BirthDay?.ToString("yyyy/MM/dd")} سال ماه روز 
 
                                          🛡 سوال امنیتی ۱: {appleId.Question1}

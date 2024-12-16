@@ -214,7 +214,7 @@ public class AppleService(
 
             AppleId? appleId = await appleIdRepository
                 .GetQuery()
-                .FirstOrDefaultAsync(x =>
+                .LastOrDefaultAsync(x =>
                     x.UserId == null && x.AppleIdTypeId == appleIdType.Id && x.Status == AppleIdStatus.Available);
 
             if (appleId is null)
