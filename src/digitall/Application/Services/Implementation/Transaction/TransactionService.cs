@@ -351,7 +351,9 @@ public class TransactionService(
         
         if (filter.Type is not null)
             query = query.Where(x => x.TransactionType == filter.Type);
-
+        
+        if (filter.Status is not null)
+            query = query.Where(x => x.TransactionStatus == filter.Status);
         #endregion
 
         IQueryable<TransactionDto> transaction = query.Select(x => new TransactionDto()
