@@ -7,7 +7,7 @@ public class FilterTransactionDto : BasePaging<TransactionDto>
 {
     public TransactionType? Type { get; set; }
     
-    public TransactionStatus Status { get; set; }
+    public TransactionStatus? Status { get; set; }
 
     /// <summary>
     /// price or code
