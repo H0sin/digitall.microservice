@@ -74,6 +74,21 @@ public class TransactionController(ITransactionService transactionService) : Bas
         return Ok(response);
     }
 
+    
+    /// <summary>
+    /// get transaction by id async
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult<TransactionDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
+    public async Task<ApiResult<TransactionDto>> GetTransaction(long id)
+    {
+        return Ok(await transactionService.GetTransactionByIdAsync(id));
+    }
+
     /// <summary>
     /// add transaction detail
     /// </summary>
