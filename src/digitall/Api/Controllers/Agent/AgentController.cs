@@ -277,6 +277,19 @@ public class AgentController(IAgentService agentService) : BaseController
     {
         return Ok(await agentService.FilterProfitReportAsync(filter,User.GetId()));
     }
-
+    
+    /// <summary>
+    /// report agent input user
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    [ProducesResponseType(typeof(ApiResult<FilterInputUserReportDto>), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    [HttpGet]
+    public async Task<ApiResult<FilterInputUserReportDto>> InputUserReport([FromQuery] FilterInputUserReportDto filter)
+    {
+        return Ok(await agentService.FilterInputUserReportAsync(filter,User.GetId()));
+    }
+    
     #endregion
 }

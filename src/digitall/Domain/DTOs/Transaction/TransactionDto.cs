@@ -89,5 +89,6 @@ public class TransactionDto
         FirstName = user?.FirstName ?? "";
         LastName = user?.LastName ?? "";
         Balance = user?.Balance;
+        UserId = user.Id;
     }
 }

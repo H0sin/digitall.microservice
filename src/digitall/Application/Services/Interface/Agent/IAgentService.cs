@@ -198,4 +198,10 @@ public interface IAgentService
     /// </summary>
     /// <returns></returns>
     Task<FilterProfitReportDto> FilterProfitReportAsync(FilterProfitReportDto filter,long userId);
+    
+    /// <summary>
+    /// report agent input user
+    /// </summary>
+    /// <returns></returns>
+    Task<FilterInputUserReportDto> FilterInputUserReportAsync(FilterInputUserReportDto filter,long userId);
 }
