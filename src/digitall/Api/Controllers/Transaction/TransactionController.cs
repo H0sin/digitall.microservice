@@ -69,8 +69,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
     public async Task<ApiResult<FilterTransactionDto>> FilterTransaction([FromQuery] FilterTransactionDto transaction)
     {
-        FilterTransactionDto response = await transactionService.FilterTransactionAsync(transaction);
-
+        FilterTransactionDto response = await transactionService.FilterTransactionAsync(transaction,User.GetId());
         return Ok(response);
     }
 
