@@ -23,9 +23,12 @@ public class TransactionDto
     public long CreateBy { get; set; }
     public string? Username { get; set; }
     public long ChatId { get; set; }
-    
     public long TransactionDetailId { get; set; }
-
+    public long? Balance { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public long UserId { get; set; }
+    
     public TransactionDto()
     {
     }
@@ -83,5 +86,8 @@ public class TransactionDto
         TransactionCode = transaction?.TransactionCode ?? 0;
         ChatId = user?.ChatId ?? 0;
         Username = user?.TelegramUsername ?? "";
+        FirstName = user?.FirstName ?? "";
+        LastName = user?.LastName ?? "";
+        Balance = user?.Balance;
     }
 }
