@@ -498,6 +498,40 @@ public class AgentService(
         return filter;
     }
 
+    public async Task<FilterInputUserReportDto> FilterInputUserReportAsync(FilterInputUserReportDto filter, long userId)
+    {
+        var query = agentRepository.GetQuery();
+
+        if (filter.StartDate is not null)
+        {
+            query = query
+                .Include(x=>x.Users)
+                .Where(x => x.Users.Any(u => u.CreateDate >= filter.StartDate));
+        }
+        
+        if (filter.EndDate is not null)
+            query = query
+                .Include(x=>x.Users)
+                .Where(x => x.Users.Any(u => u.CreateDate <= filter.EndDate));
+        
+        var result = await query
+            .SelectMany(x => x.Users)
+            .Where(u => (filter.StartDate == null || u.CreateDate >= filter.StartDate) &&
+                        (filter.EndDate == null || u.CreateDate <= filter.EndDate))
+            .GroupBy(u => u.CreateDate.Date)
+            .Select(g => new InputUserReportDto
+            {
+                Date = g.Key,
+                Count = g.Count()
+            })
+            .OrderBy(r => r.Date)
+            .ToListAsync();
+
+        await filter.Paging(result);
+        
+        return filter;
+    }
+
     public async Task<FilterAgentDto> FilterAgentAsync(FilterAgentDto filter)
     {
         Domain.Entities.Agent.Agent? parent = await

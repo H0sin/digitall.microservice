@@ -61,7 +61,9 @@ public class UserDto
     public bool IsAgent { get; set; }
 
     public AgentDto? Agency { get; set; }
-    
+
+    public string? Description { get; set; }
+
     public UserDto()
     {
     }
@@ -87,6 +89,7 @@ public class UserDto
         CardToCardPayment = user.CardToCardPayment;
         IsBlocked = user.IsBlocked;
         IsAgent = user.IsAgent;
+        Description = user.Description;
     }
 
     public UserDto(User user,AgentDto? agent)
@@ -111,5 +114,6 @@ public class UserDto
         IsBlocked = user.IsBlocked;
         IsAgent = user.IsAgent;
         Agency = agent;
+        Description = user.Description;
     }
 }

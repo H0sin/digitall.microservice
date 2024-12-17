@@ -1,4 +1,6 @@
-﻿namespace Domain.DTOs.Account;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.DTOs.Account;
 
 public class UpdateUserDto
 {
@@ -6,5 +8,7 @@ public class UpdateUserDto
     public bool IsBlocked { get; set; }
     public bool CardToCardPayment { get; set; }
 
+    [MaxLength(3000)]
+    public string? Description { get; set; }
     public int SpecialPercent { get; set; } = 0;
 }
