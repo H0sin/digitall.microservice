@@ -330,7 +330,7 @@ public class TransactionService(
     {
         var transaction = await transactionRepository.GetEntityById(id);
         UserDto? user = null;
-        
+
         if (transaction.TransactionType == TransactionType.Increase)
         {
             user = await userService.GetUserByIdAsync(transaction.CreateBy);
@@ -339,17 +339,27 @@ public class TransactionService(
         {
             user = await userService.GetUserByIdAsync(transaction.UserId ?? 0);
         }
-        
-        return new TransactionDto(transaction,user);
+
+        return new TransactionDto(transaction, user);
     }
 
-    public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter,long userId)
+    public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter, long userId)
     {
         IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository
             .GetQuery()
             .Where(t => t.CreateBy == userId || t.ModifyBy == userId || t.UserId == userId);
-        
+
         #region filter
+
+        if (filter.UserId is not null)
+            query = query.Where(t =>
+                (t.CreateBy == userId && t.ModifyBy == filter.UserId) ||
+                (t.CreateBy == filter.UserId && t.ModifyBy == userId) ||
+                (t.CreateBy == userId && t.UserId == filter.UserId) ||
+                (t.CreateBy == filter.UserId && t.UserId == userId) ||
+                (t.ModifyBy == userId && t.UserId == filter.UserId) ||
+                (t.ModifyBy == filter.UserId && t.UserId == userId)
+            );
 
         if (filter.StartDate is not null)
             query = query.Where(s => s.TransactionTime >= filter.StartDate);
@@ -359,12 +369,13 @@ public class TransactionService(
 
         if (filter.Details is not null)
             query = query.Where(x => x.Price == filter.Details || x.TransactionCode == filter.Details);
-        
+
         if (filter.Type is not null)
             query = query.Where(x => x.TransactionType == filter.Type);
-        
+
         if (filter.Status is not null)
             query = query.Where(x => x.TransactionStatus == filter.Status);
+
         #endregion
 
         IQueryable<TransactionDto> transaction = query.Select(x => new TransactionDto()
