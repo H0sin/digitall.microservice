@@ -343,11 +343,12 @@ public class TransactionService(
         return new TransactionDto(transaction,user);
     }
 
-    public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter)
+    public async Task<FilterTransactionDto> FilterTransactionAsync(FilterTransactionDto filter,long userId)
     {
-        IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository.GetQuery();
-
-
+        IQueryable<Domain.Entities.Transaction.Transaction> query = transactionRepository
+            .GetQuery()
+            .Where(t => t.CreateBy == userId || t.ModifyBy == userId || t.UserId == userId);
+        
         #region filter
 
         if (filter.StartDate is not null)
