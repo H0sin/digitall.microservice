@@ -13,6 +13,7 @@ using Domain.Entities.Menu;
 using Domain.Entities.Notification;
 using Domain.Entities.Order;
 using Domain.Entities.Product;
+using Domain.Entities.Registry;
 using Domain.Entities.Sanaei;
 using Domain.Entities.Server;
 using Domain.Entities.Subscription;
@@ -80,6 +81,7 @@ public class DigitallDbContext : DbContext
     public DbSet<Peer> Peers { get; set; }
     public DbSet<AppleId> AppleId { get; set; }
     public DbSet<AppleIdType> AppleIdTypes { get; set; }
+    public DbSet<Registry> Registries { get; set; }
     
     #endregion
 

@@ -16,6 +16,17 @@ public class RolePermissionItems
             IsDelete = false,
             ModifyBy = 1,
             ModifiedDate = DateTime.Now
+        },
+        new RolePermission()
+        {
+            Id = 17,
+            RoleId = 1,
+            PermissionId = 17,
+            CreateBy = 1,
+            CreateDate = DateTime.Now,
+            IsDelete = false,
+            ModifyBy = 1,
+            ModifiedDate = DateTime.Now
         }
     };
 }
