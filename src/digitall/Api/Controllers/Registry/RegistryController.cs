@@ -44,7 +44,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     {
         return Ok(await registryService.FilterRegistryAsync(filter, User.GetId()));
     }
-    
+
     /// <summary>
     /// filter registry
     /// </summary>
@@ -58,13 +58,13 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     {
         return Ok(await registryService.FilterRegistryAsync(filter));
     }
-    
+
     /// <summary>
     /// update registry price and model
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    [HttpPost]
+    [HttpPut]
     [PermissionChecker("UpdateRegistryAmountModel")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
