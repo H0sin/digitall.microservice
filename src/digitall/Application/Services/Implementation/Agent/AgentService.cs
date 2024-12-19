@@ -32,6 +32,11 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    // public async Task<> AddProfitForAgent(AgentsIncomesDetailDto incomes)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
     public async Task<AgencyInformationDto> GetMyAgencyInformation(long userId)
     {
         var agent = await agentRepository

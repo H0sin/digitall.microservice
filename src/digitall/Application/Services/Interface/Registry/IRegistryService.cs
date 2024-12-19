@@ -26,4 +26,12 @@ public interface IRegistryService
     /// <param name="filter"></param>
     /// <returns></returns>
     Task<FilterRegistryDto> FilterRegistryAsync(FilterRegistryDto filter);
+
+    /// <summary>
+    /// update modal and registry price
+    /// </summary>
+    /// <param name="amountModel"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateRegistryAmountModel(RegistryAmountModelDto amountModel,long userId);
 }

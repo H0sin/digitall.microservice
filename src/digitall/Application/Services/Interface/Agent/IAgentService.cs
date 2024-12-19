@@ -12,6 +12,8 @@ namespace Application.Services.Interface.Agent;
 
 public interface IAgentService
 {
+    // Task AddProfitForAgent(AgentsIncomesDetailDto incomes);
+    
     /// <summary>
     /// get agent information agency
     /// </summary>

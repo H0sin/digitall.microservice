@@ -6,5 +6,5 @@ namespace Domain.Enums.Registry;
 public enum RegistryStatus : byte
 {
     AwaitingSupportReview,
-    AwaitingForAcceptModel,
+    AwaitingForAcceptAmountModel,
 }

@@ -15,6 +15,10 @@ public class RegistryDto
     public long? CreateBy { get; set; }
     public string? Phone { get; set; }
 
+    public string? Model { get; set; }
+    
+    public long? Price { get; set; }
+
     public RegistryDto()
     {
     }
@@ -31,5 +35,7 @@ public class RegistryDto
         CreateBy = registry.CreateBy;
         Id = registry.Id;
         Phone = registry.Phone;
+        Model = registry.Model;
+        Price = registry.Price;
     }
 }

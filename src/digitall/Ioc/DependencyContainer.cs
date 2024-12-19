@@ -127,6 +127,8 @@ public static class DependencyContainer
         services.AddScoped<IAppleIdRepository, AppleIdRepository>();
         services.AddScoped<IAppleIdTypeRepository, AppleIdTypeRepository>();
         services.AddScoped<IRegistryRepository, RegistryRepository>();
+        services.AddScoped<IRegistrationOptionsRepository, RegistrationOptionsRepository>();
+        
         #endregion
 
         #region services

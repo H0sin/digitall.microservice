@@ -8,15 +8,20 @@ public class Registry : BaseEntity
 {
     [Required] [MaxLength(length: 16)] public string? ImeI_1 { get; set; }
     [MaxLength(length: 16)] public string? ImeI_2 { get; set; }
-    
+
     [Required] public bool AcceptTheRules { get; set; } = true;
-    
+
     [MaxLength(length: 500)] public string? Summery { get; set; } = "";
 
     [MaxLength(length: 50)] public string? ForWho { get; set; }
 
     public RegistryStatus Status { get; set; } = RegistryStatus.AwaitingSupportReview;
-    
-    [Required]
-    [MaxLength(11)] public string? Phone { get; set; }
+
+    [Required] [MaxLength(11)] public string? Phone { get; set; }
+
+    [MaxLength(50)] public string? Model { get; set; }
+
+    public long? Price { get; set; }
+
+    public List<string>? TransactionImages { get; set; } = null;
 }

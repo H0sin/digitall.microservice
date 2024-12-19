@@ -82,7 +82,8 @@ public class DigitallDbContext : DbContext
     public DbSet<AppleId> AppleId { get; set; }
     public DbSet<AppleIdType> AppleIdTypes { get; set; }
     public DbSet<Registry> Registries { get; set; }
-    
+    public DbSet<RegistrationOptions> RegistrationOptions { get; set; }
+
     #endregion
 
     #region properties
