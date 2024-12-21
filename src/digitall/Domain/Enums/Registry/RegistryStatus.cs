@@ -7,4 +7,6 @@ public enum RegistryStatus : byte
 {
     AwaitingSupportReview,
     AwaitingForAcceptAmountModel,
+    AwaitingForAcceptTransaction,
+    ExpireRequest,
 }

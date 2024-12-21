@@ -34,4 +34,18 @@ public interface IRegistryService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateRegistryAmountModel(RegistryAmountModelDto amountModel,long userId);
+
+    /// <summary>
+    /// upload transaction images
+    /// </summary>
+    /// <param name="registry"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UploadRegistryTransactionImagesAsync(UploadRegistryTransactionImagesDto registry,long userId);
+
+    /// <summary>
+    /// send registry options async
+    /// </summary>
+    /// <returns></returns>
+    Task<RegistrationOptionDto?> GetRegistryOptionAsync();
 }

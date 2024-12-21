@@ -19,10 +19,10 @@ namespace Application.Utilities
         // public static string ProductAvatarThumbServer = "/app/wwwroot/images/ProductAvatar/thumb/";
 
         public static string TransactionAvatarOrigin = "/images/TransactionAvatar/origin/";
-        // public static string TransactionAvatarOriginServer = "/app/wwwroot/images/TransactionAvatar/origin/";
-
         public static string TransactionAvatarThumb = "/images/TransactionAvatar/thumb/";
-        // public static string TransactionAvatarThumbServer = "/app/wwwroot/images/TransactionAvatar/thumb/";
+        
+        public static string RegistryTransactionImagesOrigin = "/images/RegistryTransactionImages/origin/";
+        public static string RegistryTransactionImagesThumb = "/images/RegistryTransactionImages/thumb/";
 
         public static string FileOrigin = "/files/Origin/";
         // public static string FileOriginServer = "/app/wwwroot/files/Origin/";
@@ -45,6 +45,9 @@ namespace Application.Utilities
         public static string TransactionAvatarOriginServer(IWebHostEnvironment env) => GetServerPath(TransactionAvatarOrigin, env);
         public static string TransactionAvatarThumbServer(IWebHostEnvironment env) => GetServerPath(TransactionAvatarThumb, env);
 
+        public static string RegistryTransactionImagesOriginServer(IWebHostEnvironment env) => GetServerPath(RegistryTransactionImagesOrigin, env);
+        public static string RegistryTransactionImagesThumbServer(IWebHostEnvironment env) => GetServerPath(RegistryTransactionImagesThumb, env);
+        
         public static string TicketAvatarOriginServer(IWebHostEnvironment env) => GetServerPath(TicketAvatarOrigin, env);
         public static string TicketAvatarThumbServer(IWebHostEnvironment env) => GetServerPath(TicketAvatarThumb, env);
         

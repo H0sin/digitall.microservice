@@ -73,4 +73,20 @@ public class RegistryController(IRegistryService registryService) : BaseControll
         await registryService.UpdateRegistryAmountModel(amountModel, User.GetId());
         return Ok();
     }
+
+    /// <summary>
+    /// upload transaction images
+    /// </summary>
+    /// <param name="images"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ApiResult> UploadRegistryTransactionImages([FromForm] UploadRegistryTransactionImagesDto images)
+    {
+        await registryService.UploadRegistryTransactionImagesAsync(images, User.GetId());
+        return Ok();
+    }
+    
+    // [PermissionChecker("")]
 }
