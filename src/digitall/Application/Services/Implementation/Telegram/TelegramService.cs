@@ -4223,7 +4223,7 @@ public class TelegramService(
 
         long ordersPrice = await orderService.GetAllUserOrderPriceAsync(user.Id);
 
-        if (ordersPrice > 2000000 | user.Balance > 1000000)
+        if (ordersPrice >= 2000000 | user.Balance >= 1000000)
         {
             telegramUser.State = TelegramMarzbanVpnSessionState.AwaitingSendTelegramBotToken;
             await botClient.SendTextMessageAsync(chatId: chatId, text: """
