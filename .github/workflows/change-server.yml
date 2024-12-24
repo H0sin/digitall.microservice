@@ -1,4 +1,4 @@
-name: Deploy to Server test.samanii
+name: deploay when change bot server
 
 on:
   push:
