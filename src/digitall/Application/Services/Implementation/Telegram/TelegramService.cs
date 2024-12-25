@@ -3804,7 +3804,7 @@ public class TelegramService(
         List<MarzbanUserDto> marzbanUsers = await marzbanService.ListMarzbanUsersDeletedInQue(agent.Id);
 
         if (marzbanUsers.Count == 0)
-            throw new AppException("هیچ درسخواست حدف سرویس وجود ندارد 😇");
+            throw new AppException("هیچ درخواست حذف سرویسی وجود ندارد 😇");
 
         foreach (MarzbanUserDto marzbanUser in marzbanUsers)
         {
@@ -3812,7 +3812,7 @@ public class TelegramService(
             await botClient!.SendTextMessageAsync(
                 chatId: chatId,
                 text: subescribeStatus.GenerateServiceDeletionRequestMessage(marzbanUser.TelegramUsername,
-                    marzbanUser.ChatId, "متاسفانه پیغام در دست رس نیست ❌"),
+                    marzbanUser.ChatId, "متاسفانه پیغام در دسترس نیست ❌"),
                 replyMarkup: TelegramHelper.MainDeleteServiceButton(marzbanUser.Id),
                 cancellationToken: cancellationToken);
         }
