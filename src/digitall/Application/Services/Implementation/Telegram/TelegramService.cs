@@ -202,14 +202,14 @@ public class TelegramService(
 
         List<ProductDto> products = await productService.GetProductAsync();
         
-        User? user = await GetUserByChatIdAsync(chatId);
-
-        if (user.TelegramUsername != callbackQuery.From.Username)
-        {
-            user.TelegramUsername = callbackQuery.From.Username;
-            await userRepository.UpdateEntity(user);
-            await userRepository.SaveChanges(user.Id);
-        }
+        // User? user = await GetUserByChatIdAsync(chatId);
+        //
+        // if (user.TelegramUsername != callbackQuery.From.Username)
+        // {
+        //     user.TelegramUsername = callbackQuery.From.Username;
+        //     await userRepository.UpdateEntity(user);
+        //     await userRepository.SaveChanges(user.Id);
+        // }
         
         if (products.Count <= 0)
             throw new AppException("محصولی وجود ندارد ❌");
