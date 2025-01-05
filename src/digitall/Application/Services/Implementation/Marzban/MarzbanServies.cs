@@ -461,7 +461,7 @@ public class MarzbanServies(
                     On_Hold_Expire_Duration =
                         template?.Days != null ? template.Days * 24 * 3600 : vpn.TotalDay * 24 * 3600,
                     On_Hold_Timeout = null,
-                    Data_Limit = (byteSize * (template?.Gb ?? vpn.TotalGb)).ToString(),
+                    Data_Limit = byteSize * (template?.Gb ?? vpn.TotalGb),
                 });
             }
 
@@ -667,7 +667,7 @@ public class MarzbanServies(
                 Note = "",
                 Proxies = proxies,
                 Status = "active",
-                Data_Limit = (byteSize * marzbanVpn.Test_TotalMg).ToString(),
+                Data_Limit = byteSize * marzbanVpn.Test_TotalMg,
             });
 
             List<Domain.Entities.Order.Order> orders = new()

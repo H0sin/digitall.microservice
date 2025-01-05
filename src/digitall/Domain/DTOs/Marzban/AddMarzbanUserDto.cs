@@ -11,7 +11,7 @@ public class AddMarzbanUserDto
     [JsonProperty("inbounds")] public object Inbounds { get; set; } = new();
 
     [JsonProperty("expire")] public string Expire { get; set; }
-    [JsonProperty("data_limit")] public string Data_Limit { get; set; }
+    [JsonProperty("data_limit")] public long Data_Limit { get; set; }
 
     [JsonProperty("data_limit_reset_strategy")]
     public string Data_Limit_Reset_Strategy { get; set; }
