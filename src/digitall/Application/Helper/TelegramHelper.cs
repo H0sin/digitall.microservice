@@ -979,7 +979,7 @@ public class TelegramHelper
     /// </summary>
     /// <returns></returns>
     private static string Default_Message(string? username, string? chaneladdress) => $"""
-         🎉 خوش‌آمدید . 🎉
+         🎉 خوش‌آمدید 🎉
          
          🔒 امکانات ما:
          
