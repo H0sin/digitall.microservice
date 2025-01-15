@@ -1153,10 +1153,9 @@ public class TelegramHelper
     public static string SendTextCardNumber(TransactionDetailDto transactionDetail, long price) => $"""
            برای افزایش موجودی مبلغ {price:N0}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
                  
-                 ========================================
                  `\{transactionDetail.CardNumber}`\
                  {transactionDetail.CardHolderName}
-                 ========================================
+                 
 
          ‼️مبلغ باید همان مبلغی که در بالا ذکر شده واریز نمایید
          ‼️امکان برداشت وجه از کیف پول نیست
