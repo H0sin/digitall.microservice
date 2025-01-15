@@ -298,8 +298,7 @@ public class UserService(
 
         if (!string.IsNullOrEmpty(filter.LastName))
             query = query.Where(s => EF.Functions.Like(s.LastName, $"%{filter.LastName}%"));
-
-
+        
         if (!string.IsNullOrEmpty(filter.Mobile))
             query = query.Where(s => s.Mobile == filter.Mobile);
 

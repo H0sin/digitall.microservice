@@ -59,20 +59,24 @@ using Application.Services.Implementation.Docker;
 using Application.Services.Implementation.Vpn;
 using Application.Services.Implementation.Marzban;
 using Application.Services.Implementation.Notification;
+using Application.Services.Implementation.Registry;
 using Application.Services.Implementation.Telegram;
 using Application.Services.Implementation.Wireguard;
 using Application.Services.Interface.Apple;
 using Application.Services.Interface.Docker;
+using Application.Services.Interface.Registry;
 using Application.Services.Interface.Telegram;
 using Application.Services.Interface.Wireguard;
 using Data.Migrations;
 using Data.Repositories;
 using Data.Repositories.Apple;
 using Data.Repositories.Notification;
+using Data.Repositories.Registry;
 using Data.Repositories.Telegram;
 using Data.Repositories.Vpn;
 using Domain.IRepositories.Apple;
 using Domain.IRepositories.Notification;
+using Domain.IRepositories.Registry;
 using Domain.IRepositories.Telegram;
 using Domain.IRepositories.Wireguard;
 
@@ -122,6 +126,8 @@ public static class DependencyContainer
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
         services.AddScoped<IAppleIdRepository, AppleIdRepository>();
         services.AddScoped<IAppleIdTypeRepository, AppleIdTypeRepository>();
+        services.AddScoped<IRegistryRepository, RegistryRepository>();
+        services.AddScoped<IRegistrationOptionsRepository, RegistrationOptionsRepository>();
         
         #endregion
 
@@ -149,6 +155,7 @@ public static class DependencyContainer
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IWireguardServices, WireguardService>();
         services.AddScoped<IAppleService, AppleService>();
+        services.AddScoped<IRegistryService, RegistryService>();
         
         #endregion
 
