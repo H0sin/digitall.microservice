@@ -191,8 +191,7 @@ public interface IAgentService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateAgencyAsync(AgencyInformationDto agency, long userId);
-
-
+    
     /// <summary>
     /// report agent incomes detail
     /// </summary>
