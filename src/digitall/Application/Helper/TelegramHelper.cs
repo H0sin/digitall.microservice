@@ -1154,7 +1154,7 @@ public class TelegramHelper
            برای افزایش موجودی مبلغ {price:N0}  تومان  را به شماره‌ی حساب زیر واریز کنید 👇🏻
                  
                  ========================================
-                 `\{transactionDetail.CardNumber}`
+                 `\{transactionDetail.CardNumber}`\
                  {transactionDetail.CardHolderName}
                  ========================================
 
