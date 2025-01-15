@@ -32,6 +32,11 @@ public class AgentService(
     IAgentsIncomesDetailRepository agentsIncomesDetailRepository,
     INotificationService notificationService) : IAgentService
 {
+    // public async Task<> AddProfitForAgent(AgentsIncomesDetailDto incomes)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
     public async Task<AgencyInformationDto> GetMyAgencyInformation(long userId)
     {
         var agent = await agentRepository
@@ -514,7 +519,7 @@ public class AgentService(
                 .Include(x=>x.Users)
                 .Where(x => x.Users.Any(u => u.CreateDate <= filter.EndDate));
         
-        var result = await query
+        var result =  query
             .SelectMany(x => x.Users)
             .Where(u => (filter.StartDate == null || u.CreateDate >= filter.StartDate) &&
                         (filter.EndDate == null || u.CreateDate <= filter.EndDate))
@@ -524,8 +529,7 @@ public class AgentService(
                 Date = g.Key,
                 Count = g.Count()
             })
-            .OrderBy(r => r.Date)
-            .ToListAsync();
+            .OrderBy(r => r.Date);
 
         await filter.Paging(result);
         
