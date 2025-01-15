@@ -1814,6 +1814,7 @@ public class TelegramService(
             chatId: chatId,
             text: TelegramHelper.SendTextCardNumber(transactionDetail, price),
             replyMarkup: TelegramHelper.SendTransactionImageButton(),
+            parseMode:ParseMode.MarkdownV2,
             cancellationToken: cancellationToken);
     }
 

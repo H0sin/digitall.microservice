@@ -20,7 +20,6 @@ namespace Api.Controllers.Agent;
 [ApiVersion(1)]
 public class AgentController(IAgentService agentService) : BaseController
 {
-    
     #region get
 
     /// <summary>
