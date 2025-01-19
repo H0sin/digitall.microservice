@@ -32,6 +32,7 @@ using Domain.Exceptions;
 using Domain.IRepositories.Account;
 using Domain.IRepositories.Telegram;
 using IPE.SmsIrClient.Models.Requests;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -47,6 +48,7 @@ public class UserService(
     INotificationService notificationService,
     IWireguardServices wireguardServices,
     IMarzbanService marzbanService,
+    IWebHostEnvironment _hostEnvironment,
     ITelegramBotRepository botRepository
 ) : IUserService
 {
@@ -372,36 +374,28 @@ public class UserService(
         return filter;
     }
 
-    public async Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId)
+    public async Task UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId)
     {
         User? user = await userRepository.GetEntityById(userId);
 
-        if (user is null) return UpdateUserProfileResult.NotExists;
+        if (user is null) throw new NotFoundException($"not found user by id {userId}");
 
         user.Email = profile.Email;
         user.FirstName = profile.FirstName;
         user.LastName = profile.LastName;
         user.Address = profile.Address;
-
-        if (user.Mobile != user.Mobile && user.MobileActiveCode == profile.MobileActiveCode)
-        {
-            user.MobileActiveCode = new Random().Next(10000, 999999).ToString();
-            user.Mobile = profile.Mobile;
-            await SendMobileActiveCode(user.Mobile, userId);
-        }
-
+        user.Mobile = profile.Mobile;
+        
         if (profile.Avatar != null && profile.Avatar.IsImage())
         {
-            // var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(profile.Avatar.FileName);
-            // profile.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer, 100, 100,
-            //     PathExtension.UserAvatarThumbServer, user.Avatar);
-            // user.Avatar = imageName;
+            var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(profile.Avatar.FileName);
+            profile.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer(_hostEnvironment), 100, 100,
+                PathExtension.UserAvatarThumbServer(_hostEnvironment), user.Avatar);
+            user.Avatar = imageName;
         }
 
         await userRepository.UpdateEntity(user);
         await userRepository.SaveChanges(userId);
-
-        return UpdateUserProfileResult.Success;
     }
 
     public async Task SendMobileActiveCode(string phone, long userId)
@@ -509,8 +503,12 @@ public class UserService(
         var user = await userRepository.GetEntityById(userId);
         var telegramBot = await botRepository.GetQuery().SingleOrDefaultAsync(x => x.BotId == user.BotId);
         var agency = await agentService.GetAgentByAdminIdAsync(user.Id);
-
-        return new(user, agency, telegramBot);
+        string? avatar = null;
+        
+        if (!string.IsNullOrEmpty(user.Avatar))
+            avatar = PathExtension.UserAvatarThumbServer(_hostEnvironment) + user.Avatar;
+        
+        return new(user, agency, telegramBot,avatar);
     }
 
     public async Task DisabledAllUserAccount(long userId)

@@ -234,7 +234,7 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesDefaultResponseType]
     public async Task<ApiResult> UpdateProfile([FromForm] UpdateUserProfileDto user)
     {
-        UpdateUserProfileResult response = await userService.UpdateUserProfileAsync(user, User.GetId());
+        await userService.UpdateUserProfileAsync(user, User.GetId());
         return Ok();
     }
 
