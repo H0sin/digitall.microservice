@@ -386,7 +386,7 @@ public class UserService(
         user.Address = profile.Address;
         user.Mobile = profile.Mobile;
         
-        if (profile.Avatar != null && profile.Avatar.IsImage())
+        if (profile.Avatar != null)
         {
             var imageName = Guid.NewGuid().ToString("N") + Path.GetExtension(profile.Avatar.FileName);
             profile.Avatar.AddImageToServer(imageName, PathExtension.UserAvatarOriginServer(_hostEnvironment), 100, 100,
