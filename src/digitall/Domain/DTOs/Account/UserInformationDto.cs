@@ -16,8 +16,9 @@ public class UserInformationDto
     public string? BotName { get; set; }
     public string? BotLink { get; set; }
     public long Balance { get; set; }
+    public string? Avatar { get; set; }
 
-    public UserInformationDto(User? user, AgentDto? agent, TelegramBot? bot)
+    public UserInformationDto(User? user, AgentDto? agent, TelegramBot? bot,string? avatar = null)
     {
         FirstName = user?.FirstName;
         LastName = user?.LastName;
@@ -29,6 +30,7 @@ public class UserInformationDto
         Agency = agent;
         BotName = bot?.Link?.Replace("https://t.me/", "").Replace("_", " ") ?? "";
         BotLink = bot?.Link;
+        Avatar = avatar ?? user.Avatar;
     }
 
     public UserInformationDto()

@@ -29,7 +29,4 @@ public class UpdateUserProfileDto
 
     [MaxLength(12, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
     public string? Mobile { get; set; }
-
-    [MaxLength(20, ErrorMessage = "{0} نمی تواند بیشتر از {1} کاراکتر باشد")]
-    public string? MobileActiveCode { get; set; }
 }

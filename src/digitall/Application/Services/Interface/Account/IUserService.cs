@@ -28,7 +28,7 @@ public interface IUserService
     Task<FilterUsersDto> GetAgentUsersByFilterAsync(FilterUsersDto filter, long userId);
     Task<UserDto?> GetUserByIdAsync(long id);
     Task<UserDto?> GetUserByEmailAsync(string email);
-    Task<UpdateUserProfileResult> UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId);
+    Task UpdateUserProfileAsync(UpdateUserProfileDto profile, long userId);
     Task<List<UserDto>> GetUserByAgentAsync(long userId);
     Task SendMobileActiveCode(string phone, long userId);
     Task<UserDto?> GetUserByChatIdAsync(long chatId);
