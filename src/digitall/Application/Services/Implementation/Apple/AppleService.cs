@@ -124,7 +124,7 @@ public class AppleService(
             var mainAppleIdType = await appleIdTypeRepository.GetEntityById(id);
 
             price = appleIdType.Price;
-            
+
             AgentDto? isAgent = await agentService.GetAgentByAdminIdAsync(user.Id);
 
             if (user.Balance < price)
@@ -269,7 +269,9 @@ public class AppleService(
                 ModifyBy = modifyByUser != null ? modifyByUser.FirstName + " " + modifyByUser.LastName : null,
                 CreateDate = appleId.CreateDate,
                 ModifiedDate = appleId.ModifiedDate,
-                Status = appleId.Status ?? AppleIdStatus.SoldOut
+                Status = appleId.Status ?? AppleIdStatus.SoldOut,
+                AppleIdTypeId = appleId.AppleIdTypeId,
+                SendToWarranty = appleId.SendToWarranty
             };
 
         if ((filter.UserId ?? 0) != 0)
@@ -277,6 +279,12 @@ public class AppleService(
 
         if (!string.IsNullOrEmpty(filter.Email))
             query = query.Where(x => EF.Functions.Like(x.Email, $"%{filter.Email}%"));
+
+        if (filter.Status is not null)
+            query = query.Where(x => x.Status == filter.Status);
+
+        if (filter.Type is not null)
+            query = query.Where(x => x.AppleIdTypeId == filter.Type);
 
         IQueryable<AppleIdDto> appleIds = query;
 
@@ -596,5 +604,29 @@ public class AppleService(
         newAppleId.ModifyBy = modifyBy?.UserFullName() ?? "";
 
         return newAppleId;
+    }
+
+    public async Task UpdateAppleIdAsync(AppleIdDto appleId, long userId)
+    {
+        var appleAccount = await appleIdRepository
+            .GetEntityById(appleId.Id);
+
+        if (appleAccount is null) throw new NotFoundException("not found apple id by id {id}", appleId.Id);
+
+        appleAccount.Status = appleId.Status;
+        appleAccount.Email = appleId.Email;
+        appleAccount.Phone = appleId.Phone;
+        appleAccount.Password = appleId.Password;
+        appleAccount.BirthDay = appleId.BirthDay;
+        appleAccount.Question1 = appleId.Question1;
+        appleAccount.Answer1 = appleId.Answer1;
+        appleAccount.Question2 = appleId.Question2;
+        appleAccount.Answer2 = appleId.Answer2;
+        appleAccount.Question3 = appleId.Question3;
+        appleAccount.Answer3 = appleId.Answer3;
+        appleAccount.AppleIdTypeId = appleId.AppleIdTypeId;
+
+        await appleIdRepository.UpdateEntity(appleAccount);
+        await appleIdRepository.SaveChanges(userId);
     }
 }

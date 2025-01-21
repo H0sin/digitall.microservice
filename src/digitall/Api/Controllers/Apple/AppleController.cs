@@ -68,4 +68,16 @@ public class AppleController(IAppleService appleService) : BaseController
     {
         return Ok(await appleService.GetAppleIdByIdAsync(id));
     }
+
+    /// <summary>
+    /// update appleid async
+    /// </summary>
+    /// <param name="account"></param>
+    /// <returns></returns>
+    [HttpPut]
+    public async Task<ApiResult> UpdateAppleId([FromBody] AppleIdDto account)
+    {
+        await appleService.UpdateAppleIdAsync(account, User.GetId());
+        return Ok();
+    }
 }

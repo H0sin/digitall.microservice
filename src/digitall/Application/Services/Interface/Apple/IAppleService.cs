@@ -24,4 +24,5 @@ public interface IAppleService
      Task RejectWarrantyRequestAsync(long id, string message,long userId);
      Task<AppleId?> ApplyWarrantyServicesAsync(long id,AppleIdStatus status);
      Task<AppleIdDto?> GetAppleIdByIdAsync(long id);
+     Task UpdateAppleIdAsync(AppleIdDto appleId, long userId);
 }
