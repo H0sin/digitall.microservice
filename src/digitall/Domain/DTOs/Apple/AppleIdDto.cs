@@ -26,11 +26,10 @@ public class AppleIdDto
         Answer3 = appleId.Answer3;
         UserId = appleId.UserId;
         OrderId = appleId.OrderId;
-        // CreateBy = createBy?.FirstName + "" + createBy?.LastName;
-        // ModifyBy = modifyBy?.FirstName + "" + modifyBy?.LastName;
         CreateDate = appleId.CreateDate;
         ModifiedDate = appleId.ModifiedDate;
         Status = appleId.Status ?? AppleIdStatus.SoldOut;
+        AppleIdTypeId = appleId.AppleIdTypeId;
     }
 
     
@@ -56,4 +55,7 @@ public class AppleIdDto
     public DateTime CreateDate { get; set; }
     
     public DateTime ModifiedDate { get; set; }
+
+    public long AppleIdTypeId { get; set; }
+    public bool SendToWarranty { get; set; }
 }
