@@ -250,6 +250,9 @@ public class AppleService(
             join modifyByUser in userRepository.GetQuery().Where(x => x.IsDelete == false)
                 on appleId.ModifyBy equals modifyByUser.Id into modifyByGroup
             from modifyByUser in modifyByGroup.DefaultIfEmpty()
+            join buyUser in userRepository.GetQuery().Where(x => x.IsDelete == false)
+                on appleId.UserId equals buyUser.Id into buyUserGroup
+            from buyUser in buyUserGroup.DefaultIfEmpty()
             select new AppleIdDto
             {
                 Id = appleId.Id,
@@ -271,7 +274,8 @@ public class AppleService(
                 ModifiedDate = appleId.ModifiedDate,
                 Status = appleId.Status ?? AppleIdStatus.SoldOut,
                 AppleIdTypeId = appleId.AppleIdTypeId,
-                SendToWarranty = appleId.SendToWarranty
+                SendToWarranty = appleId.SendToWarranty,
+                Buyer = buyUser?.UserFullName() ?? "-"
             };
 
         if ((filter.UserId ?? 0) != 0)
@@ -289,7 +293,6 @@ public class AppleService(
         IQueryable<AppleIdDto> appleIds = query;
 
         await filter.Paging(appleIds);
-
         return filter;
     }
 
