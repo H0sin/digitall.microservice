@@ -58,4 +58,6 @@ public class AppleIdDto
 
     public long AppleIdTypeId { get; set; }
     public bool SendToWarranty { get; set; }
+    
+    public string? Buyer { get; set; }
 }
