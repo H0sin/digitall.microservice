@@ -30,7 +30,7 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
 
                 await notificationService.AddNotificationAsync(new AddNotificationDto()
                 {
-                    Message = "اکانت های شما در حال فعال سازی است",
+                    Message = $"{agent.BrandName} {agent.AgentAdminId} اکانت های شما در حال فعال سازی است",
                     NotificationType = NotificationType.BogsReports,
                     UserId = agent.AgentAdminId,
                 }, 1);

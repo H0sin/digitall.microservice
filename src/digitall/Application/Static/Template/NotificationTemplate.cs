@@ -1,6 +1,7 @@
 ﻿using Application.Helper;
 using Data.Migrations;
 using Domain.DTOs.Account;
+using Domain.DTOs.Agent;
 using Domain.DTOs.Notification;
 using Domain.DTOs.Telegram;
 using Domain.DTOs.Transaction;
@@ -23,15 +24,15 @@ public static class NotificationTemplate
         {
             Message = $"""
                        🚨🚨 درخواست جدید گارانتی اپل آیدی! 🚨🚨
-                       
+
                        🆘📣 توجه، پشتیبان عزیز! 📣🆘
                        🔔 یک درخواست گارانتی اپل آیدی از طرف مشتری ثبت شده است.
-                       
+
                        🤔 شما انجام می‌دهید؟ 🤔
                        ⚠️ توجه: فقط یک پشتیبان می‌تواند این درخواست را قبول کند اگر شما این درخواست را تایید کنید، سایر پشتیبان‌ها قادر به قبول آن نخواهند بود!
-                       
+
                        📍 لطفاً هرچه سریع‌تر تصمیم بگیرید تا فرآیند رسیدگی به درخواست مشتری آغاز شود ⏳
-                       
+
                        با کلیک روی دکمه زیر، شما مسئول رسیدگی به این درخواست می‌شوید و سایر پشتیبان‌ها دسترسی به این درخواست نخواهند داشت
                        """,
             NotificationType = NotificationType.Alter,
@@ -647,5 +648,21 @@ public static class NotificationTemplate
             {
                 new("تسویه حساب 🏦", "inventory_increase")
             },
+        };
+
+    public static AddNotificationDto AlterForDisabledAccountsForMonitor(DateTime disabledTime, long userId,
+        AgentDto agent)
+        => new(
+        )
+        {
+            Message = $"""
+                       اکانت هایه نماینده تا
+                       {(disabledTime - DateTime.Now).Hours} ساعت دیگر 
+                       قطع میشوند
+                       {agent.BrandName}
+                       {agent.AgentAdminId} 
+                       """,
+            UserId = userId,
+            NotificationType = NotificationType.BogsReports,
         };
 }

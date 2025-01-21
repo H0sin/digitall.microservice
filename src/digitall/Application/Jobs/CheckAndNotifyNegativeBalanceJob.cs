@@ -41,6 +41,10 @@ public class CheckAndNotifyNegativeBalanceJob(IServiceScopeFactory serviceScopeF
                 await notificationService.AddNotificationAsync(
                     NotificationTemplate.AlterForDisabledAccounts(agent.DisabledAccountTime ?? DateTime.Now,
                         agent.AgentAdminId), 1);
+
+                await notificationService.AddNotificationAsync(
+                    NotificationTemplate.AlterForDisabledAccountsForMonitor(agent.DisabledAccountTime ?? DateTime.Now,
+                        1, agent), 1);
             }
         }
         catch (Exception e)

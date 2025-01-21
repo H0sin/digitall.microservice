@@ -275,7 +275,7 @@ public class AppleService(
                 Status = appleId.Status ?? AppleIdStatus.SoldOut,
                 AppleIdTypeId = appleId.AppleIdTypeId,
                 SendToWarranty = appleId.SendToWarranty,
-                Buyer = buyUser.UserFullName() ?? "-"
+                Buyer = buyUser.UserFullName()
             };
         
         if ((filter.UserId ?? 0) != 0)
