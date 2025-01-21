@@ -277,7 +277,7 @@ public class AppleService(
                 SendToWarranty = appleId.SendToWarranty,
                 Buyer = buyUser?.UserFullName() ?? "-"
             };
-
+        
         if ((filter.UserId ?? 0) != 0)
             query = query.Where(i => i.UserId == filter.UserId);
 
