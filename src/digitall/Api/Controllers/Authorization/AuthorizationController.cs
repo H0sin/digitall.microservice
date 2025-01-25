@@ -15,128 +15,74 @@ namespace Api.Controllers.Authorization
     /// <inheritdoc />
     public class AuthorizationController(IAuthorizeService authorizeService) : BaseController
     {
-        #region add
-
         /// <summary>
-        /// add role if exists role return status code 8
+        /// Assign or remove roles for a user.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult> AddRole([FromBody] AddRoleDto role)
+        /// <param name="dto">The user-role update information.</param>
+        /// <returns>Result of the update operation.</returns>
+        [HttpPut("user/roles")]
+        public async Task<ApiResult> UpdateUserRoles([FromBody] UserRoleUpdateDto dto)
         {
-            AddRoleResult response = await authorizeService.AddRoleAsync(role, User.GetId());
-
-            return response switch
-            {
-                AddRoleResult.Success => Ok(),
-                AddRoleResult.Exists => BadRequest("آیتم تکراری است")
-            };
+            await authorizeService.UpdateUserRolesAsync(dto, User.GetId());
+            return Ok();
         }
 
         /// <summary>
-        /// add role for user
+        /// Assign or remove permissions for a role.
         /// </summary>
-        /// <param name="userrole">list role id and user id</param>
-        /// <returns></returns>
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult> AddUserRole([FromBody] AddUserRolesDto userrole)
+        /// <param name="dto">The role-permission update information.</param>
+        /// <returns>Result of the update operation.</returns>
+        [HttpPut("role/permissions")]
+        public async Task<ApiResult> UpdateRolePermissions([FromBody] RolePermissionUpdateDto dto)
         {
-            AddUserRoleResult response = await authorizeService.AddRoleForUser(userrole, User.GetId());
-
-            return response switch
-            {
-                AddUserRoleResult.Success => Ok(),
-                AddUserRoleResult.NotUserExists => BadRequest("کاربر وجود ندارد")
-            };
+            await authorizeService.UpdateRolePermissionsAsync(dto, User.GetId());
+            return Ok();
         }
 
         /// <summary>
-        /// add menu for role
+        /// Get all roles with their assigned status for a specific user.
         /// </summary>
-        /// <param name="roleMenu"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult> AddMenusForRole([FromBody] AddRoleMenuDto roleMenu)
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>List of roles and their assigned status.</returns>
+        [HttpGet("user/{userId}/roles")]
+        public async Task<ApiResult<List<RoleDto>>> GetRolesForUser(long userId)
         {
-            AddRoleMenuResult response = await authorizeService.AddRoleMenuAsync(roleMenu, User.GetId());
-
-            return response switch
-            {
-                AddRoleMenuResult.Success => Ok(),
-                AddRoleMenuResult.NotExists => BadRequest("آیتم وجود ندارد")
-            };
-        }
-
-        #endregion
-
-        #region get
-
-        /// <summary>
-        /// get menu by role id
-        /// </summary>
-        /// <param name="userrole">role id</param>
-        /// <returns></returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResult<RoleByMenusDto>), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult<RoleByMenusDto>> GetMenuByRoleId([FromQuery] long roleId)
-        {
-            RoleByMenusDto? response = await authorizeService.GetMenuByRoleIdAsync(roleId);
-            return Ok(response);
+            var roles = await authorizeService.GetAllRolesForUserAsync(userId);
+            return Ok(roles);
         }
 
         /// <summary>
-        /// get role by user id
+        /// Get all permissions with their assigned status for a specific role.
         /// </summary>
-        /// <param name="userrole">user id</param>
-        /// <returns></returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResult<UserByRolesDto>), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult<UserByRolesDto>> GetRoleByUserId([FromQuery] long userId)
+        /// <param name="roleId">The ID of the role.</param>
+        /// <returns>List of permissions and their assigned status.</returns>
+        [HttpGet("role/{roleId}/permissions")]
+        public async Task<ApiResult<List<PermissionDto>>> GetPermissionsForRole(long roleId)
         {
-            UserByRolesDto? response = await authorizeService.GetRoleByUserIdAsync(userId);
-            return Ok(response);
+            var permissions = await authorizeService.GetAllPermissionsForRoleAsync(roleId);
+            return Ok(permissions);
         }
 
         /// <summary>
-        /// get all roles
+        /// Get all available roles.
         /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResult<List<RoleDto>>), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult<List<RoleDto>>> GetRoles()
+        /// <returns>List of all roles.</returns>
+        [HttpGet("roles")]
+        public async Task<ApiResult<List<RoleDto>>> GetAllRoles()
         {
-            List<RoleDto>? response = await authorizeService.GetRolesAsync();
-            return Ok(response);
+            var roles = await authorizeService.GetAllRolesAsync();
+            return Ok(roles);
         }
 
         /// <summary>
-        /// get all menu for role has or no has
+        /// Get all available permissions.
         /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResult<List<RoleMenusDto>>), (int)HttpStatusCode.OK)]
-        [ProducesDefaultResponseType]
-        public async Task<ApiResult<List<RoleMenusDto>>> GetRoleMenus([FromQuery] long roleId)
+        /// <returns>List of all permissions.</returns>
+        [HttpGet("permissions")]
+        public async Task<ApiResult<List<PermissionDto>>> GetAllPermissions()
         {
-            List<RoleMenusDto>? response = await authorizeService.GetHasMenusByRoleId(roleId);
-            return Ok(response);
+            var permissions = await authorizeService.GetAllPermissionsAsync();
+            return Ok(permissions);
         }
-
-        #endregion
     }
 }
