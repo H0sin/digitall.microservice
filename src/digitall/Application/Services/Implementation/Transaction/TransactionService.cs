@@ -353,8 +353,8 @@ public class TransactionService(
 
         if (filter.UserId is not null)
             query = query.Where(t =>
-                (t.CreateBy == userId && t.ModifyBy == filter.UserId) ||
-                (t.CreateBy == filter.UserId && t.ModifyBy == userId) ||
+                // (t.CreateBy == userId && t.ModifyBy == filter.UserId) ||
+                // (t.CreateBy == filter.UserId && t.ModifyBy == userId) ||
                 (t.CreateBy == userId && t.UserId == filter.UserId) ||
                 (t.CreateBy == filter.UserId && t.UserId == userId) ||
                 (t.ModifyBy == userId && t.UserId == filter.UserId) ||

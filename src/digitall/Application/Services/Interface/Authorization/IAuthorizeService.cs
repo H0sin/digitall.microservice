@@ -8,6 +8,7 @@ namespace Application.Services.Interface.Authorization;
 
 public interface IAuthorizeService
 {
+    Task<List<UserRolePermissionsDto>> GetRolePermissionUserAsync(long userId);
     /// <summary>
     /// Updates roles assigned to a user. 
     /// Adds or removes roles based on the provided `IsAssigned` flag.
