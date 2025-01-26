@@ -15,6 +15,7 @@ using Domain.Entities.Account;
 using SixLabors.ImageSharp.ColorSpaces;
 using Application.Services.Interface.Authorization;
 using Domain.DTOs.Account;
+using Permission = Domain.DTOs.Authorization.Permission;
 
 namespace Application.Services.Implementation.Authorization;
 
@@ -271,7 +272,30 @@ public class AuthorizeService(
     {
         return await permissionRepository.HasUserPermission(userId, permissionName);
     }
-    
+
+    public async Task<List<UserRolePermissionsDto>> GetRolePermissionUserAsync(long userId)
+    {
+        var userRoles = await userRoleRepository.GetQuery()
+            .Where(ur => ur.UserId == userId)
+            .Select(ur => ur.RoleId)
+            .ToListAsync();
+
+        if (!userRoles.Any())
+            return new List<UserRolePermissionsDto>();
+
+        
+        var rolesWithPermissions = await roleRepository.GetQuery()
+            .Where(r => userRoles.Contains(r.Id))
+            .Select(r => new UserRolePermissionsDto
+            {
+                RoleId = r.Id,
+                RoleName = r.Title,
+                Permissions = r.RolePermissions.Select(rp => new Permission(rp.PermissionId,rp.Permission.SystemName)).ToList()
+            }).ToListAsync();
+
+        return rolesWithPermissions;
+    }
+
     public async Task UpdateUserRolesAsync(UserRoleUpdateDto userRoleUpdateDto, long userId)
     {
         var userRoles = await userRoleRepository.GetQuery().Where(ur => ur.UserId == userRoleUpdateDto.UserId)

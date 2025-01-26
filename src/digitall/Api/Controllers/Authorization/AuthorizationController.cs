@@ -16,6 +16,16 @@ namespace Api.Controllers.Authorization
     public class AuthorizationController(IAuthorizeService authorizeService) : BaseController
     {
         /// <summary>
+        /// get all role permission user
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ApiResult<List<UserRolePermissionsDto>>> GetUserRolePermissions()
+        {
+            return Ok(await authorizeService.GetRolePermissionUserAsync(User.GetId()));
+        }
+
+        /// <summary>
         /// Assign or remove roles for a user.
         /// </summary>
         /// <param name="dto">The user-role update information.</param>
