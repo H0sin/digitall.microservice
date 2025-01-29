@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Category;
@@ -32,6 +33,7 @@ public class CategoryController : BaseController
     /// </summary>
     /// <param name="category"></param>
     /// <returns></returns>
+    [PermissionChecker("AddCategory")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ApiResult<AddCategoryDto>), (int)HttpStatusCode.BadRequest)]
@@ -62,6 +64,7 @@ public class CategoryController : BaseController
     /// </summary>
     /// <param name="category"></param>
     /// <returns>List Category</returns>
+    [PermissionChecker("GetCategories")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<List<CategoryDto>>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
@@ -80,6 +83,7 @@ public class CategoryController : BaseController
     /// </summary>
     /// <param name="category"></param>
     /// <returns>Category</returns>
+    [PermissionChecker("GetCategory")]
     [ProducesResponseType(typeof(ApiResult<CategoryDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
     [ProducesDefaultResponseType]

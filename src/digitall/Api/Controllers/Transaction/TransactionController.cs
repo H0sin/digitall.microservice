@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Implementation.Agent;
@@ -24,6 +25,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// <summary>
     /// add transaction for user
     /// </summary>
+    [PermissionChecker("AddTransaction")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
@@ -49,6 +51,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// after admin show transaction acept transaction
     /// </summary>
     /// <param name="transaction">TransactionStatus 1 = accepted, 2 not accepted, 3 waiting</param>
+    [PermissionChecker("UpdateTransactionStatus")]
     [HttpPut]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
@@ -63,6 +66,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// get transaction list by filter
     /// </summary>
     /// <returns>FilterTransaction</returns>
+    [PermissionChecker("FilterTransaction")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<FilterTransactionDto>), (int)HttpStatusCode.OK)]
@@ -79,6 +83,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [PermissionChecker("GetTransaction")]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<TransactionDto>), (int)HttpStatusCode.OK)]
@@ -92,6 +97,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// add transaction detail
     /// </summary>
     /// <returns>FilterTransaction</returns>
+    [PermissionChecker("AddTransactionDetails")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
@@ -106,6 +112,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// get transaciton detail list
     /// </summary>
     /// <returns>FilterTransaction</returns>
+    [PermissionChecker("GetTransactionDetails")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<TransactionDetailDto>), (int)HttpStatusCode.OK)]
@@ -121,6 +128,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// </summary>
     /// <param name="transaction"></param>
     /// <returns></returns>
+    [PermissionChecker("IncreaseBalance")]
     [HttpPost("{userId}")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -138,6 +146,7 @@ public class TransactionController(ITransactionService transactionService) : Bas
     /// </summary>
     /// <param name="transaction"></param>
     /// <returns></returns>
+    [PermissionChecker("DecreaseBalance")]
     [HttpPost("{userId}")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]

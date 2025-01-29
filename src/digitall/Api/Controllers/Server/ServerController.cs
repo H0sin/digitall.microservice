@@ -2,6 +2,7 @@
 using System.Text;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Helper;
@@ -45,6 +46,7 @@ public class ServerController : BaseController
     /// get transaction list by filter
     /// </summary>
     /// <returns>FilterTransaction</returns>
+    [PermissionChecker("AddServer")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.BadRequest)]
@@ -65,6 +67,7 @@ public class ServerController : BaseController
     /// get active servers list for drop down
     /// </summary>
     /// <returns>List Server Dto</returns>
+    [PermissionChecker("GetServers")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<List<ServerDto>>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
@@ -78,6 +81,7 @@ public class ServerController : BaseController
     /// get server by id
     /// </summary>
     /// <returns>Server Dto</returns>
+    [PermissionChecker("GetServerById")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<ServerDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status200OK)]
@@ -97,6 +101,7 @@ public class ServerController : BaseController
     /// filter servers
     /// </summary>
     /// <returns>List Server Dto</returns>
+    [PermissionChecker("FilterServers")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<FilterServerDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]

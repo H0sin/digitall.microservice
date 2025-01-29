@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Agent;
@@ -26,6 +27,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// agency information
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("AgencyInformation")]
     [ProducesResponseType(typeof(ApiResult<AgencyInformationDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
@@ -38,6 +40,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent after login my admin agent information
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAgentTree")]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentTreeDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
@@ -53,6 +56,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent after login my admin agent information
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAdminAgentInformation")]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
@@ -69,6 +73,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="code"></param>
     /// <returns></returns>
+    [PermissionChecker("GetAgentByCode")]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
     [ProducesDefaultResponseType]
@@ -84,6 +89,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get user agent
     /// </summary>
     /// <returns>AgentDto</returns>
+    [PermissionChecker("GetUserAgent")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
@@ -100,6 +106,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="Id">Send Agent Id</param>
     /// <returns>AgentDto</returns>
+    [PermissionChecker("GetAgentById")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<AgentDto>), StatusCodes.Status200OK)]
@@ -114,6 +121,8 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent list
     /// </summary>
     /// <returns>List AgentDto</returns>
+    
+    [PermissionChecker("GetAgents")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<List<AgentDto>>), StatusCodes.Status200OK)]
@@ -129,6 +138,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent after login set agent and used
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAgentInformation")]
     [HttpGet]
     [ProducesResponseType(typeof(AgentDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
@@ -136,7 +146,8 @@ public class AgentController(IAgentService agentService) : BaseController
     public async Task<ApiResult<AgentDto>> GetAgentInformation() =>
         Ok(await agentService.GetAgentByUserIdAsync(User.GetId()));
 
-
+    
+    [PermissionChecker("GetAgentInformationPayment")]
     [HttpGet]
     [ProducesResponseType(typeof(InformationPaymentDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<InformationPaymentDto>), StatusCodes.Status200OK)]
@@ -148,6 +159,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent request
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAgentRequests")]
     [HttpGet]
     [ProducesResponseType(typeof(List<AgentRequestDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<List<AgentRequestDto>>), StatusCodes.Status200OK)]
@@ -164,6 +176,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="filter">FilterAgentDto</param>
     /// <returns>FilterAgentDto</returns>
+    [PermissionChecker("FilterAgents")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResult<FilterAgentDto>), StatusCodes.Status200OK)]
@@ -188,6 +201,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// return agent status
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAgentStatus")]
     [HttpGet]
     [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -202,6 +216,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="agent"></param>
     /// <returns>ok or bad request</returns>
+    [PermissionChecker("AddAgent")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult),(int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -217,6 +232,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
+    [PermissionChecker("AddRequestForAgent")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -236,6 +252,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
+    [PermissionChecker("ChangeRequestStatus")]   
     [HttpPut]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -251,6 +268,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="agency"></param>
     /// <returns></returns>
+    [PermissionChecker("UpdateAgent")]
     [HttpPut]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -268,7 +286,8 @@ public class AgentController(IAgentService agentService) : BaseController
     /// report agent incomes
     /// </summary>
     /// <param name="filter"></param>
-    /// <returns></returns>
+    /// <returns></returns>\
+    [PermissionChecker("ProfitReport")]
     [ProducesResponseType(typeof(ApiResult<FilterProfitReportDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
@@ -282,6 +301,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [PermissionChecker("InputUserReport")]
     [ProducesResponseType(typeof(ApiResult<FilterInputUserReportDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet]

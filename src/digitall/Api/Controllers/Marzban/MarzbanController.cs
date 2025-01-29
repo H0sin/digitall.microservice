@@ -2,6 +2,7 @@
 using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Marzban;
@@ -21,6 +22,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="marzban"></param>
     /// <returns></returns>
+    [PermissionChecker("AddMarzbanServer")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanServer([FromBody] AddMarzbanServerDto marzban)
@@ -35,6 +37,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <remarks>for counting vpn price</remarks>
     /// <param name="id"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServer")]
     [HttpGet]
     [ProducesResponseType(typeof(GetMarzbanServerOptionDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(GetMarzbanServerOptionDto), (int)HttpStatusCode.NoContent)]
@@ -49,6 +52,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <remarks>for selected server Ip or Price Or ......</remarks>
     /// <param name="id"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServers")]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetMarzbanServerOptionDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -60,6 +64,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("ReasetMarzbanServerCore")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> ReasetMarzbanServerCore(long serverId)
@@ -73,6 +78,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServerCoreConfig")]
     [HttpGet]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -86,6 +92,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// update marzban config before get and after add add inboud or user 
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("UpdateMarzbanServerCoreConfig")]
     [HttpPut]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -100,6 +107,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// get marzban server settings 
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServerNodeSettings")]
     [HttpGet]
     [ProducesResponseType(typeof(MarzbanNodeSettingDto), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -115,6 +123,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <param name="serverId"></param>
     /// <param name="node"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServerNodeSettings")]
     [HttpPost]
     [ProducesResponseType(typeof(MarzbanNodeDto), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -131,6 +140,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <param name="serverId"></param>
     /// <param name="nodeId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServerNodeById")]
     [HttpGet]
     [ProducesResponseType(typeof(MarzbanNodeDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(Nullable), (int)HttpStatusCode.NotFound)]
@@ -146,6 +156,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// update marzban config before get and after add add inboud or user 
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("UpdateMarzbanserverNode")]
     [HttpPut]
     [ProducesResponseType(typeof(MarzbanNodeDto), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -162,6 +173,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <param name="serverId"></param>
     /// <param name="nodeId"></param>
     /// <returns></returns>
+    [PermissionChecker("DeleteMarzbanServerNode")]
     [HttpDelete]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> DeleteMarzbanServerNode(long serverId, [FromQuery] long nodeId)
@@ -176,6 +188,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// <param name="serverId"></param>
     /// <param name="nodeId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanServerNodes")]
     [HttpGet]
     [ProducesResponseType(typeof(List<MarzbanNodeDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -192,6 +205,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanInbouds")]
     [HttpGet]
     [ProducesResponseType(typeof(List<MarzbanInboundsDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -206,6 +220,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// get list protocol
     /// </summary>
     /// <returns>[vless,trojan,vmess,shadowshoks]</returns>
+    [PermissionChecker("Portocols")]
     [HttpGet]
     [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
     public ApiResult<List<string>> Portocols() => Ok(Enum.GetNames(typeof(Protocols)).ToList());
@@ -217,6 +232,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="vpn"></param>
     /// <returns></returns>
+    [PermissionChecker("AddMarzbanVpn")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanVpn(AddMarzbanVpnDto vpn)
@@ -229,6 +245,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// return marzban vpn list for buy
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("AddMarzbanVpn")]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetMarzbanVpnDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(IReadOnlyList<GetMarzbanVpnDto>), (int)HttpStatusCode.OK)]
@@ -243,6 +260,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="vpn"></param>
     /// <returns></returns>
+    [PermissionChecker("BuyMarzbanVpn")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> BuyMarzbanVpn(BuyMarzbanVpnDto vpn)
@@ -257,6 +275,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     // action 2 get all sub 
 
     // action 1
+    [PermissionChecker("GetMarzbanUser")]
     [HttpPost]
     [ProducesResponseType(typeof(MarzbanUserInformationDto), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -271,6 +290,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="template"></param>
     /// <returns></returns>
+    [PermissionChecker("AddMarzbanVpnTemplate")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMarzbanVpnTemplate([FromBody] AddMarzbanVpnTemplatesDto template)
@@ -284,6 +304,7 @@ public class MarzbanController(IMarzbanService marzbanService) : BaseController
     /// </summary>
     /// <param name="vpnId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetMarzbanVpnTemplateByVpnId")]
     [HttpGet]
     [ProducesResponseType(typeof(List<MarzbanVpnTemplateDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]

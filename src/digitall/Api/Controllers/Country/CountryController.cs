@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Country;
@@ -21,6 +22,7 @@ public class CountryController(ICountryService countryService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetCountris")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<List<CountryDto>>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -39,6 +41,7 @@ public class CountryController(ICountryService countryService) : BaseController
     /// </summary>
     /// <param name="country"></param>
     /// <returns></returns>
+    [PermissionChecker("AddCountry")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddCountry(AddCountryDto country)

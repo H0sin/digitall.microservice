@@ -41,4 +41,5 @@ public enum ApiResultStatusCode
     [Display(Name = "خطا از سمت مرزبان")] MarzbanError = -4,
     
     [Display(Name = "خطا از سمت ربات")] TelegramException = -5,
+    [Display(Name = "عدم دسترسی")] NoPermission = -99  
 }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Application.Extensions;
 using Application.Services.Implementation.Apple;
 using Application.Services.Interface.Apple;
@@ -22,6 +23,7 @@ public class AppleController(IAppleService appleService) : BaseController
     /// get GetAppleIdTypesAsync
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetAppleIdType")]
     [ProducesResponseType(typeof(List<GetAppleIdTypeDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
@@ -35,6 +37,7 @@ public class AppleController(IAppleService appleService) : BaseController
     /// return list apple id
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("FilterAppleId")]
     [ProducesResponseType(typeof(FilterAppleId), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet]
@@ -47,6 +50,7 @@ public class AppleController(IAppleService appleService) : BaseController
     /// return list apple id
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("AddAppleId")]
     [ProducesResponseType(typeof(AppleId), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpPost]
@@ -61,6 +65,7 @@ public class AppleController(IAppleService appleService) : BaseController
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [PermissionChecker("GetAppleIdById")]
     [ProducesResponseType(typeof(AppleIdDto), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     [HttpGet("{id}")]
@@ -74,6 +79,7 @@ public class AppleController(IAppleService appleService) : BaseController
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
+    [PermissionChecker("UpdateAppleId")]
     [HttpPut]
     public async Task<ApiResult> UpdateAppleId([FromBody] AppleIdDto account)
     {

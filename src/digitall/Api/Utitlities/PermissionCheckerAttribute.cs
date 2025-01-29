@@ -1,5 +1,7 @@
-﻿using Application.Extensions;
+﻿using Api.Filters;
+using Application.Extensions;
 using Application.Services.Interface.Authorization;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -24,7 +26,8 @@ namespace Api.Utitlities
                     _authorizeService = (IAuthorizeService)context.HttpContext.RequestServices.GetService(typeof(IAuthorizeService));
                     if (!_authorizeService.HasUserPermission(userId, _permission).Result)
                     {
-                        context.Result = new ForbidResult();
+                        context.Result = new JsonResult(new ApiResult(false, ApiResultStatusCode.NoPermission,
+                            "شما به این بخش دسترسی نداری"));
                     }
                 }
             }
