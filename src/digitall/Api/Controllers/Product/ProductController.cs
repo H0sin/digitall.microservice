@@ -7,6 +7,7 @@ using System.Net;
 using Domain.DTOs.Vpn;
 using Api.Filters;
 using Api.Controllers.Base;
+using Api.Utitlities;
 
 namespace Api.Controllers.Product;
 
@@ -26,6 +27,7 @@ public class ProductController : BaseController
 
     #region get
 
+    [PermissionChecker("GetProductByFilter")]
     [HttpGet]
     public async Task<ApiResult<FilterProductDto>> GetProductByFilterAsync([FromQuery] FilterProductDto filter)
     {
@@ -37,6 +39,7 @@ public class ProductController : BaseController
 
     #region add
 
+    [PermissionChecker("AddProduct")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddProduct([FromBody] AddProductDto product)
@@ -45,6 +48,7 @@ public class ProductController : BaseController
         return Ok();
     }
 
+    [PermissionChecker("AddVpnProduct")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddVpnProduct([FromForm] AddVpnProductDto product)
