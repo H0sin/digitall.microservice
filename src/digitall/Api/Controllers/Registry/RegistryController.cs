@@ -22,6 +22,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     /// </summary>
     /// <param name="registry"></param>
     /// <returns></returns>
+    [PermissionChecker("Add")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -37,6 +38,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [PermissionChecker("Filter")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<FilterRegistryDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -50,6 +52,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [PermissionChecker("FilterAll")]
     [HttpGet]
     [PermissionChecker("AllRegistryItem")]
     [ProducesResponseType(typeof(ApiResult<FilterRegistryDto>), (int)HttpStatusCode.OK)]
@@ -64,6 +67,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [PermissionChecker("Update")]
     [HttpPut]
     [PermissionChecker("UpdateRegistryAmountModel")]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
@@ -79,6 +83,7 @@ public class RegistryController(IRegistryService registryService) : BaseControll
     /// </summary>
     /// <param name="images"></param>
     /// <returns></returns>
+    [PermissionChecker("UploadRegistryTransactionImages")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]

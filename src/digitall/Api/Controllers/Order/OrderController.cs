@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Application.Extensions;
 using Application.Services.Interface.Order;
 using Domain.DTOs.Order;
@@ -19,6 +20,7 @@ namespace Api.Controllers.Order
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
+        [PermissionChecker("AddOrder")]
         [HttpPost]
         [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
@@ -44,6 +46,7 @@ namespace Api.Controllers.Order
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
+        [PermissionChecker("FilterOrder")]
         [HttpGet]
         [ProducesResponseType(typeof(ApiResult<FilterOrderDto>), (int)HttpStatusCode.OK)]
         [ProducesDefaultResponseType]
@@ -58,6 +61,7 @@ namespace Api.Controllers.Order
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
+        [PermissionChecker("FilterUserOrder")]
         [HttpGet]
         [ProducesResponseType(typeof(ApiResult<FilterOrderDto>), (int)HttpStatusCode.OK)]
         [ProducesDefaultResponseType]

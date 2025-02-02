@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Notification;
@@ -10,6 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Notification;
 
+/// <summary>
+/// Notification Controller
+/// </summary>
+/// <param name="notificationService"></param>
 [ApiVersion(1)]
 public class NotificationController(INotificationService notificationService) : BaseController
 {
@@ -18,6 +23,7 @@ public class NotificationController(INotificationService notificationService) : 
     /// just accept 
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetNotificationType")]
     [HttpGet]
     [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -30,6 +36,7 @@ public class NotificationController(INotificationService notificationService) : 
     /// </summary>
     /// <param name="notification"></param>
     /// <returns></returns>
+    [PermissionChecker("AddNotification")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -43,6 +50,7 @@ public class NotificationController(INotificationService notificationService) : 
     /// get list notifications
     /// </summary>
     /// <returns></returns>
+    [PermissionChecker("GetNotifications")]
     [HttpGet]
     [ProducesResponseType(typeof(List<NotificationDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]

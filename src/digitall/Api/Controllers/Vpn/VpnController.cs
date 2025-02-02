@@ -9,6 +9,7 @@ using Application.Services.Interface.Marzban;
 using Domain.DTOs.Marzban;
 using Api.Filters;
 using Api.Controllers.Base;
+using Api.Utitlities;
 
 namespace Api.Controllers.Vpn;
 
@@ -21,6 +22,7 @@ public class VpnController(IVpnService vpnService) : BaseController
     /// </summary>
     /// <param name="filter">set filter item</param>
     /// <returns>filterProduct</returns>
+    [PermissionChecker("GetVpns")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<FilterVpnDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.NotFound)]
@@ -36,6 +38,7 @@ public class VpnController(IVpnService vpnService) : BaseController
 
     #region buy
 
+    [PermissionChecker("BuyVpn")]
     [HttpPost]
     public async Task<ApiResult> BuyVpn([FromBody] BuyMarzbanVpnDto vpn)
     {

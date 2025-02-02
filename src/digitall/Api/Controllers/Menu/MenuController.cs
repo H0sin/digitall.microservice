@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Api.Filters;
 using Api.Controllers.Base;
+using Api.Utitlities;
 
 namespace Api.Controllers.Menu;
 
@@ -38,6 +39,7 @@ public class MenuController : BaseController
     /// </summary>
     /// <param name="menu"></param>
     /// <returns></returns>
+    [PermissionChecker("AddMenus")]
     [HttpPost]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddMenus([FromBody] AddMenuDto menu)
@@ -59,6 +61,7 @@ public class MenuController : BaseController
     /// receive menus using the token sent in the header
     /// </summary>
     /// <returns>List MenuDto</returns>
+    [PermissionChecker("GetMenus")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<List<MenuDto>>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult<IEnumerable<MenuDto>>), (int)HttpStatusCode.OK)]
@@ -75,6 +78,7 @@ public class MenuController : BaseController
     /// get all menu
     /// </summary>
     /// <returns>List MenuDto</returns>
+    [PermissionChecker("GetAllMenus")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<List<MenuDto>>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]

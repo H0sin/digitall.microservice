@@ -9,6 +9,7 @@ using System.Net;
 using Domain.Entities.Authorization;
 using Api.Filters;
 using Api.Controllers.Base;
+using Api.Utitlities;
 
 namespace Api.Controllers.Authorization
 {
@@ -19,6 +20,7 @@ namespace Api.Controllers.Authorization
         /// get all role permission user
         /// </summary>
         /// <returns></returns>
+        [PermissionChecker("GetUserRolePermission")]
         [HttpGet]
         public async Task<ApiResult<List<UserRolePermissionsDto>>> GetUserRolePermissions()
         {
@@ -30,6 +32,7 @@ namespace Api.Controllers.Authorization
         /// </summary>
         /// <param name="dto">The user-role update information.</param>
         /// <returns>Result of the update operation.</returns>
+        [PermissionChecker("UpdateUserRole")]
         [HttpPut("user/roles")]
         public async Task<ApiResult> UpdateUserRoles([FromBody] UserRoleUpdateDto dto)
         {
@@ -42,6 +45,7 @@ namespace Api.Controllers.Authorization
         /// </summary>
         /// <param name="dto">The role-permission update information.</param>
         /// <returns>Result of the update operation.</returns>
+        [PermissionChecker("UpdateUserRolePermissions")]
         [HttpPut("role/permissions")]
         public async Task<ApiResult> UpdateRolePermissions([FromBody] RolePermissionUpdateDto dto)
         {
@@ -54,6 +58,7 @@ namespace Api.Controllers.Authorization
         /// </summary>
         /// <param name="userId">The ID of the user.</param>
         /// <returns>List of roles and their assigned status.</returns>
+        [PermissionChecker("GetRolesForUser")]
         [HttpGet("user/{userId}/roles")]
         public async Task<ApiResult<List<RoleDto>>> GetRolesForUser(long userId)
         {
@@ -66,6 +71,7 @@ namespace Api.Controllers.Authorization
         /// </summary>
         /// <param name="roleId">The ID of the role.</param>
         /// <returns>List of permissions and their assigned status.</returns>
+        [PermissionChecker("GetPermissionsForRole")]
         [HttpGet("role/{roleId}/permissions")]
         public async Task<ApiResult<List<PermissionDto>>> GetPermissionsForRole(long roleId)
         {
@@ -77,6 +83,7 @@ namespace Api.Controllers.Authorization
         /// Get all available roles.
         /// </summary>
         /// <returns>List of all roles.</returns>
+        [PermissionChecker("GetAllRoles")]
         [HttpGet("roles")]
         public async Task<ApiResult<List<RoleDto>>> GetAllRoles()
         {
@@ -88,6 +95,7 @@ namespace Api.Controllers.Authorization
         /// Get all available permissions.
         /// </summary>
         /// <returns>List of all permissions.</returns>
+        [PermissionChecker("GetAllPermissions")]
         [HttpGet("permissions")]
         public async Task<ApiResult<List<PermissionDto>>> GetAllPermissions()
         {

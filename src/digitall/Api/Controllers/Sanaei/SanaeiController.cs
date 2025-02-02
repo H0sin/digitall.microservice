@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Api.Controllers.Base;
 using Api.Filters;
+using Api.Utitlities;
 using Asp.Versioning;
 using Application.Extensions;
 using Application.Services.Interface.Sanaei;
@@ -21,6 +22,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetInboundsList")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<List<SanaeiInboundDto>>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -36,6 +38,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     /// </summary>
     /// <param name="serverId"></param>
     /// <returns></returns>
+    [PermissionChecker("GetInboundsbyId")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult<InboundDto>), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -55,6 +58,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     /// <param name="addInbound"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
+    [PermissionChecker("AddInbound")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -73,6 +77,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     /// </summary>
     /// <param name="updateInbound"></param>
     /// <returns></returns>
+    [PermissionChecker("UpdateInbound")]
     [HttpPut]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -91,6 +96,7 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     /// </summary>
     /// <param name="updateInbound"></param>
     /// <returns></returns>
+    [PermissionChecker("DeleteInbound")]
     [HttpDelete]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -103,6 +109,8 @@ public class SanaeiController(ISanaeiService sanaeiService) : BaseController
     #endregion
 
     #region client
+    
+    [PermissionChecker("GetClientConfig")]
 
     [HttpPost]
     public async Task<ApiResult> GetClientConfig([FromBody] GetClientDto client)
