@@ -4,9 +4,5 @@ using Domain.IRepositories.Server;
 
 namespace Data.Repositories.Server;
 
-public class ServerRepository : BaseRepository<Domain.Entities.Server.Server>, IServerRepository
-{
-    public ServerRepository(DigitallDbContext context) : base(context)
-    {
-    }
-}
+public class ServerRepository(DigitallDbContext context)
+    : BaseRepository<Domain.Entities.Server.Server>(context), IServerRepository;

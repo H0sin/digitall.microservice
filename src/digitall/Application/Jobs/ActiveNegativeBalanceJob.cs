@@ -24,9 +24,10 @@ public class ActiveNegativeBalanceJob(IServiceScopeFactory serviceScopeFactory) 
 
             foreach (var agent in agents)
             {
-                await userService.ActiveAllUserAccount(agent.AgentAdminId);
                 agent.DisabledAccountTime = null;
                 await agentService.UpdateAgentAsync(agent, agent.AgentAdminId);
+
+                await userService.ActiveAllUserAccount(agent.AgentAdminId);
 
                 await notificationService.AddNotificationAsync(new AddNotificationDto()
                 {

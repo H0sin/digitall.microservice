@@ -22,6 +22,27 @@ namespace Api.Controllers.Agent;
 public class AgentController(IAgentService agentService) : BaseController
 {
     #region get
+    
+    /// <summary>
+    /// Agent No Reached Limited
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    public async Task<ApiResult<List<AgentDto>>> AgentsReachedNegativeLimit()
+    {
+        return Ok(await agentService.AgentsReachedNegativeLimit());
+    }
+
+    /// <summary>
+    /// Agent No Reached Limited
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    public async Task<ApiResult<List<AgentDto>>> AgentsReachedNegativeNotLimit()
+    {
+        return Ok(await agentService.AgentsReachedNegativeNotLimit());
+    }
+
 
     /// <summary>
     /// agency information
@@ -35,7 +56,7 @@ public class AgentController(IAgentService agentService) : BaseController
     {
         return Ok(await agentService.GetMyAgencyInformation(User.GetId()));
     }
-    
+
     /// <summary>
     /// get agent after login my admin agent information
     /// </summary>
@@ -121,7 +142,6 @@ public class AgentController(IAgentService agentService) : BaseController
     /// get agent list
     /// </summary>
     /// <returns>List AgentDto</returns>
-    
     [PermissionChecker("GetAgents")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResult), StatusCodes.Status204NoContent)]
@@ -146,7 +166,7 @@ public class AgentController(IAgentService agentService) : BaseController
     public async Task<ApiResult<AgentDto>> GetAgentInformation() =>
         Ok(await agentService.GetAgentByUserIdAsync(User.GetId()));
 
-    
+
     [PermissionChecker("GetAgentInformationPayment")]
     [HttpGet]
     [ProducesResponseType(typeof(InformationPaymentDto), (int)HttpStatusCode.OK)]
@@ -218,7 +238,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// <returns>ok or bad request</returns>
     [PermissionChecker("AddAgent")]
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResult),(int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
     public async Task<ApiResult> AddAgent([FromBody] AddAgentDto agent)
     {
@@ -252,7 +272,7 @@ public class AgentController(IAgentService agentService) : BaseController
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [PermissionChecker("ChangeRequestStatus")]   
+    [PermissionChecker("ChangeRequestStatus")]
     [HttpPut]
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     [ProducesDefaultResponseType]
@@ -262,7 +282,7 @@ public class AgentController(IAgentService agentService) : BaseController
         return Ok();
     }
 
-    
+
     /// <summary>
     /// update agent information 
     /// </summary>
@@ -277,7 +297,7 @@ public class AgentController(IAgentService agentService) : BaseController
         await agentService.UpdateAgencyAsync(agency, User.GetId());
         return Ok();
     }
-    
+
     #endregion
 
     #region report
@@ -293,9 +313,9 @@ public class AgentController(IAgentService agentService) : BaseController
     [HttpGet]
     public async Task<ApiResult<FilterProfitReportDto>> ProfitReport([FromQuery] FilterProfitReportDto filter)
     {
-        return Ok(await agentService.FilterProfitReportAsync(filter,User.GetId()));
+        return Ok(await agentService.FilterProfitReportAsync(filter, User.GetId()));
     }
-    
+
     /// <summary>
     /// report agent input user
     /// </summary>
@@ -307,8 +327,8 @@ public class AgentController(IAgentService agentService) : BaseController
     [HttpGet]
     public async Task<ApiResult<FilterInputUserReportDto>> InputUserReport([FromQuery] FilterInputUserReportDto filter)
     {
-        return Ok(await agentService.FilterInputUserReportAsync(filter,User.GetId()));
+        return Ok(await agentService.FilterInputUserReportAsync(filter, User.GetId()));
     }
-    
+
     #endregion
 }

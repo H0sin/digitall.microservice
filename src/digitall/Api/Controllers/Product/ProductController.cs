@@ -11,27 +11,20 @@ using Api.Utitlities;
 
 namespace Api.Controllers.Product;
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="productService"></param>
 [ApiVersion(1)]
-public class ProductController : BaseController
+public class ProductController(IProductService productService) : BaseController
 {
-    #region constructor
-
-    private readonly IProductService _productService;
-
-    public ProductController(IProductService productService)
-    {
-        _productService = productService;
-    }
-
-    #endregion
-
     #region get
 
     [PermissionChecker("GetProductByFilter")]
     [HttpGet]
     public async Task<ApiResult<FilterProductDto>> GetProductByFilterAsync([FromQuery] FilterProductDto filter)
     {
-        FilterProductDto response = await _productService.FilterProductAsync(filter, User.GetId());
+        FilterProductDto response = await productService.FilterProductAsync(filter, User.GetId());
         return Ok(response);
     }
 
@@ -44,7 +37,7 @@ public class ProductController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddProduct([FromBody] AddProductDto product)
     {
-        var result = await _productService.AddProductAsync(product, User.GetId());
+        var result = await productService.AddProductAsync(product, User.GetId());
         return Ok();
     }
 
@@ -53,8 +46,7 @@ public class ProductController : BaseController
     [ProducesResponseType(typeof(ApiResult), (int)HttpStatusCode.OK)]
     public async Task<ApiResult> AddVpnProduct([FromForm] AddVpnProductDto product)
     {
-        var result = await _productService.AddVpnProductAsync(product, User.GetId());
-
+        var result = await productService.AddVpnProductAsync(product, User.GetId());
         return Ok();
     }
     #endregion

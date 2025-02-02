@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Notification;
 
+/// <summary>
+/// Notification Controller
+/// </summary>
+/// <param name="notificationService"></param>
 [ApiVersion(1)]
 public class NotificationController(INotificationService notificationService) : BaseController
 {

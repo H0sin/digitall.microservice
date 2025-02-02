@@ -54,8 +54,8 @@ public class AgentService(
                 agent => agent.AgentAdminId,
                 user => user.Id,
                 (agent, user) => new { Agent = agent, User = user })
-            .Where(x => x.User.Balance < -100000 &&
-                        x.User.Balance - 100000 < x.Agent.AmountWithNegative)
+            .Where(x => x.User.Balance < -150000 &&
+                        x.User.Balance - 150000 < x.Agent.AmountWithNegative)
             .Select(x => new AgentDto(x.Agent))
             .ToListAsync();
     }
@@ -67,7 +67,7 @@ public class AgentService(
                 agent => agent.AgentAdminId,
                 user => user.Id,
                 (agent, user) => new { Agent = agent, User = user })
-            .Where(x => x.User.Balance <= x.Agent.AmountWithNegative && x.Agent.DisabledAccountTime != null)
+            .Where(x => (x.User.Balance + -150000) >= x.Agent.AmountWithNegative && x.Agent.DisabledAccountTime != null)
             .Select(x => new AgentDto(x.Agent))
             .ToListAsync();
     }
@@ -405,7 +405,6 @@ public class AgentService(
         currentAgent.SpecialPercent = agent.SpecialPercent;
         currentAgent.AmountWithNegative = agent.AmountWithNegative;
         currentAgent.DisabledAccountTime = agent.DisabledAccountTime;
-
         currentAgent.PersianBrandName = agent.PersianBrandName;
         currentAgent.BrandName = agent.BrandName;
 

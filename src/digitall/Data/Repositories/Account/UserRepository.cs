@@ -5,9 +5,4 @@ using Domain.IRepositories.Account;
 
 namespace Data.Repositories.Account;
 
-public class UserRepository : BaseRepository<User>, IUserRepository
-{
-    public UserRepository(DigitallDbContext context) : base(context)
-    {
-    }
-}
+public class UserRepository(DigitallDbContext context) : BaseRepository<User>(context), IUserRepository;
