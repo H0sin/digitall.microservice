@@ -223,9 +223,11 @@ public class WireguardService(
             {
                 while (retry < 20)
                 {
+                    var postfixNumber = new Random().Next(9, 99) + new Random().Next(9, 99);
+                    
                     name = isAgent != null
-                        ? isAgent.BrandName + "_" + (count + retry)
-                        : agent.BrandName + "_" + (count + retry);
+                        ? isAgent.BrandName + postfixNumber
+                        : agent.BrandName + postfixNumber;
 
                     data = new RequestWireguard(WireguardApiPath.AddPeer(server, wireguardVpn.InterfaceName),
                         HttpMethod.Post,
@@ -408,7 +410,11 @@ public class WireguardService(
                     NotificationTemplate.SetBrandName(agent.AgentAdminId), user.Id);
 
 
-            string name = isAgent != null ? isAgent.BrandName + "_" + (count + 1) : agent.BrandName + "_" + (count + 1);
+            var postfixNumber = new Random().Next(9, 99) + new Random().Next(9, 99);
+                    
+            string name = isAgent != null
+                ? isAgent.BrandName + postfixNumber
+                : agent.BrandName + postfixNumber;
 
             #endregion
 

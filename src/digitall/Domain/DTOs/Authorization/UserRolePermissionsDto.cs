@@ -7,5 +7,5 @@ public class UserRolePermissionsDto
     public List<Permission> Permissions { get; set; }
 }
 
-public record Permission(long PermissionId, string PermissionName);
+public record Permission(long PermissionId, string PermissionName,string Title);
 
