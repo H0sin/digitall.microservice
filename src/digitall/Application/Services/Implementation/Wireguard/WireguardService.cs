@@ -223,7 +223,7 @@ public class WireguardService(
             {
                 while (retry < 20)
                 {
-                    var postfixNumber = new Random().Next(9, 99) + new Random().Next(9, 99);
+                    var postfixNumber = new Random().Next(999, 9999);
                     
                     name = isAgent != null
                         ? isAgent.BrandName + postfixNumber
@@ -410,7 +410,7 @@ public class WireguardService(
                     NotificationTemplate.SetBrandName(agent.AgentAdminId), user.Id);
 
 
-            var postfixNumber = new Random().Next(9, 99) + new Random().Next(9, 99);
+            var postfixNumber = new Random().Next(999, 9999);
                     
             string name = isAgent != null
                 ? isAgent.BrandName + postfixNumber
