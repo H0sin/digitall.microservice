@@ -290,7 +290,7 @@ public class AuthorizeService(
             {
                 RoleId = r.Id,
                 RoleName = r.Title,
-                Permissions = r.RolePermissions.Select(rp => new Permission(rp.PermissionId,rp.Permission.SystemName)).ToList()
+                Permissions = r.RolePermissions.Select(rp => new Permission(rp.PermissionId,rp.Permission.SystemName,rp.Permission.Title)).ToList()
             }).ToListAsync();
 
         return rolesWithPermissions;
