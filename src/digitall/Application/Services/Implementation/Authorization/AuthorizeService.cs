@@ -384,6 +384,7 @@ public class AuthorizeService(
         {
             PermissionId = permission.Id,
             PermissionName = permission.SystemName,
+            Title = permission.Title,
             IsAssigned = rolePermissions.Any(rp => rp.PermissionId == permission.Id)
         }).ToList();
     }
@@ -396,7 +397,8 @@ public class AuthorizeService(
         {
             PermissionId = p.Id,
             PermissionName = p.SystemName,
-            IsAssigned = false
+            IsAssigned = false,
+            Title = p.Title
         }).ToList();
     }
 
