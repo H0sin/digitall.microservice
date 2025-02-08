@@ -13,10 +13,16 @@ public class PermissionDto
     /// <summary>
     /// Name of the permission.
     /// </summary>
-    public string PermissionName { get; set; }
+    public string? PermissionName { get; set; }
 
     /// <summary>
     /// Indicates whether the permission is assigned (used for role-permission mapping).
     /// </summary>
     public bool IsAssigned { get; set; }
+
+    
+    /// <summary>
+    /// For Persian Name Permissions
+    /// </summary>
+    public string? Title { get; set; }
 }
