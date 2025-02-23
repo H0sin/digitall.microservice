@@ -150,7 +150,7 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup? AppleIdInformationButton(AppleId appleId, AppleIdType type,Order order)
+    public static InlineKeyboardMarkup? AppleIdInformationButton(AppleId appleId, AppleIdType type, Order order)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
@@ -159,7 +159,7 @@ public class TelegramHelper
 
         DateTime purchaseDate = order.CreateDate;
         TimeSpan difference = DateTime.UtcNow - purchaseDate;
-        
+
         if (type.Warranty & difference.Days < type.WarrantyDay)
             buttons.Add(CreateList1Button(InlineKeyboardButton.WithCallbackData("گزارش مشکلات - گارانتی",
                 $"appleId_warranty?Id={appleId.Id}")));
@@ -420,7 +420,7 @@ public class TelegramHelper
         return new InlineKeyboardMarkup(buttons);
     }
 
-    public static InlineKeyboardMarkup CreateMainMenu(User user, bool has_bot = false,string? token = null)
+    public static InlineKeyboardMarkup CreateMainMenu(User user, bool has_bot = false, string? token = null)
     {
         IList<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 
@@ -440,11 +440,11 @@ public class TelegramHelper
                 {
                     Url = $"https://digitalldns.com?token={token}"
                 })));
-            
+
                 buttons.Add(CreateList1Button(InlineKeyboardButton.WithWebApp("ریجستری تلفن همراه", new WebAppInfo()
                 {
                     Url = $"https://digitalldns.com?token={token}&registry=true"
-                })));   
+                })));
             }
         }
         else
@@ -987,21 +987,21 @@ public class TelegramHelper
     /// <returns></returns>
     private static string Default_Message(string? username, string? chaneladdress) => $"""
          🎉 خوش‌آمدید 🎉
-         
+
          🔒 امکانات ما:
-         
+
          VPN‌های پیشرفته: V2Ray و WireGuard
          Apple ID
-         
+
          🕖 ساعات پشتیبانی: 🟢 ۹ تا ۱۲ شب
-         
+
          💼 نمایندگی ویژه:
-         
+
          💸 قیمت‌های بسیار مناسب با دریافت نمایندگی
          🤖 دریافت ربات با برند خودتان  (رایگان)
-         
+
          ✨ همین حالا شروع کنید و از مزایای ویژه بهره‌مند شوید! ✨
-         
+
          👨🏻‍💻پشتیبانی: @{username ?? "NO_USERNAME"}
          """;
 
@@ -1163,7 +1163,7 @@ public class TelegramHelper
                  `\{transactionDetail.CardNumber}`\
                  {transactionDetail.CardHolderName}
                  
-
+         
          ‼️مبلغ باید همان مبلغی که در بالا ذکر شده واریز نمایید
          ‼️امکان برداشت وجه از کیف پول نیست
          ‼️مسئولیت واریز اشتباهی با شماست
@@ -1338,6 +1338,8 @@ public class TelegramHelper
                     From = await botClient!.GetMeAsync(cancellationToken: cancellationToken),
                     Data = $"user_management?id={currentUser?.Id ?? 0}",
                 };
+
+                telegramUser.MessageId = 0;
 
                 await telegramService.ManagementUserAsync(botClient!, callbackQuery,
                     cancellationToken, telegramUser);
